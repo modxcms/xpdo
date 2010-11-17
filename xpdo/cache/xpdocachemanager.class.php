@@ -196,7 +196,7 @@ class xPDOCacheManager {
      * @param string $content The content of the newly written file.
      * @param string $mode The php file mode to write in. Defaults to 'wb'
      * @param array $options An array of options for the function.
-     * @return boolean Returns true if the file was successfully written.
+     * @return mixed Returns number of bytes written if the write was successfull, otherwise false
      */
     public function writeFile($filename, $content, $mode= 'wb', $options= array()) {
         $written= false;
