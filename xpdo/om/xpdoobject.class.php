@@ -1424,7 +1424,7 @@ class xPDOObject {
     /**
      * Remove the persistent instance of an object permanently.
      *
-     * Deletes the persistent object isntance stored in the database when
+     * Deletes the persistent object instance stored in the database when
      * called, including any dependent objects defined by composite foreign key
      * relationships.
      *
