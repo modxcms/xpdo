@@ -839,7 +839,7 @@ class xPDOObject {
      *
      * Warning: do not use the $format parameter if retrieving multiple values of
      * different types, as the format string will be applied to all types, most
-     * likely with unpredicatable results.  Optionally, you can supply an associate
+     * likely with unpredictable results.  Optionally, you can supply an associate
      * array of format strings with the field key as the key for the format array.
      *
      * @param string|array $k A string (or an array of strings) representing the field
