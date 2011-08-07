@@ -532,6 +532,45 @@ class xPDOObject {
         return $objCollection;
     }
 
+
+
+    public static function loadObjectAndRelations(xPDO & $xpdo, $className, $criteria, $cacheFlag) {
+        $objCollection = array();
+        if ($query= $xpdo->newQuery($className, $criteria, $cacheFlag)) {
+            $query = $xpdo->addDerivativeCriteria($className, $query);
+            $query->bindGraph($graph);
+            $rows = array();
+            $fromCache = false;
+            $collectionCaching = (integer) $xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
+            if ($collectionCaching > 0 && $xpdo->_cacheEnabled && $cacheFlag) {
+                $rows= $xpdo->fromCache($query);
+                $fromCache = !empty($rows);
+            }
+            if (!$fromCache) {
+                $stmt= $query->prepare();
+                if ($stmt && $stmt->execute()) {
+                    $objCollection= $query->hydrateGraph($stmt, $cacheFlag);
+                }
+            } elseif (!empty($rows)) {
+                $objCollection= $query->hydrateGraph($rows, $cacheFlag);
+            }
+        }
+        return $objCollection;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Get a set of column names from an xPDOObject for use in SQL queries.
      *

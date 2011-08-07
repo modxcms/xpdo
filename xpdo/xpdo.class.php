@@ -833,6 +833,17 @@ class xPDO {
         return $object;
     }
 
+    public function getObjectAndRelations($className, $criteria= null, $cacheFlag= true) {
+        if(!$object = $this->call($className, 'loadObjectAndRelations', array(& $this, $className, $criteria, $cacheFlag))){
+            $this->log(xPDO::LOG_LEVEL_WARN, 'getObjectAndRelations criteria returned no instance.');
+        }
+            ;
+
+        
+    }
+
+
+
     /**
      * Retrieves a collection of xPDOObject instances with related objects.
      *
