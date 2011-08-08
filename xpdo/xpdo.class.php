@@ -676,6 +676,94 @@ class xPDO {
         return $instance;
     }
 
+
+    /**
+     * Retrieves a single object instance by the specified criteria and all its related instance
+     * in aggregates or composites.
+     *
+     * Algorithm performs a depth first search in the graph. It can be pretty slow and huge if you end up parsing all your DB.
+     * It prevents cycling by:
+     * - not following relation to parent object
+     * - not following relation for instance of an already visited class if $cycleSafe is set to true (but still dump
+     * the static fields of that object for further parsing, usefull if you want to grab all objects of a class related
+     * to an object of the same class).
+     *
+     * @uses xPDOObject::load()
+     * @param string $className Name of the class to get an instance of.
+     * @param mixed $criteria Primary key of the record or a xPDOCriteria object.
+     * @param integer $maxDepth the maximum depth of parsing.
+     * @param boolean $cycleSafe If set to true, prevent the algorithm to retrieve object whose class has already been seen in the parsing.
+     * @param mixed $cacheFlag If an integer value is provided, this specifies
+     * the time to live in the object cache; if cacheFlag === false, caching is
+     * ignored for the object and if cacheFlag === true, the object will live in
+     * cache indefinitely.
+     * @return array|null An array with all the values of all objects, or null if it could not be
+     * instantiated.
+    */
+    public function getObjectAndRelations($className, $criteria= null, $maxDepth = 0, $cycleSafe = true, $cacheFlag= true) {
+        $instance= null;
+        if ($criteria !== null) {
+            $instance = $this->call($className, 'load', array(& $this, $className, $criteria, $cacheFlag));
+        }
+        if($instance){
+            return $this->_expandRelated($instance, array(), array(), 0, $maxDepth, $cycleSafe);
+        }else{
+            return $instance;
+        }
+
+    }
+
+    private function _expandRelated($instance, $parent = array(), $visited = array(), $depth = 0, $maxDepth = 0, $cycleSafe=true){
+        $res = $instance->toArray();
+
+        // If we already visited a node from this class, let's not go further to avoid combinatory explosion
+        // We'll output what we have and go.
+        if(($cycleSafe && in_array(get_parent_class($instance), $visited)) || $maxDepth && $depth >= $maxDepth){
+            return $res;
+        }
+        $visited[] = get_parent_class($instance);
+
+        $related = array_merge($this->getAggregates(get_class($instance))
+                                 ,$this->getComposites(get_class($instance)));
+
+        foreach($related as $alias => $rel){
+
+            // We don't want to cycle ! We ignore the parent node in the graph.
+            if(!(!empty($parent) &&
+               $parent['parentclass'] == $rel['class'] &&
+               $parent['local'] == $rel['foreign'] &&
+               $parent['foreign'] == $rel['local'])
+            ){
+                $rel['parentclass'] = get_parent_class($instance);
+                // Relation key (local field)
+                $pk = $rel['local'];
+                $res[$alias] = array();
+
+                // Retrieve related objects where foreign key == local key
+                $query = $this->newQuery($rel['class']);
+                $query->where(array(
+                                  $rel['foreign'] => $instance->get($pk)
+                              ));
+                if($rel['cardinality'] == 'many'){
+                    $relobj = $this->getCollection($rel['class'],$query);
+                    foreach($relobj as $obj){
+                       $res[$alias][] = $this->_expandRelated($obj,$rel,$visited, $depth+1, $maxDepth, $cycleSafe);
+                    }
+                }
+                else {
+                    $obj = $this->getObject($rel['class'],$query);
+                    if($obj) {
+                        $res[$alias] = $this->_expandRelated($obj,$rel,$visited, $depth+1, $maxDepth, $cycleSafe);
+                    }
+                }
+            }
+        }
+        return $res;
+    }
+
+
+
+
     /**
      * Retrieves a collection of xPDOObjects by the specified xPDOCriteria.
      *
@@ -833,14 +921,6 @@ class xPDO {
         return $object;
     }
 
-    public function getObjectAndRelations($className, $criteria= null, $cacheFlag= true) {
-        if(!$object = $this->call($className, 'loadObjectAndRelations', array(& $this, $className, $criteria, $cacheFlag))){
-            $this->log(xPDO::LOG_LEVEL_WARN, 'getObjectAndRelations criteria returned no instance.');
-        }
-            ;
-
-        
-    }
 
 
 
