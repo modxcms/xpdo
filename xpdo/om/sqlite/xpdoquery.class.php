@@ -105,7 +105,7 @@ class xPDOQuery_sqlite extends xPDOQuery {
                     $clauses[] = $this->xpdo->escape($setKey) . ' = ' . $value;
                 }
                 if (!empty($clauses)) {
-                    $sql.= 'SET ' . implode(', ', $clauses);
+                    $sql.= 'SET ' . implode(', ', $clauses) . ' ';
                 }
                 unset($clauses);
             }
