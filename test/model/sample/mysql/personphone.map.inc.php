@@ -14,7 +14,7 @@ $xpdo_meta_map['PersonPhone']= array (
   array (
     'person' => 
     array (
-      'dbtype' => 'int',
+      'dbtype' => 'integer',
       'precision' => '11',
       'phptype' => 'integer',
       'null' => false,
@@ -22,7 +22,7 @@ $xpdo_meta_map['PersonPhone']= array (
     ),
     'phone' => 
     array (
-      'dbtype' => 'int',
+      'dbtype' => 'integer',
       'precision' => '11',
       'phptype' => 'integer',
       'null' => false,
@@ -30,7 +30,7 @@ $xpdo_meta_map['PersonPhone']= array (
     ),
     'is_primary' => 
     array (
-      'dbtype' => 'tinyint',
+      'dbtype' => 'smallint',
       'precision' => '1',
       'phptype' => 'boolean',
       'null' => false,

@@ -22,7 +22,7 @@ $xpdo_meta_map['relClassMany']= array (
     ),
     'field2' => 
     array (
-      'dbtype' => 'tinyint',
+      'dbtype' => 'smallint',
       'precision' => '1',
       'phptype' => 'boolean',
       'null' => false,
@@ -37,7 +37,7 @@ $xpdo_meta_map['relClassMany']= array (
     ),
     'fkey' => 
     array (
-      'dbtype' => 'int',
+      'dbtype' => 'intger',
       'precision' => '11',
       'phptype' => 'integer',
       'null' => true,

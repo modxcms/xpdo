@@ -90,7 +90,7 @@ $xpdo_meta_map['Person']= array (
     ),
     'security_level' => 
     array (
-      'dbtype' => 'tinyint',
+      'dbtype' => 'smallint',
       'precision' => '4',
       'phptype' => 'integer',
       'null' => false,

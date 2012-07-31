@@ -24,7 +24,7 @@ $xpdo_meta_map['xPDOSample']= array (
   array (
     'parent' => 
     array (
-      'dbtype' => 'int',
+      'dbtype' => 'integer',
       'precision' => '11',
       'phptype' => 'integer',
       'null' => false,
@@ -61,7 +61,7 @@ $xpdo_meta_map['xPDOSample']= array (
     ),
     'unix_timestamp' => 
     array (
-      'dbtype' => 'int',
+      'dbtype' => 'integer',
       'precision' => '11',
       'phptype' => 'integer',
       'null' => false,
@@ -95,7 +95,7 @@ $xpdo_meta_map['xPDOSample']= array (
     ),
     'integer' => 
     array (
-      'dbtype' => 'int',
+      'dbtype' => 'integer',
       'precision' => '11',
       'phptype' => 'integer',
       'null' => false,
@@ -110,7 +110,7 @@ $xpdo_meta_map['xPDOSample']= array (
     ),
     'boolean' => 
     array (
-      'dbtype' => 'tinyint',
+      'dbtype' => 'smallint',
       'precision' => '1',
       'phptype' => 'boolean',
       'null' => false,

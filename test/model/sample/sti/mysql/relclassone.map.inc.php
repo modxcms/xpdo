@@ -13,7 +13,7 @@ $xpdo_meta_map['relClassOne']= array (
   array (
     'field1' => 
     array (
-      'dbtype' => 'int',
+      'dbtype' => 'integer',
       'precision' => '11',
       'phptype' => 'integer',
       'null' => false,

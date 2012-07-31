@@ -20,4 +20,4 @@
 # Suite 330, Boston, MA 02111-1307 USA
 #
 
-phpunit --colors --syntax-check xPDOTestHarness
+phpunit --colors xPDOTestHarness

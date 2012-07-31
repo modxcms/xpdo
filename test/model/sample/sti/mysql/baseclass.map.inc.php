@@ -17,7 +17,7 @@ $xpdo_meta_map['baseClass']= array (
   array (
     'field1' => 
     array (
-      'dbtype' => 'tinyint',
+      'dbtype' => 'smallint',
       'precision' => '2',
       'phptype' => 'integer',
       'null' => false,
@@ -41,7 +41,7 @@ $xpdo_meta_map['baseClass']= array (
     ),
     'fkey' => 
     array (
-      'dbtype' => 'int',
+      'dbtype' => 'integer',
       'precision' => '11',
       'phptype' => 'integer',
       'null' => true,

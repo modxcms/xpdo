@@ -640,6 +640,7 @@ class xPDO {
         }
         if ($class === false) {
             $this->log(xPDO::LOG_LEVEL_ERROR, "Could not load class: {$classname} from {$fqn}.");
+            
         }
         return $class;
     }
@@ -2472,11 +2473,11 @@ class xPDO {
     /**
      * @see http://php.net/manual/en/function.pdo-lastinsertid.php
      */
-    public function lastInsertId() {
+    public function lastInsertId($className = null, $fieldName = null) {
         if (!$this->connect()) {
             return false;
         }
-        return $this->pdo->lastInsertId();
+        return $this->driver->lastInsertId($className, $fieldName);
     }
 
     /**
