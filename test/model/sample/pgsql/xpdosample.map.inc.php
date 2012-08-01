@@ -67,7 +67,7 @@ $xpdo_meta_map['xPDOSample']= array (
     ),
     'date_time' => 
     array (
-      'dbtype' => 'datetime',
+      'dbtype' => 'timestamp',
       'phptype' => 'datetime',
       'null' => true,
     ),

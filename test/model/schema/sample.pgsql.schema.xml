@@ -53,7 +53,7 @@
         <field key="text" dbtype="text" phptype="string" null="true" />
         <field key="timestamp" dbtype="timestamp" phptype="timestamp" null="false" default="CURRENT_TIMESTAMP" attributes="ON UPDATE CURRENT_TIMESTAMP" />
         <field key="unix_timestamp" dbtype="integer" phptype="integer" null="false" default="0" />
-        <field key="date_time" dbtype="datetime" phptype="datetime" null="true" />
+        <field key="date_time" dbtype="timestamp" phptype="datetime" null="true" />
         <field key="date" dbtype="date" phptype="date" null="true" />
         <field key="enum" dbtype="varchar" attributes="CHECK (&quot;enum&quot; IN('','T','F'))" phptype="string" null="false" />
         <field key="password" dbtype="varchar" precision="255" phptype="string" null="false" />

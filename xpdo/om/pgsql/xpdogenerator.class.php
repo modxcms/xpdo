@@ -85,17 +85,14 @@ class xPDOGenerator_pgsql extends xPDOGenerator {
         $schemaVersion = xPDO::SCHEMA_VERSION;
         $xmlContent = array();
         $xmlContent[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-        $xmlContent[] = "<model package=\"{$package}\" baseClass=\"{$baseClass}\" platform=\"oci\" version=\"{$schemaVersion}\">";
+        $xmlContent[] = "<model package=\"{$package}\" baseClass=\"{$baseClass}\" platform=\"pgsql\" version=\"{$schemaVersion}\">";
         //read list of tables
         $tableLike= ($tablePrefix && $restrictPrefix);
         if ($tableLike) {
-            $tablesStmt= $this->manager->xpdo->query("SELECT * FROM user_tables WHERE table_name LIKE '{$tablePrefix}%' ORDER BY table_name");
-            $tmpSmt = "SELECT * FROM user_tables WHERE table_name LIKE '{$tablePrefix}%' ORDER BY table_name";
+            $tablesStmt= $this->manager->xpdo->query("SELECT relname FROM pg_class WHERE relname LIKE '{$tableLike}' AND relkind = 'r'");
         } else {
-            $tablesStmt= $this->manager->xpdo->query("SELECT * FROM user_tables ORDER BY table_name");
-            $tmpSmt = "SELECT * FROM user_tables ORDER BY table_name";
+            $tablesStmt= $this->manager->xpdo->query("SELECT relname FROM pg_class WHERE relname !~ '^(pg_|sql_)' AND relkind = 'r'");
         }
-        echo "<br>" . $tmpSmt . "</br>";
         $tables= $tablesStmt->fetchAll(PDO::FETCH_NUM);
         if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, print_r($tables, true));
         foreach ($tables as $table) {
@@ -107,7 +104,7 @@ class xPDOGenerator_pgsql extends xPDOGenerator {
             }
             $class= $this->getClassName($tableName);
             $extends= $baseClass;
-            $fieldsStmt= $this->manager->xpdo->query("SELECT * FROM user_tab_cols WHERE table_name = '{$table[0]}'");
+            $fieldsStmt= $this->manager->xpdo->query("SELECT * FROM information_schema.columns where table_name = '{$table[0]}'");
             $fields= $fieldsStmt->fetchAll(PDO::FETCH_ASSOC);
             if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Fields for table {$table[0]}: " . print_r($fields, true));
             $cid = 0;
@@ -117,30 +114,41 @@ class xPDOGenerator_pgsql extends xPDOGenerator {
                 $nullable = 0;
                 $data_default = null;
                 $precision = " precision=\"%s\"";
-                
+                $Default = null;
                 extract($field, EXTR_OVERWRITE);
-                $Field= $COLUMN_NAME;
-                $DataType = preg_replace('/\(\d\)$/i', '', $DATA_TYPE);
-                $PhpType= $this->manager->xpdo->driver->getPhpType($DataType);
-                $Null= ' null="' . (($NULLABLE == 'Y') ? 'true' : 'false') . '"';
-                $Default= $this->getDefault($DATA_DEFAULT);
-                
-                // TODO: Needs refining
-                if (!is_null($DATA_PRECISION) && !is_null($DATA_SCALE)) {
-                    $precision = sprintf($precision, $DATA_PRECISION . "," . $DATA_SCALE);
-                } else if (is_null($DATA_PRECISION) && !is_null($DATA_SCALE)) {
-                    if ($PhpType == 'timestamp') {
-                        $precision = sprintf($precision, $DATA_SCALE);
-                    } else if ($PhpType == 'float') {
-                        $precision = sprintf($precision, '*,'.$DATA_SCALE);
+                $Field= $column_name;
+                $DataType = preg_replace('/\(\d\)$/i', '', $udt_name);
+
+                if (preg_match('/INT/i', $DataType)) {
+                    if (preg_match('/nextval/i', $column_default)) {
+                        $DataType = 'SERIAL'; //convert integers with sequence to SERIAL to ease the sequencing
+                    } else {
+                        $DataType = $data_type;
                     }
-                } else if (!is_null($DATA_PRECISION)) {
-                    $precision = sprintf($precision, $DATA_PRECISION);
-                } else if ($PhpType == 'string') {
-                    $precision = sprintf($precision, $DATA_LENGTH);
+                }
+                
+                $PhpType= $this->manager->xpdo->driver->getPhpType($DataType);
+
+                $Null= ' null="' . (($is_nullable == 'YES') ? 'true' : 'false') . '"';
+                if ($PhpType == 'string') {
+                    $Default = $this->getDefault(substr($column_default, strpos($column_default, "'"), strpos($column_default, "'", 1)));
                 } else {
-                    $precision = sprintf($precision, '');
+                    $Default= $this->getDefault($column_default);
                 } 
+                // Precision
+                switch ($PhpType) {
+                    case 'string' :
+                        $precision = sprintf($precision, (string)$character_maximum_length);
+                        break;
+                    case 'float' :
+                        $precision = sprintf($precision, $numeric_precision . "," . $numeric_scale);
+                        break;
+                    default :
+                        $precision = ' precision=""';
+                        break;
+                }
+
+               
                 if ($baseClass === 'xPDOObject' && $Field === 'id') {
                     $extends= 'xPDOSimpleObject';
                     continue;
@@ -148,21 +156,23 @@ class xPDOGenerator_pgsql extends xPDOGenerator {
                 $xmlFields[]= "\t\t<field key=\"{$Field}\" dbtype=\"{$DataType}\" phptype=\"{$PhpType}\"{$Null}{$Default}{$precision}/>";
                 $cid++;
             }
-            $indicesStmt= $this->manager->xpdo->query("SELECT * FROM user_indexes WHERE TABLE_NAME = '{$table[0]}'");
+            $indicesStmt= $this->manager->xpdo->query("SELECT constraint_name, constraint_type FROM information_schema.table_constraints WHERE table_name = '{$table[0]}' AND constraint_type != 'CHECK';");
             $indices= $indicesStmt->fetchAll(PDO::FETCH_ASSOC);
             if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Indices for table {$table[0]}: " . print_r($indices, true));
             foreach ($indices as $index) {
-                $primary = preg_match('/_PRIMARY$/i', $index['INDEX_NAME']) ? 'true' : 'false';
-                $unique = !empty($index['UNIQUENESS']) ? 'true' : 'false';
-                $indexName = stristr($index['INDEX_NAME'], $class . "_") ? str_ireplace($class . '_', '', $index['INDEX_NAME']) : $index['INDEX_NAME'];
-
-                $xmlIndices[]= "\t\t<index alias=\"{$indexName}\" name=\"{$index['INDEX_NAME']}\" primary=\"{$primary}\" unique=\"{$unique}\" type=\"{$index['INDEX_TYPE']}\">";
-                $columnsStmt = $this->manager->xpdo->query("SELECT * FROM user_ind_columns WHERE index_name = '{$index['INDEX_NAME']}'");
+                $primary = preg_match('/_PRIMARY$/i', $index['constraint_name']) ? 'true' : 'false';
+                $unique = preg_match('/_UNIQUE$/i', $index['constraint_name']) ? 'true' : 'false';
+                $indexName = stristr($index['constraint_name'], $table[0] . "_") ? str_ireplace($table[0]. '_', '', $index['constraint_name']) : $index['constraint_name'];
+                $constType = substr($index['constraint_type'], 0, stripos($index['constraint_type'], " "));
+                
+                $xmlIndices[]= "\t\t<index alias=\"{$indexName}\" name=\"{$indexName}\" primary=\"{$primary}\" unique=\"{$unique}\" type=\"{$constType}\">";
+                
+                $columnsStmt = $this->manager->xpdo->query("SELECT * from information_schema.key_column_usage WHERE constraint_name = '{$index['constraint_name']}'");
 
                 $columns = $columnsStmt->fetchAll(PDO::FETCH_ASSOC);
-                if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Columns of index {$index['INDEX_NAME']}: " . print_r($columns, true));
+                if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Columns of index {$index['constraint_name']}: " . print_r($columns, true));
                 foreach ($columns as $column) {
-                    $xmlIndices[]= "\t\t\t<column key=\"{$column['COLUMN_NAME']}\" collation=\"{$column['DESCEND']}\"  />";
+                    $xmlIndices[]= "\t\t\t<column key=\"{$column['column_name']}\" />";
                 }
                 $xmlIndices[]= "\t\t</index>";
             }
