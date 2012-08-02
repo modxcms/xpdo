@@ -122,14 +122,6 @@ class xPDOManager_pgsql extends xPDOManager {
                     if (array_key_exists('generated', $meta) && $meta['generated'] == 'native') {
                         $nativeGen = true;
                     }
-                    /*if (array_key_exists('attributes', $meta) && (preg_match("/ON UPDATE ([\w]+)/i", $meta['attributes'], $matches)) && in_array(strtoupper($matches[1]), array_merge($this->xpdo->driver->_currentTimestamps, $this->xpdo->driver->_currentDates))) {
-                        $updateTriggers[] = array(
-                            'column' => $key,
-                            'className' => $className,
-                            'dataType' => $matches[1]
-                        );
-                        unset($matches);
-                    }*/
                     
                 }
                 $sql .= implode(', ', $columns);
@@ -209,10 +201,6 @@ class xPDOManager_pgsql extends xPDOManager {
                         $sql = "ALTER TABLE {$this->xpdo->getTableName($className)} ADD {$colDef}";
                         if ($this->xpdo->exec($sql) !== false) {
                             $result = true;
-                            /*if (array_key_exists('attributes', $meta) && (preg_match("/ON UPDATE ([\w]+)/i", $meta['attributes'], $matches)) && in_array(strtoupper($matches[1]), array_merge($this->xpdo->_currentTimestamps, $this->xpdo->_currentDates))) {
-                                $this->addUpdateTrigger($className, $key, $matches[1]);
-                                unset($matches);
-                            }*/
                         } else {
                             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error adding field {$class}->{$name}: " . print_r($this->xpdo->errorInfo(), true), '', __METHOD__, __FILE__, __LINE__);
                         }
@@ -262,25 +250,6 @@ class xPDOManager_pgsql extends xPDOManager {
             }
         } else {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not get writable connection", '', __METHOD__, __FILE__, __LINE__);
-        }
-        return $result;
-    }
-    
-    private function addUpdateTrigger($className, $column, $dataType) {
-        $sql = "CREATE OR REPLACE TRIGGER {$this->xpdo->escape($className.'_'.$column.'_'.update)}
-BEFORE UPDATE ON {$this->xpdo->escape($this->xpdo->getTableName($className))}
-FOR EACH ROW
-BEGIN
-    IF NOT UPDATING (:new.{$this->xpdo->escape($column)}) THEN
-        :new.{$this->xpdo->escape($column)} := {$dataType};
-    END IF;
-END;";
-        if($this->xpdo->exec($sql) !== false) {
-            $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "ON UPDATE trigger created on {$this->xpdo->getTableName($className)} for column {$column} with data type {$dataType}");
-            $result = true;
-        } else {
-            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Unable to create ON UPDATE trigger for {$tableName}: " . print_r($this->xpdo->errorInfo(), true), '', __METHOD__, __FILE__, __LINE__);
-            $result = false;
         }
         return $result;
     }
