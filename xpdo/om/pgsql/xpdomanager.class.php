@@ -43,43 +43,77 @@ require_once (dirname(dirname(__FILE__)) . '/xpdomanager.class.php');
  */
 class xPDOManager_pgsql extends xPDOManager {
     public function createSourceContainer($dsnArray = null, $username= null, $password= null, $containerOptions= array ()) {
-        $return = false;
+        $created = false;
         if ($this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
-            $this->xpdo->log(xPDO::LOG_LEVEL_WARN, 'PostgreSQL does not support source container creation');
             if ($dsnArray === null) $dsnArray = xPDO::parseDSN($this->xpdo->getOption('dsn'));
-                try {
-                    $db = $dsnArray['dbname'];
-                    $dbStmt = $this->xpdo->query("SELECT datname FROM pg_database WHERE datname = '{$db}'");
-                    $dbs = $dbStmt->fetch(PDO::FETCH_ASSOC);
-                    $dbStmt->closeCursor();
-                    if (strtolower($dbs['datname']) == strtolower($db))
-                        $return = true;
-                } catch (Exception $e) {
-                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error removing source container: " . $e->getMessage());
+            if ($username === null) $username = $this->xpdo->getOption('username', null, '');
+            if ($password === null) $password = $this->xpdo->getOption('password', null, '');
+            if (is_array($dsnArray) && is_string($username) && is_string($password)) {
+                $sql= 'CREATE DATABASE ' . $this->xpdo->escape($dsnArray['dbname']);
+                if (isset ($containerOptions['charset'])) {
+                    $sql.= ' WITH ENCODING ' . $containerOptions['charset'];
                 }
+                if (isset ($containerOptions['collation'])) {
+                    if (!isset ($containerOptions['charset'])) {
+                        $sql . " WITH";
+                    }
+                    $sql.= ' LC_COLLATE ' . $containerOptions['collation'];
+                }
+                try {
+                    $pdo = new PDO("pgsql:host={$dsnArray['host']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+                    $result = $pdo->exec($sql);
+                    if ($result !== false) {
+                        $created = true;
+                    } else {
+                        $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not create source container:\n{$sql}\nresult = " . var_export($result, true));
+                    }
+                } catch (PDOException $pe) {
+                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not connect to database server: " . $pe->getMessage());
+                } catch (Exception $e) {
+                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not create source container: " . $e->getMessage());
+                }
+            }
+        } else {
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not get writable connection", '', __METHOD__, __FILE__, __LINE__);
         }
-        return $return;
+        return $created;
     }
 
     public function removeSourceContainer($dsnArray = null, $username= null, $password= null) {
-        $return = false;
+        $removed= false;
         if ($this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
-            $this->xpdo->log(xPDO::LOG_LEVEL_WARN, 'PostgreSQL does not support source container removal');
             if ($dsnArray === null) $dsnArray = xPDO::parseDSN($this->xpdo->getOption('dsn'));
-            if (is_array($dsnArray)) {
+            if ($username === null) $username = $this->xpdo->getOption('username', null, '');
+            if ($password === null) $password = $this->xpdo->getOption('password', null, '');
+            if (is_array($dsnArray) && is_string($username) && is_string($password)) {
+                //Make sure noone can connect to database
+                if ($this->xpdo->exec("update pg_database set datallowconn = 'false' where datname = '{$dsnArray['dbname']}'")) {
+                    $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Updated database to prevent connections to it\n");
+                    
+                }
+                //Force kill connections to database
+                if ($this->xpdo->exec("SELECT pg_terminate_backend(procpid) FROM pg_stat_activity WHERE datname = '{$dsnArray['dbname']}'")) {
+                    $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "All connections to database dropped\n");
+                }
+                $sql= 'DROP DATABASE IF EXISTS ' . $this->xpdo->escape($dsnArray['dbname']);
                 try {
-                    $db = $dsnArray['dbname'];
-                    $dbStmt = $this->xpdo->query("SELECT datname FROM pg_database WHERE datname = '{$db}'");
-                    $dbs = $dbStmt->fetch(PDO::FETCH_ASSOC);
-                    $dbStmt->closeCursor();
-                    if (strtolower($dbs['datname']) == strtolower($db))
-                        $return = true;
+                    $pdo = new PDO("pgsql:host={$dsnArray['host']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+                    $result = $pdo->exec($sql);
+                    if ($result !== false) {
+                        $removed = true;
+                    } else {
+                        $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not remove source container:\n{$sql}\nresult = " . var_export($result, true));
+                    }
+                } catch (PDOException $pe) {
+                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not connect to database server: " . $pe->getMessage());
                 } catch (Exception $e) {
-                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error removing source container: " . $e->getMessage());
+                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not remove source container: " . $e->getMessage());
                 }
             }
+        } else {
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not get writable connection", '', __METHOD__, __FILE__, __LINE__);
         }
-        return $return;
+        return $removed;
     }
 
     public function removeObjectContainer($className) {
