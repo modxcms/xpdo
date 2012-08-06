@@ -93,7 +93,12 @@ class xPDOQuery_pgsql extends xPDOQuery {
             if ($command != 'SELECT') {
                 $tables[]= $this->xpdo->escape($table['table']);
             } else {
-                $tables[]= $this->xpdo->escape($table['table']) . ' ' . $this->xpdo->escape($table['alias']);
+                if (preg_match('/SELECT/', $table['table'])) { // Subquery in FROM
+                    $tables[]= $table['table'] . ' ' . $this->xpdo->escape($table['alias']);
+                }else {
+                    $tables[]= $this->xpdo->escape($table['table']) . ' ' . $this->xpdo->escape($table['alias']);
+                }
+                
             }
         }
         $sql.= $this->query['from']['tables'] ? implode(', ', $tables) . ' ' : '';
