@@ -80,6 +80,7 @@ class xPDODriver_pgsql extends xPDODriver {
     
     public function lastInsertId($className = null, $column = null) {
         $return = false;
+        $max = 0;
         if ($className) {
             if (!$column) {
                 $column = $this->xpdo->getPK($className);
@@ -87,13 +88,9 @@ class xPDODriver_pgsql extends xPDODriver {
             $tableName = $this->xpdo->literal($this->xpdo->getTableName($className));
             $sql = "SELECT currval('{$tableName}_{$column}_seq')";
             $seqStmt = $this->xpdo->query($sql);
-            if ($sequences = $seqStmt->fetchAll(PDO::FETCH_COLUMN)) {
-                $sequence = reset($sequences);
-                $sequence = intval($sequence);
-                $return = $sequence;    
+            if ($sequence = $seqStmt->fetchColumn()) {
+                $return = intval($sequence);
             }
-
-            
         }
         return $return;
     }

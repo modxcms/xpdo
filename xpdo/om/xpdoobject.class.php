@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2010-2013 by MODX, LLC.
+ * Copyright 2010-2012 by MODX, LLC.
  *
  * This file is part of xPDO.
  *
@@ -232,30 +232,28 @@ class xPDOObject {
         $rows= null;
         if ($criteria->prepare()) {
             if ($xpdo->getDebug() === true) $xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Attempting to execute query using PDO statement object: " . print_r($criteria->sql, true) . print_r($criteria->bindings, true));
-            $tstart= microtime(true);
+            $tstart= $xpdo->getMicroTime();
             if (!$criteria->stmt->execute()) {
-                $xpdo->queryTime += microtime(true) - $tstart;
-                $xpdo->executedQueries++;
+                $tend= $xpdo->getMicroTime();
+                $totaltime= $tend - $tstart;
+                $xpdo->queryTime= $xpdo->queryTime + $totaltime;
+                $xpdo->executedQueries= $xpdo->executedQueries + 1;
                 $errorInfo= $criteria->stmt->errorInfo();
-                $xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Error ' . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($errorInfo, true));
+                $xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Error ' . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($errorInfo, true). "\nUsing Query:\n" . $criteria->toSQL() . "\n");
                 if (($errorInfo[1] == '1146' || $errorInfo[1] == '1') && $xpdo->getOption(xPDO::OPT_AUTO_CREATE_TABLES)) {
                     if ($xpdo->getManager() && $xpdo->manager->createObjectContainer($className)) {
-                        $tstart= microtime(true);
+                        $tstart= $xpdo->getMicroTime();
                         if (!$criteria->stmt->execute()) {
-                            $xpdo->queryTime += microtime(true) - $tstart;
-                            $xpdo->executedQueries++;
-                            $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($criteria->stmt->errorInfo(), true));
-                        } else {
-                            $xpdo->queryTime += microtime(true) - $tstart;
-                            $xpdo->executedQueries++;
+                            $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($criteria->stmt->errorInfo(), true) . "\nUsing Query:\n" . $criteria->toSQL() . "\n");
                         }
+                        $tend= $xpdo->getMicroTime();
+                        $totaltime= $tend - $tstart;
+                        $xpdo->queryTime= $xpdo->queryTime + $totaltime;
+                        $xpdo->executedQueries= $xpdo->executedQueries + 1;
                     } else {
                         $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $xpdo->errorCode() . " attempting to create object container for class {$className}:\n" . print_r($xpdo->errorInfo(), true));
                     }
                 }
-            } else {
-                $xpdo->queryTime += microtime(true) - $tstart;
-                $xpdo->executedQueries++;
             }
             $rows= & $criteria->stmt;
         } else {
@@ -266,15 +264,14 @@ class xPDOObject {
                     if (!$criteria->prepare()) {
                         $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error preparing statement for query: {$criteria->sql} - " . print_r($errorInfo, true));
                     } else {
-                        $tstart= microtime(true);
+                        $tstart= $xpdo->getMicroTime();
                         if (!$criteria->stmt->execute()) {
-                            $xpdo->queryTime += microtime(true) - $tstart;
-                            $xpdo->executedQueries++;
                             $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($criteria->stmt->errorInfo(), true));
-                        } else {
-                            $xpdo->queryTime += microtime(true) - $tstart;
-                            $xpdo->executedQueries++;
                         }
+                        $tend= $xpdo->getMicroTime();
+                        $totaltime= $tend - $tstart;
+                        $xpdo->queryTime= $xpdo->queryTime + $totaltime;
+                        $xpdo->executedQueries= $xpdo->executedQueries + 1;
                     }
                 } else {
                     $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $xpdo->errorCode() . " attempting to create object container for class {$className}:\n" . print_r($xpdo->errorInfo(), true));
@@ -359,11 +356,8 @@ class xPDOObject {
      * @param array &$objCollection The collection to load the instance into.
      * @param string $className Name of the class.
      * @param mixed $criteria A valid primary key, criteria array, or xPDOCriteria instance.
-     * @param array $row The associative array containing the instance data.
-     * @param bool $fromCache If the instance is for the cache
-     * @param bool|int $cacheFlag Indicates if the objects should be cached and
+     * @param boolean|integer $cacheFlag Indicates if the objects should be cached and
      * optionally, by specifying an integer value, for how many seconds.
-     * @return bool True if a valid instance was loaded, false otherwise.
      */
     public static function _loadCollectionInstance(xPDO & $xpdo, array & $objCollection, $className, $criteria, $row, $fromCache, $cacheFlag=true) {
         $loaded = false;
@@ -532,14 +526,9 @@ class xPDOObject {
             }
             if (!$fromCache) {
                 if ($query->prepare()) {
-                    $tstart = microtime(true);
                     if ($query->stmt->execute()) {
-                        $xpdo->queryTime += microtime(true) - $tstart;
-                        $xpdo->executedQueries++;
                         $objCollection= $query->hydrateGraph($query->stmt, $cacheFlag);
                     } else {
-                        $xpdo->queryTime += microtime(true) - $tstart;
-                        $xpdo->executedQueries++;
                         $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error {$query->stmt->errorCode()} executing query: {$query->sql} - " . print_r($query->stmt->errorInfo(), true));
                     }
                 } else {
@@ -934,7 +923,7 @@ class xPDOObject {
      *
      * Warning: do not use the $format parameter if retrieving multiple values of
      * different types, as the format string will be applied to all types, most
-     * likely with unpredictable results.  Optionally, you can supply an associate
+     * likely with unpredicatable results.  Optionally, you can supply an associate
      * array of format strings with the field key as the key for the format array.
      *
      * @param string|array $k A string (or an array of strings) representing the field
@@ -1332,6 +1321,14 @@ class xPDOObject {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Attempt to save lazy object: ' . print_r($this->toArray('', true), 1));
             return false;
         }
+        //Pgsql and Oci have their own save methods
+        if (in_array($this->xpdo->config['dbtype'], array('pgsql', 'oci'))) {
+            $xpdoObj = "xPDOObject_" . $this->xpdo->config['dbtype'];
+            if ($saved = $xpdoObj::save($cacheFlag))
+                return $saved;
+        }
+
+
         $result= true;
         $sql= '';
         $pk= $this->getPrimaryKey();
@@ -1389,7 +1386,7 @@ class xPDOObject {
                 elseif ($this->_fieldMeta[$_k]['phptype'] == 'timestamp' && preg_match('/int/i', $this->_fieldMeta[$_k]['dbtype'])) {
                     $fieldType= PDO::PARAM_INT;
                 }
-                elseif (!in_array($this->_fieldMeta[$_k]['phptype'], array ('string','password','datetime','timestamp','date','time','array','json','float'))) {
+                elseif (!in_array($this->_fieldMeta[$_k]['phptype'], array ('string','password','datetime','timestamp','date','time','array','json'))) {
                     $fieldType= PDO::PARAM_INT;
                 }
                 if ($this->_new) {
@@ -1411,7 +1408,7 @@ class xPDOObject {
                         $where= '';
                         foreach ($pkn as $k => $v) {
                             $vt= PDO::PARAM_INT;
-                            if (in_array($this->_fieldMeta[$k]['phptype'], array('string', 'float'))) {
+                            if ($this->_fieldMeta[$k]['phptype'] == 'string') {
                                 $vt= PDO::PARAM_STR;
                             }
                             if ($iteration) {
@@ -1425,7 +1422,7 @@ class xPDOObject {
                     } else {
                         $pkn= $this->getPK();
                         $pkt= PDO::PARAM_INT;
-                        if (in_array($this->_fieldMeta[$pkn]['phptype'], array('string', 'float'))) {
+                        if ($this->_fieldMeta[$pkn]['phptype'] == 'string') {
                             $pkt= PDO::PARAM_STR;
                         }
                         $bindings[":{$pkn}"]['value']= $pk;
@@ -1443,30 +1440,18 @@ class xPDOObject {
                         $criteria->bind($bindings, true, false);
                     }
                     if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Executing SQL:\n{$sql}\nwith bindings:\n" . print_r($bindings, true));
-                    $tstart = microtime(true);
                     if (!$result= $criteria->stmt->execute()) {
-                        $this->xpdo->queryTime += microtime(true) - $tstart;
-                        $this->xpdo->executedQueries++;
                         $errorInfo= $criteria->stmt->errorInfo();
                         $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement:\n" . $criteria->toSQL() . "\n" . print_r($errorInfo, true));
                         if (($errorInfo[1] == '1146' || $errorInfo[1] == '1') && $this->getOption(xPDO::OPT_AUTO_CREATE_TABLES)) {
                             if ($this->xpdo->getManager() && $this->xpdo->manager->createObjectContainer($this->_class) === true) {
-                                $tstart = microtime(true);
                                 if (!$result= $criteria->stmt->execute()) {
-                                    $this->xpdo->queryTime += microtime(true) - $tstart;
-                                    $this->xpdo->executedQueries++;
                                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement:\n{$sql}\n");
-                                } else {
-                                    $this->xpdo->queryTime += microtime(true) - $tstart;
-                                    $this->xpdo->executedQueries++;
                                 }
                             } else {
                                 $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $this->xpdo->errorCode() . " attempting to create object container for class {$this->_class}:\n" . print_r($this->xpdo->errorInfo(), true));
                             }
                         }
-                    } else {
-                        $this->xpdo->queryTime += microtime(true) - $tstart;
-                        $this->xpdo->executedQueries++;
                     }
                 } else {
                     $result= false;
@@ -1474,7 +1459,7 @@ class xPDOObject {
                 if ($result) {
                     if ($pkn && !$pk) {
                         if ($pkGenerated) {
-                            $this->_fields[$this->getPK()]= $this->xpdo->lastInsertId($this->_class, $pkn);
+                            $this->_fields[$this->getPK()]= $this->xpdo->lastInsertId($this->_class, $this->getPK());
                         }
                         $pk= $this->getPrimaryKey();
                     }
@@ -1604,7 +1589,7 @@ class xPDOObject {
     /**
      * Remove the persistent instance of an object permanently.
      *
-     * Deletes the persistent object instance stored in the database when
+     * Deletes the persistent object isntance stored in the database when
      * called, including any dependent objects defined by composite foreign key
      * relationships.
      *
@@ -1628,7 +1613,6 @@ class xPDOObject {
                     }
                     if ($composite['cardinality'] === 'many') {
                         if ($many= $this->getMany($compositeAlias)) {
-                            /** @var xPDOObject $one */
                             foreach ($many as $one) {
                                 $ancestors[]= $compositeAlias;
                                 $newAncestors= $ancestors + $current;
@@ -1655,33 +1639,16 @@ class xPDOObject {
             // $delete->limit(1);
             $stmt= $delete->prepare();
             if (is_object($stmt)) {
-                $tstart = microtime(true);
                 if (!$result= $stmt->execute()) {
-                    $this->xpdo->queryTime += microtime(true) - $tstart;
-                    $this->xpdo->executedQueries++;
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not delete from ' . $this->_table . '; primary key specified was ' . print_r($pk, true) . "\n" . print_r($stmt->errorInfo(), true));
                 } else {
-                    $this->xpdo->queryTime += microtime(true) - $tstart;
-                    $this->xpdo->executedQueries++;
                     $callback = $this->getOption(xPDO::OPT_CALLBACK_ON_REMOVE);
                     if ($callback && is_callable($callback)) {
                         call_user_func($callback, array('className' => $this->_class, 'criteria' => $delete, 'object' => $this));
                     }
-                    if ($this->xpdo->_cacheEnabled && $this->xpdo->getOption('cache_db', null, false)) {
-                        /** @var xPDOCache $dbCache */
-                        $dbCache = $this->xpdo->getCacheManager()->getCacheProvider(
-                            $this->getOption('cache_db_key', null, 'db'),
-                            array(
-                                xPDO::OPT_CACHE_KEY => $this->getOption('cache_db_key', null, 'db'),
-                                xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, null, $this->getOption(xPDO::OPT_CACHE_HANDLER, null, 'cache.xPDOFileCache')),
-                                xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, xPDOCacheManager::CACHE_PHP)),
-                                xPDO::OPT_CACHE_EXPIRES => (integer) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
-                                xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', null, xPDOCacheManager::CACHE_DIR)
-                            )
-                        );
-                        if (!$dbCache->delete($this->_class, array('multiple_object_delete' => true))) {
-                            $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Could not remove cache entries for {$this->_class}", '', __METHOD__, __FILE__, __LINE__);
-                        }
+                    if ($this->xpdo->_cacheEnabled) {
+                        $cacheKey= is_array($pk) ? implode('_', $pk) : $pk;
+                        $this->xpdo->toCache($this->xpdo->getTableClass($this->_class) . '_' . $cacheKey, null, 0, array('modified' => true));
                     }
                     $this->xpdo->log(xPDO::LOG_LEVEL_INFO, "Removed {$this->_class} instance with primary key " . print_r($pk, true));
                 }
@@ -2235,7 +2202,7 @@ class xPDOObject {
                     $criteria->andCondition($addCriteria);
                 }
                 if ($collection= $this->xpdo->getCollection($fkMeta['class'], $criteria, $cacheFlag)) {
-                    $this->_relatedObjects[$alias]= array_diff_key($this->_relatedObjects[$alias], $collection) + $collection;
+                    $this->_relatedObjects[$alias]= array_merge($this->_relatedObjects[$alias], $collection);
                 }
             }
         }
