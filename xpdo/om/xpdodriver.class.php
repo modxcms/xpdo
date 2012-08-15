@@ -103,6 +103,6 @@ abstract class xPDODriver {
     }
     
     public function lastInsertId($className = null, $fieldName = null) {
-        return $this->pdo->lastInsertId();
+        return $this->xpdo->pdo->lastInsertId();
     }
 }

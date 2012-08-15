@@ -20,16 +20,3 @@ require_once (dirname(dirname(__FILE__)) . '/person.class.php');
  */
 class Person_mysql extends Person {}
 
-/**
- * Represents a Phone number.
- * @see phone.map.inc.php
- * @package sample.mysql
- */
-class Phone_mysql extends Phone {}
-
-/**
- * Represents a one to many relationship between a Person and a Phone.
- * @see personphone.map.inc.php
- * @package sample.mysql
- */
-class PersonPhone_mysql extends PersonPhone {}

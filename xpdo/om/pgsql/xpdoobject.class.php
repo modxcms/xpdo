@@ -43,81 +43,81 @@ if (!class_exists('xPDOObject')) {
  * @subpackage om.pgsql
  */
 class xPDOObject_pgsql extends xPDOObject {
-    public function save($cacheFlag= null) {
-        if ($this->isLazy()) {
-            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Attempt to save lazy object: ' . print_r($this->toArray('', true), 1));
+    public function save(xPDOObject &$obj, $cacheFlag= null) {
+        if ($obj->isLazy()) {
+            $obj->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Attempt to save lazy object: ' . print_r($this->toArray('', true), 1));
             return false;
         }
         $result= true;
         $sql= '';
-        $pk= $this->getPrimaryKey();
-        $pkn= $this->getPK();
+        $pk= $obj->getPrimaryKey();
+        $pkn= $obj->getPK();
         $pkGenerated= false;
-        if ($this->isNew()) {
-            $this->setDirty();
+        if ($obj->isNew()) {
+            $obj->setDirty();
         }
-        if ($this->getOption(xPDO::OPT_VALIDATE_ON_SAVE)) {
-            if (!$this->validate()) {
+        if ($obj->getOption(xPDO::OPT_VALIDATE_ON_SAVE)) {
+            if (!$obj->validate()) {
                 return false;
             }
         }
-        if (!$this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
-            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not get connection for writing data", '', __METHOD__, __FILE__, __LINE__);
+        if (!$obj->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
+            $obj->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not get connection for writing data", '', __METHOD__, __FILE__, __LINE__);
             return false;
         }
-        $this->_saveRelatedObjects();
-        if (!empty ($this->_dirty)) {
+        $obj->_saveRelatedObjects();
+        if (!empty ($obj->_dirty)) {
             $cols= array ();
             $bindings= array ();
             $updateSql= array ();
-            foreach (array_keys($this->_dirty) as $_k) {
-                if (!array_key_exists($_k, $this->_fieldMeta)) {
+            foreach (array_keys($obj->_dirty) as $_k) {
+                if (!array_key_exists($_k, $obj->_fieldMeta)) {
                     continue;
                 }
-                if (isset($this->_fieldMeta[$_k]['generated']) && $this->_fieldMeta[$_k]['generated'] == 'native') {
+                if (isset($obj->_fieldMeta[$_k]['generated']) && $obj->_fieldMeta[$_k]['generated'] == 'native') {
                     $pkGenerated= true;
                     continue;
                 }
-                if ($this->_fieldMeta[$_k]['phptype'] === 'password') {
-                    $this->_fields[$_k]= $this->encode($this->_fields[$_k], 'password');
+                if ($obj->_fieldMeta[$_k]['phptype'] === 'password') {
+                    $obj->_fields[$_k]= $obj->encode($obj->_fields[$_k], 'password');
                 }
                 $fieldType= PDO::PARAM_STR;
-                $fieldValue= $this->_fields[$_k];
-                if (in_array($this->_fieldMeta[$_k]['phptype'], array ('datetime', 'timestamp')) && !empty($this->_fieldMeta[$_k]['attributes']) && $this->_fieldMeta[$_k]['attributes'] == 'ON UPDATE CURRENT_TIMESTAMP') {
-                    $this->_fields[$_k]= strftime('%Y-%m-%d %H:%M:%S');
+                $fieldValue= $obj->_fields[$_k];
+                if (in_array($obj->_fieldMeta[$_k]['phptype'], array ('datetime', 'timestamp')) && !empty($obj->_fieldMeta[$_k]['attributes']) && $obj->_fieldMeta[$_k]['attributes'] == 'ON UPDATE CURRENT_TIMESTAMP') {
+                    $obj->_fields[$_k]= strftime('%Y-%m-%d %H:%M:%S');
                     continue;
                 }
                 elseif ($fieldValue === null || $fieldValue === 'NULL') {
-                    if ($this->_new) continue;
+                    if ($obj->_new) continue;
                     $fieldType= PDO::PARAM_NULL;
                     $fieldValue= null;
                 }
-                elseif (in_array($this->_fieldMeta[$_k]['phptype'], array ('timestamp', 'datetime')) && in_array($fieldValue, $this->xpdo->driver->_currentTimestamps, true)) {
-                    $this->_fields[$_k]= strftime('%Y-%m-%d %H:%M:%S');
+                elseif (in_array($obj->_fieldMeta[$_k]['phptype'], array ('timestamp', 'datetime')) && in_array($fieldValue, $obj->xpdo->driver->_currentTimestamps, true)) {
+                    $obj->_fields[$_k]= strftime('%Y-%m-%d %H:%M:%S');
                     continue;
                 }
-                elseif (in_array($this->_fieldMeta[$_k]['phptype'], array ('date')) && in_array($fieldValue, $this->xpdo->driver->_currentDates, true)) {
-                    $this->_fields[$_k]= strftime('%Y-%m-%d');
+                elseif (in_array($obj->_fieldMeta[$_k]['phptype'], array ('date')) && in_array($fieldValue, $obj->xpdo->driver->_currentDates, true)) {
+                    $obj->_fields[$_k]= strftime('%Y-%m-%d');
                     continue;
                 }
-                elseif ($this->_fieldMeta[$_k]['phptype'] == 'timestamp' && preg_match('/int/i', $this->_fieldMeta[$_k]['dbtype'])) {
+                elseif ($obj->_fieldMeta[$_k]['phptype'] == 'timestamp' && preg_match('/int/i', $obj->_fieldMeta[$_k]['dbtype'])) {
                     $fieldType= PDO::PARAM_INT;
                 }
-                elseif (!in_array($this->_fieldMeta[$_k]['phptype'], array ('string','password','datetime','timestamp','date','time','array','json'))) {
+                elseif (!in_array($obj->_fieldMeta[$_k]['phptype'], array ('string','password','datetime','timestamp','date','time','array','json'))) {
                     $fieldType= PDO::PARAM_INT;
                 }
-                if ($this->_new) {
-                    $cols[$_k]= $this->xpdo->escape($_k);
+                if ($obj->_new) {
+                    $cols[$_k]= $obj->xpdo->escape($_k);
                     $bindings[":{$_k}"]['value']= $fieldValue;
                     $bindings[":{$_k}"]['type']= $fieldType;
                 } else {
                     $bindings[":{$_k}"]['value']= $fieldValue;
                     $bindings[":{$_k}"]['type']= $fieldType;
-                    $updateSql[]= $this->xpdo->escape($_k) . " = :{$_k}";
+                    $updateSql[]= $obj->xpdo->escape($_k) . " = :{$_k}";
                 }
             }
-            if ($this->_new) {
-                $sql= "INSERT INTO {$this->_table} (" . implode(', ', array_values($cols)) . ") VALUES (" . implode(', ', array_keys($bindings)) . ")";
+            if ($obj->_new) {
+                $sql= "INSERT INTO {$obj->_table} (" . implode(', ', array_values($cols)) . ") VALUES (" . implode(', ', array_keys($bindings)) . ")";
             } else {
                 if ($pk && $pkn) {
                     if (is_array($pkn)) {
@@ -125,48 +125,48 @@ class xPDOObject_pgsql extends xPDOObject {
                         $where= '';
                         foreach ($pkn as $k => $v) {
                             $vt= PDO::PARAM_INT;
-                            if ($this->_fieldMeta[$k]['phptype'] == 'string') {
+                            if ($obj->_fieldMeta[$k]['phptype'] == 'string') {
                                 $vt= PDO::PARAM_STR;
                             }
                             if ($iteration) {
                                 $where .= " AND ";
                             }
-                            $where .= $this->xpdo->escape($k) . " = :{$k}";
-                            $bindings[":{$k}"]['value']= $this->_fields[$k];
+                            $where .= $obj->xpdo->escape($k) . " = :{$k}";
+                            $bindings[":{$k}"]['value']= $obj->_fields[$k];
                             $bindings[":{$k}"]['type']= $vt;
                             $iteration++;
                         }
                     } else {
-                        $pkn= $this->getPK();
+                        $pkn= $obj->getPK();
                         $pkt= PDO::PARAM_INT;
-                        if ($this->_fieldMeta[$pkn]['phptype'] == 'string') {
+                        if ($obj->_fieldMeta[$pkn]['phptype'] == 'string') {
                             $pkt= PDO::PARAM_STR;
                         }
                         $bindings[":{$pkn}"]['value']= $pk;
                         $bindings[":{$pkn}"]['type']= $pkt;
-                        $where= $this->xpdo->escape($pkn) . ' = :' . $pkn;
+                        $where= $obj->xpdo->escape($pkn) . ' = :' . $pkn;
                     }
                     if (!empty ($updateSql)) {
-                        $sql= "UPDATE {$this->_table} SET " . implode(',', $updateSql) . " WHERE {$where}";
+                        $sql= "UPDATE {$obj->_table} SET " . implode(',', $updateSql) . " WHERE {$where}";
                     }
                 }
             }
-            if (!empty ($sql) && $criteria= new xPDOCriteria($this->xpdo, $sql)) {
+            if (!empty ($sql) && $criteria= new xPDOCriteria($obj->xpdo, $sql)) {
                 if ($criteria->prepare()) {
                     if (!empty ($bindings)) {
                         $criteria->bind($bindings, true, false);
                     }
-                    if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Executing SQL:\n{$sql}\nwith bindings:\n" . print_r($bindings, true));
+                    if ($obj->xpdo->getDebug() === true) $obj->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Executing SQL:\n{$sql}\nwith bindings:\n" . print_r($bindings, true));
                     if (!$result= $criteria->stmt->execute()) {
                         $errorInfo= $criteria->stmt->errorInfo();
-                        $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement:\n" . $criteria->toSQL() . "\n" . print_r($errorInfo, true));
-                        if (($errorInfo[1] == '1146' || $errorInfo[1] == '1') && $this->getOption(xPDO::OPT_AUTO_CREATE_TABLES)) {
-                            if ($this->xpdo->getManager() && $this->xpdo->manager->createObjectContainer($this->_class) === true) {
+                        $obj->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement:\n" . $criteria->toSQL() . "\n" . print_r($errorInfo, true));
+                        if (($errorInfo[1] == '1146' || $errorInfo[1] == '1') && $obj->getOption(xPDO::OPT_AUTO_CREATE_TABLES)) {
+                            if ($obj->xpdo->getManager() && $obj->xpdo->manager->createObjectContainer($obj->_class) === true) {
                                 if (!$result= $criteria->stmt->execute()) {
-                                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement:\n{$sql}\n");
+                                    $obj->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement:\n{$sql}\n");
                                 }
                             } else {
-                                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $this->xpdo->errorCode() . " attempting to create object container for class {$this->_class}:\n" . print_r($this->xpdo->errorInfo(), true));
+                                $obj->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $obj->xpdo->errorCode() . " attempting to create object container for class {$obj->_class}:\n" . print_r($obj->xpdo->errorInfo(), true));
                             }
                         }
                     }
@@ -175,34 +175,34 @@ class xPDOObject_pgsql extends xPDOObject {
                 }
                 if ($result) {
                     if ($pkGenerated) {
-                        $this->_fields[$this->getPK()]= $this->xpdo->lastInsertId($this->_class, $this->getPK());
-                    $pk= $this->getPrimaryKey();
+                        $obj->_fields[$obj->getPK()]= $obj->xpdo->lastInsertId($obj->_class, $obj->getPK());
+                    $pk= $obj->getPrimaryKey();
                     }
-                    if ($pk || !$this->getPK()) {
-                        $this->_dirty= array();
-                        $this->_validated= array();
-                        $this->_new= false;
+                    if ($pk || !$obj->getPK()) {
+                        $obj->_dirty= array();
+                        $obj->_validated= array();
+                        $obj->_new= false;
                     }
-                    $callback = $this->getOption(xPDO::OPT_CALLBACK_ON_SAVE);
+                    $callback = $obj->getOption(xPDO::OPT_CALLBACK_ON_SAVE);
                     if ($callback && is_callable($callback)) {
-                        call_user_func($callback, array('className' => $this->_class, 'criteria' => $criteria, 'object' => $this));
+                        call_user_func($callback, array('className' => $obj->_class, 'criteria' => $criteria, 'object' => $obj));
                     }
-                    if ($this->xpdo->_cacheEnabled && $pk && ($cacheFlag || ($cacheFlag === null && $this->_cacheFlag))) {
-                        $cacheKey= $this->xpdo->newQuery($this->_class, $pk, $cacheFlag);
+                    if ($obj->xpdo->_cacheEnabled && $pk && ($cacheFlag || ($cacheFlag === null && $obj->_cacheFlag))) {
+                        $cacheKey= $obj->xpdo->newQuery($obj->_class, $pk, $cacheFlag);
                         if (is_bool($cacheFlag)) {
                             $expires= 0;
                         } else {
                             $expires= intval($cacheFlag);
                         }
-                        $this->xpdo->toCache($cacheKey, $this, $expires, array('modified' => true));
+                        $obj->xpdo->toCache($cacheKey, $obj, $expires, array('modified' => true));
                     }
                 }
             }
         }
-        $this->_saveRelatedObjects();
+        $obj->_saveRelatedObjects();
         if ($result) {
-            $this->_dirty= array ();
-            $this->_validated= array ();
+            $obj->_dirty= array ();
+            $obj->_validated= array ();
         }
         return $result;
     }

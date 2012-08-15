@@ -1323,8 +1323,8 @@ class xPDOObject {
         }
         //Pgsql and Oci have their own save methods
         if (in_array($this->xpdo->config['dbtype'], array('pgsql', 'oci'))) {
-            $xpdoObj = "xPDOObject_" . $this->xpdo->config['dbtype'];
-            if ($saved = $xpdoObj::save($cacheFlag))
+            $saved = $this->xpdo->call('xPDOObject', 'save', array(&$this, $cacheFlag));
+            if ($saved)
                 return $saved;
         }
 
