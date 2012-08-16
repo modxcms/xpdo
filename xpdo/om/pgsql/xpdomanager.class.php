@@ -258,16 +258,18 @@ class xPDOManager_pgsql extends xPDOManager {
             if ($className) {
                 $meta = $this->xpdo->getIndexMeta($className);
                 if (is_array($meta) && array_key_exists($name, $meta)) {
+                    $tableName = $this->xpdo->getTableName($className);
+                    $indexkey = $this->xpdo->escape($this->xpdo->literal($tableName) . '_' . $indexkey);
                     $idxDef = $this->getIndexDef($className, $name, $meta[$name]);
                     if (!empty($idxDef)) {
                         $indexType = ($meta[$name]['primary'] ? 'PRIMARY KEY' : ($meta[$name]['unique'] ? 'UNIQUE' : 'INDEX'));
                         switch ($indexType) {
                             case 'PRIMARY KEY':
                             case 'UNIQUE':
-                                $sql = "ALTER TABLE {$this->xpdo->getTableName($className)} ADD CONSTRAINT {$this->xpdo->escape($className . '_' . $name)} {$indexType} ({$idxDef})";
+                                $sql = "ALTER TABLE {$this->xpdo->getTableName($className)} ADD CONSTRAINT {$indexkey} {$indexType} ({$idxDef})";
                                 break;
                             default:
-                                $sql = "CREATE {$indexType}  {$this->xpdo->escape($className . '_' . $name)} ON {$tableName} ({$idxDef})";
+                                $sql = "CREATE {$indexType}  {$indexkey} ON {$tableName} ({$idxDef})";
                                 break;
                         }
                         if ($this->xpdo->exec($sql) !== false) {
@@ -359,14 +361,16 @@ class xPDOManager_pgsql extends xPDOManager {
         if ($this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
             $className = $this->xpdo->loadClass($class);
             if ($className) {
+                $tableName = $this->xpdo->getTableName($className);
+                $indexkey = $this->xpdo->escape($this->xpdo->literal($tableName) . '_' . $indexkey);
                 $indexType = (isset($options['type']) && in_array($options['type'], array('PRIMARY KEY', 'UNIQUE', 'INDEX', 'FULLTEXT')) ? $options['type'] : 'INDEX');
                 switch ($indexType) {
                     case 'PRIMARY KEY':
                     case 'UNIQUE':
-                        $sql = "ALTER TABLE {$this->xpdo->getTableName($className)} DROP CONSTRAINT {$this->xpdo->escape($name)}";
+                        $sql = "ALTER TABLE {$tableName} DROP CONSTRAINT {$indexkey}";
                         break;
                     default:
-                        $sql = "DROP INDEX {$this->xpdo->escape($name)} ON {$this->xpdo->getTableName($className)}";
+                        $sql = "DROP INDEX {$indexkey} ON {$tableName}";
                         break;
                 }
                 $result = $this->xpdo->exec($sql);
