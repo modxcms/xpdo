@@ -142,7 +142,7 @@ class xPDOQueryLimitTest extends xPDOTestCase {
     	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Item');
-            $criteria->sortby('color','ASC');
+            $criteria->sortby($this->xpdo->escape('color'),'ASC');
             $criteria->limit($limit,$start);
             $result = $this->xpdo->getCollection('Item',$criteria);
         } catch (Exception $e) {

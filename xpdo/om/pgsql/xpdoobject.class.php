@@ -43,7 +43,7 @@ if (!class_exists('xPDOObject')) {
  * @subpackage om.pgsql
  */
 class xPDOObject_pgsql extends xPDOObject {
-    public function save(xPDOObject &$obj, $cacheFlag= null) {
+    public static function _save(xPDOObject &$obj, $cacheFlag= null) {
         if ($obj->isLazy()) {
             $obj->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Attempt to save lazy object: ' . print_r($this->toArray('', true), 1));
             return false;

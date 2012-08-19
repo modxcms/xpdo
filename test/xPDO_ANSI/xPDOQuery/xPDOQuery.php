@@ -398,7 +398,7 @@ class xPDOQueryTest extends xPDOTestCase {
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
-                'security_level IN (1,3)',
+                "{$this->xpdo->escape('security_level')} IN (1,3)",
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (Exception $e) {
@@ -440,7 +440,7 @@ class xPDOQueryTest extends xPDOTestCase {
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
-                'security_level NOT IN (2,3)',
+                "{$this->xpdo->escape('security_level')} NOT IN (2,3)",
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (Exception $e) {
@@ -493,7 +493,7 @@ class xPDOQueryTest extends xPDOTestCase {
     	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Person');
-            $criteria->sortby($sortBy,$sortDir);
+            $criteria->sortby($this->xpdo->escape($sortBy),$sortDir);
             $people = $this->xpdo->getCollection('Person',$criteria);
         } catch (Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);

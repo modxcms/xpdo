@@ -72,6 +72,11 @@ class xPDOQuerySortByTest extends xPDOTestCase {
         $success = false;
         try {
             $criteria = $this->xpdo->newQuery('Item');
+            if (stripos($sort, ',') !== false) {
+                $sort = $this->xpdo->getSelectColumns('Item', 'Item', '', explode(",", $sort));
+            } else {
+                $sort = $this->xpdo->escape($sort);
+            }
             $criteria->sortby($sort,$dir);
             $result = $this->xpdo->getCollection('Item',$criteria);
             if (is_array($result) && !empty($result)) {
