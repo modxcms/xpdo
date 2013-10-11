@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2010-2012 by MODX, LLC.
+ * Copyright 2010-2013 by MODX, LLC.
  *
  * This file is part of xPDO.
  *
@@ -28,29 +28,27 @@
  * @package xpdo
  * @subpackage om.sqlite
  */
-$xpdo_meta_map = array (
-    'xPDOSimpleObject' => array (
-        'table' => null,
-        'fields' => array (
-            'id' => null,
-        ),
-        'fieldMeta' => array (
-            'id' => array(
-                'dbtype' => 'INTEGER',
-                'phptype' => 'integer',
-                'null' => false,
-                'index' => 'pk',
-                'generated' => 'native',
-            )
-        ),
-        'indexes' => array (
-            'PRIMARY' => array (
-                'columns' => array(
-                    'id' => array()
-                ),
-                'primary' => true,
-                'unique' => true
-            )
+$xpdo_meta_map['xPDOSimpleObject'] = array (
+    'table' => null,
+    'fields' => array (
+        'id' => null,
+    ),
+    'fieldMeta' => array (
+        'id' => array(
+            'dbtype' => 'INTEGER',
+            'phptype' => 'integer',
+            'null' => false,
+            'index' => 'pk',
+            'generated' => 'native',
+        )
+    ),
+    'indexes' => array (
+        'PRIMARY' => array (
+            'columns' => array(
+                'id' => array()
+            ),
+            'primary' => true,
+            'unique' => true
         )
     )
 );

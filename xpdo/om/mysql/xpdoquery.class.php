@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2010-2012 by MODX, LLC.
+ * Copyright 2010-2013 by MODX, LLC.
  *
  * This file is part of xPDO.
  *
@@ -101,6 +101,8 @@ class xPDOQuery_mysql extends xPDOQuery {
                     $type = $setVal['type'];
                     if ($value !== null && in_array($type, array(PDO::PARAM_INT, PDO::PARAM_STR))) {
                         $value = $this->xpdo->quote($value, $type);
+                    } elseif ($value === null) {
+                        $value = 'NULL';
                     }
                     $clauses[] = $this->xpdo->escape($setKey) . ' = ' . $value;
                 }

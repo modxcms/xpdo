@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2010-2012 by MODX, LLC.
+ * Copyright 2010-2013 by MODX, LLC.
  *
  * This file is part of xPDO.
  *
@@ -22,6 +22,8 @@
 require_once dirname(__FILE__).'/xPDOSetUp.php';
 require_once dirname(__FILE__).'/xPDOTearDown.php';
 require_once dirname(__FILE__).'/xPDO/xPDO_AllTests.php';
+require_once dirname(__FILE__).'/xPDOCache/xPDOCache_AllTests.php';
+require_once dirname(__FILE__).'/xPDOZip/xPDOZip_AllTests.php';
 require_once dirname(__FILE__).'/xPDOQuery/xPDOQuery_AllTests.php';
 /**
  * Main Suite handling all xPDO tests.
@@ -34,6 +36,8 @@ class xPDOSuite_AllTests {
         $suite = new PHPUnit_Framework_TestSuite('xPDOSuite');
         $suite->addTestSuite('xPDOSetUpTest');
         $suite->addTest(xPDO_AllTests::suite());
+        $suite->addTest(xPDOCache_AllTests::suite());
+        $suite->addTest(xPDOZip_AllTests::suite());
         $suite->addTest(xPDOQuery_AllTests::suite());
 		$suite->addTestSuite('xPDOTearDownTest');
         return $suite;

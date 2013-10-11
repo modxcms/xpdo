@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2010-2012 by MODX, LLC.
+ * Copyright 2010-2013 by MODX, LLC.
  *
  * This file is part of xPDO.
  *
@@ -75,7 +75,10 @@ abstract class xPDOQuery extends xPDOCriteria {
         ' INTERVAL(',
         ' LEAST(',
         'MATCH(',
-        'MATCH ('
+        'MATCH (',
+        'MAX(',
+        'MIN(',
+        'AVG('
     );
     protected $_quotable= array ('string', 'password', 'date', 'datetime', 'timestamp', 'time');
     protected $_class= null;
@@ -278,6 +281,34 @@ abstract class xPDOQuery extends xPDOCriteria {
                     $local= $fkMeta['local'];
                     $foreign= $fkMeta['foreign'];
                     $conditions= $this->xpdo->escape($parentAlias) . '.' . $this->xpdo->escape($local) . ' =  ' . $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($foreign);
+                    if (isset($fkMeta['criteria']['local'])) {
+                        $localCriteria = array();
+                        if (is_array($fkMeta['criteria']['local'])) {
+                            foreach ($fkMeta['criteria']['local'] as $critKey => $critVal) {
+                                if (is_numeric($critKey)) {
+                                    $localCriteria[] = $critVal;
+                                } else {
+                                    $localCriteria["{$this->_class}.{$critKey}"] = $critVal;
+                                }
+                            }
+                        }
+                        if (!empty($localCriteria)) {
+                            $conditions = array($localCriteria, $conditions);
+                        }
+                        $foreignCriteria = array();
+                        if (is_array($fkMeta['criteria']['foreign'])) {
+                            foreach ($fkMeta['criteria']['foreign'] as $critKey => $critVal) {
+                                if (is_numeric($critKey)) {
+                                    $foreignCriteria[] = $critVal;
+                                } else {
+                                    $foreignCriteria["{$parentAlias}.{$critKey}"] = $critVal;
+                                }
+                            }
+                        }
+                        if (!empty($foreignCriteria)) {
+                            $conditions = array($foreignCriteria, $conditions);
+                        }
+                    }
                 }
             }
             $this->condition($target[$targetIdx]['conditions'], $conditions, $conjunction, $binding, $condGroup);
@@ -380,7 +411,7 @@ abstract class xPDOQuery extends xPDOCriteria {
     }
 
     public function having($conditions) {
-        //TODO: implement HAVING clause support
+        $this->query['having'][] = $this->parseConditions((array) $conditions);
         return $this;
     }
 
@@ -443,6 +474,34 @@ abstract class xPDOQuery extends xPDOCriteria {
             $foreign= $fkMeta['foreign'];
             $this->select($this->xpdo->getSelectColumns($class, $classAlias, $classAlias . '_'));
             $expression= $this->xpdo->escape($parentAlias) . '.' . $this->xpdo->escape($local) . ' = ' .  $this->xpdo->escape($classAlias) . '.' . $this->xpdo->escape($foreign);
+            if (isset($fkMeta['criteria']['local'])) {
+                $localCriteria = array();
+                if (is_array($fkMeta['criteria']['local'])) {
+                    foreach ($fkMeta['criteria']['local'] as $critKey => $critVal) {
+                        if (is_numeric($critKey)) {
+                            $localCriteria[] = $critVal;
+                        } else {
+                            $localCriteria["{$classAlias}.{$critKey}"] = $critVal;
+                        }
+                    }
+                }
+                if (!empty($localCriteria)) {
+                    $expression = array($localCriteria, $expression);
+                }
+                $foreignCriteria = array();
+                if (is_array($fkMeta['criteria']['foreign'])) {
+                    foreach ($fkMeta['criteria']['foreign'] as $critKey => $critVal) {
+                        if (is_numeric($critKey)) {
+                            $foreignCriteria[] = $critVal;
+                        } else {
+                            $foreignCriteria["{$parentAlias}.{$critKey}"] = $critVal;
+                        }
+                    }
+                }
+                if (!empty($foreignCriteria)) {
+                    $expression = array($foreignCriteria, $expression);
+                }
+            }
             $this->leftJoin($class, $classAlias, $expression);
             if (!empty ($relations)) {
                 foreach ($relations as $relationAlias => $subRelations) {
@@ -455,8 +514,12 @@ abstract class xPDOQuery extends xPDOCriteria {
     /**
      * Hydrates a graph of related objects from a single result set.
      *
-     * @param array $rows A collection of result set rows for hydrating the graph.
-     * @return array A collection of objects with all related objects from the graph pre-populated.
+     * @param array|PDOStatement $rows A collection of result set rows or an
+     * executed PDOStatement to fetch rows from to hydrating the graph.
+     * @param bool $cacheFlag Indicates if the objects should be cached and
+     * optionally, by specifying an integer value, for how many seconds.
+     * @return array A collection of objects with all related objects from the
+     * graph pre-populated.
      */
     public function hydrateGraph($rows, $cacheFlag = true) {
         $instances= array ();
@@ -556,10 +619,11 @@ abstract class xPDOQuery extends xPDOCriteria {
     }
 
     /**
-     * Parses an xPDO condition expression.
+     * Parses an xPDO condition expression into one or more xPDOQueryConditions.
      *
      * @param mixed $conditions A valid xPDO condition expression.
      * @param string $conjunction The optional conjunction for the condition( s ).
+     * @return array||xPDOQueryCondition An xPDOQueryCondition or array of xPDOQueryConditions.
      */
     public function parseConditions($conditions, $conjunction = xPDOQuery::SQL_AND) {
         $result= array ();
@@ -571,9 +635,8 @@ abstract class xPDOQuery extends xPDOCriteria {
         $alias= $command == 'SELECT' ? $this->_class : $this->xpdo->getTableName($this->_class, false);
         $alias= trim($alias, $this->xpdo->_escapeCharOpen . $this->xpdo->_escapeCharClose);
         if (is_array($conditions)) {
-            if (isset ($conditions[0]) && !$this->isConditionalClause($conditions[0]) && is_array($pk) && count($conditions) == count($pk)) {
+            if (isset($conditions[0]) && is_scalar($conditions[0]) && !$this->isConditionalClause($conditions[0]) && is_array($pk) && count($conditions) == count($pk)) {
                 $iteration= 0;
-                $sql= '';
                 foreach ($pk as $k) {
                     if (!isset ($conditions[$iteration])) {
                         $conditions[$iteration]= null;
@@ -591,7 +654,6 @@ abstract class xPDOQuery extends xPDOCriteria {
                     $iteration++;
                 }
             } else {
-                $bindings= array ();
                 reset($conditions);
                 while (list ($key, $val)= each($conditions)) {
                     if (is_int($key)) {

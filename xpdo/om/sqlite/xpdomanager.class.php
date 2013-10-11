@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2010-2012 by MODX, LLC.
+ * Copyright 2010-2013 by MODX, LLC.
  *
  * This file is part of xPDO.
  *
@@ -125,6 +125,7 @@ class xPDOManager_sqlite extends xPDOManager {
                 $tableConstraints = array();
                 if (!empty ($indexes)) {
                     foreach ($indexes as $indexkey => $indexdef) {
+                        $indexkey = $this->xpdo->literal($instance->_table) . '_' . $indexkey;
                         $indexType = ($indexdef['primary'] ? 'PRIMARY KEY' : ($indexdef['unique'] ? 'UNIQUE' : 'INDEX'));
                         $index = $indexdef['columns'];
                         if (is_array($index)) {

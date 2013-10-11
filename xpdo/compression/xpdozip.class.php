@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2010-2012 by MODX, LLC.
+ * Copyright 2010-2013 by MODX, LLC.
  *
  * This file is part of xPDO.
  *
@@ -95,6 +95,15 @@ class xPDOZip {
             if (is_dir($source)) {
                 if ($dh = opendir($source)) {
                     if ($source[strlen($source) - 1] !== '/') $source .= '/';
+                    $targetDir = rtrim($target, '/');
+                    if (!empty($targetDir)) {
+                        if ($this->_archive->addEmptyDir($targetDir)) {
+                            $results[$target] = "Successfully added directory {$target} from {$source}";
+                        } else {
+                            $results[$target] = "Error adding directory {$target} from {$source}";
+                            $this->_errors[] = $results[$target];
+                        }
+                    }
                     while (($file = readdir($dh)) !== false) {
                         if (is_dir($source . $file)) {
                             if (($file !== '.') && ($file !== '..')) {
