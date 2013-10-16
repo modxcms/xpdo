@@ -436,7 +436,12 @@ class xPDOManager_mysql extends xPDOManager {
             $extra= ' ' . $meta['extra'];
         }
         $default= '';
-        if (isset ($meta['default']) && !preg_match($lobsPattern, $dbtype)) {
+        $attributes= (isset ($meta['attributes'])) ? ' ' . $meta['attributes'] : '';
+
+        if (in_array($this->xpdo->driver->getPhpType($dbtype), $datetimeStrings) && preg_match('/ON UPDATE CURRENT_TIMESTAMP/',$attributes) == 1 &&
+            (!isset($meta['default']) || $meta['default'] == null || strtoupper($meta['default']) == 'NULL' || $meta['default'] == '0000-00-00 00:00:00')) {
+            $default = ' DEFAULT CURRENT_TIMESTAMP';
+        } else if (isset ($meta['default']) && !preg_match($lobsPattern, $dbtype)) {
             $defaultVal= $meta['default'];
             if (($defaultVal === null || strtoupper($defaultVal) === 'NULL') || (in_array($this->xpdo->driver->getPhpType($dbtype), $datetimeStrings) && $defaultVal === 'CURRENT_TIMESTAMP')) {
                 $default= ' DEFAULT ' . $defaultVal;
@@ -444,7 +449,7 @@ class xPDOManager_mysql extends xPDOManager {
                 $default= ' DEFAULT \'' . $defaultVal . '\'';
             }
         }
-        $attributes= (isset ($meta['attributes'])) ? ' ' . $meta['attributes'] : '';
+
         if (strpos(strtolower($attributes), 'unsigned') !== false) {
             $result = $this->xpdo->escape($name) . ' ' . $dbtype . $precision . $attributes . $null . $default . $extra;
         } else {
