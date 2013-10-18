@@ -550,6 +550,7 @@ class xPDOTest extends xPDOTestCase {
         return array(
             array('SELECT * FROM a WHERE a.a=?', array("$1.00"), "SELECT * FROM a WHERE a.a='$1.00'"),
             array('SELECT * FROM a WHERE a.a=:a', array(':a' => "$1.00"), "SELECT * FROM a WHERE a.a='$1.00'"),
+            array('SELECT * FROM a WHERE a.a=? AND a.b=?', array(0, "0"), "SELECT * FROM a WHERE a.a=0 AND a.b='0'"),
         );
     }
 

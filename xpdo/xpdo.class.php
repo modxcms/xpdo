@@ -2678,8 +2678,11 @@ class xPDO {
                     }
                     $bound[$pattern] = str_replace(array('\\', '$'), array('\\\\', '\$'), $v);
                 } else {
-                    $v = ($type > 0)? $this->quote($bindings[$k]['value'], $type) : 'NULL';
-                    $sql= preg_replace("/(\?)/", $v, $sql, 1);
+                    $pos = strpos($sql, '?');
+                    if ($pos !== false) {
+                        $v = ($type > 0)? $this->quote($bindings[$k]['value'], $type) : 'NULL';
+                        $sql = substr_replace($sql, $v, $pos, 1);
+                    }
                 }
             }
             if (!empty($bound)) {
