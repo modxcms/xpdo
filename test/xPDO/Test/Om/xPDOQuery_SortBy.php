@@ -1,31 +1,25 @@
 <?php
 /**
- * Copyright 2010-2013 by MODX, LLC.
+ * This file is part of the xPDO package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
- *
- * @package xpdo-test
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace xPDO\Test\Om;
+
+use xPDO\Om\xPDOObject;
+use xPDO\TestCase;
+use xPDO\xPDO;
+
 /**
  * Tests related to sortby statements.
  *
- * @package xpdo-test
- * @subpackage xpdoquery
+ * @package xPDO\Test\Om
  */
-class xPDOQuerySortByTest extends xPDOTestCase {
+class xPDOQuerySortByTest extends TestCase {
     /**
      * Setup dummy data for each test.
      */
@@ -49,7 +43,7 @@ class xPDOQuerySortByTest extends xPDOTestCase {
                 $item->save();
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
     }
@@ -68,20 +62,22 @@ class xPDOQuerySortByTest extends xPDOTestCase {
      * @dataProvider providerSortBy
      */
     public function testSortBy($sort,$dir,$nameOfFirst) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
-        $success = false;
         try {
             $criteria = $this->xpdo->newQuery('Item');
             $criteria->sortby($sort,$dir);
             $result = $this->xpdo->getCollection('Item',$criteria);
             if (is_array($result) && !empty($result)) {
-                foreach ($result as $r) { $result = $r; break; }
+                foreach ($result as $r) {
+                    /** @var xPDOObject $result */
+                    $result = $r;
+                    break;
+                }
                 $name = $result->get('name');
                 $this->assertEquals($nameOfFirst,$name,'xPDOQuery: SortBy did not return expected result, returned `'.$name.'` instead.');
             } else {
-                throw new Exception('xPDOQuery: SortBy test getCollection call did not return an array');
+                throw new \Exception('xPDOQuery: SortBy test getCollection call did not return an array');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->assertTrue(false,$e->getMessage());
         }
     }
@@ -102,7 +98,6 @@ class xPDOQuerySortByTest extends xPDOTestCase {
      * @dataProvider providerSortByWithGroupBy
      */
     public function testSortByWithGroupBy($sort,$dir,$nameOfFirst) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Item');
             $criteria->groupby("{$sort},id,color");
@@ -112,13 +107,17 @@ class xPDOQuerySortByTest extends xPDOTestCase {
             $result = $this->xpdo->getCollection('Item',$criteria);
             if (is_array($result) && !empty($result)) {
                 $match = null;
-                foreach ($result as $r) { $match = $r; break; }
+                foreach ($result as $r) {
+                    /** @var xPDOObject $match */
+                    $match = $r;
+                    break;
+                }
                 $name = $match->get('name');
                 $this->assertEquals($nameOfFirst,$name,'xPDOQuery: SortBy did not return expected result, returned `'.$name.'` instead.');
             } else {
-                throw new Exception('xPDOQuery: SortBy test with groupby call did not return an array');
+                throw new \Exception('xPDOQuery: SortBy test with groupby call did not return an array');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->assertTrue(false,$e->getMessage());
         }
     }
@@ -139,21 +138,23 @@ class xPDOQuerySortByTest extends xPDOTestCase {
      * @dataProvider providerSortByWithLimit
      */
     public function testSortByWithLimit($sort,$dir,$limit,$start,$nameOfFirst) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
-        $success = false;
         try {
             $criteria = $this->xpdo->newQuery('Item');
             $criteria->sortby($this->xpdo->escape($sort),$dir);
             $criteria->limit($limit,$start);
             $result = $this->xpdo->getCollection('Item',$criteria);
             if (is_array($result) && !empty($result)) {
-                foreach ($result as $r) { $result = $r; break; }
+                foreach ($result as $r) {
+                    /** @var xPDOObject $result */
+                    $result = $r;
+                    break;
+                }
                 $name = $result->get('name');
                 $this->assertEquals($nameOfFirst,$name,'xPDOQuery: SortBy did not return expected result `'.$nameOfFirst.'`, returned `'.$name.'` instead: '.$criteria->toSql());
             } else {
-                throw new Exception('xPDOQuery: SortBy test with limit call did not return an array');
+                throw new \Exception('xPDOQuery: SortBy test with limit call did not return an array');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->assertTrue(false,$e->getMessage());
         }
     }

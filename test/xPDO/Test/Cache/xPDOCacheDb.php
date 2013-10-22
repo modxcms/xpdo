@@ -1,35 +1,30 @@
 <?php
 /**
- * Copyright 2010-2013 by MODX, LLC.
+ * This file is part of the xPDO package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
- *
- * @package xpdo-test
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace xPDO\Test\Cache;
+
+use xPDO\TestCase;
+use xPDO\xPDO;
+
 /**
- * Tests related to basic xPDOObject methods
+ * Tests related to xPDO cache_db options
  *
- * @package xpdo-test
- * @subpackage xpdo
+ * @package xPDO\Test\Cache
  */
-class xPDOCacheDbTest extends xPDOTestCase {
+class xPDOCacheDbTest extends TestCase
+{
     /**
      * Setup dummy data for each test.
      */
-    public function setUp() {
+    public function setUp()
+    {
         parent::setUp();
         try {
             /* ensure we have clear data and identity sequences */
@@ -40,21 +35,21 @@ class xPDOCacheDbTest extends xPDOTestCase {
             $this->xpdo->manager->createObjectContainer('PersonPhone');
             $this->xpdo->manager->createObjectContainer('BloodType');
 
-            $bloodTypes = array('A+','A-','B+','B-','AB+','AB-','O+','O-');
+            $bloodTypes = array('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-');
             foreach ($bloodTypes as $bloodType) {
                 $bt = $this->xpdo->newObject('BloodType');
-                $bt->set('type',$bloodType);
-                $bt->set('description','');
+                $bt->set('type', $bloodType);
+                $bt->set('description', '');
                 if (!$bt->save()) {
-                    $this->xpdo->log(xPDO::LOG_LEVEL_FATAL,'Could not add blood type: '.$bloodType);
+                    $this->xpdo->log(xPDO::LOG_LEVEL_FATAL, 'Could not add blood type: ' . $bloodType);
                 }
             }
 
-            $bloodTypeABPlus = $this->xpdo->getObject('BloodType','AB+');
-            if (empty($bloodTypeABPlus)) $this->xpdo->log(xPDO::LOG_LEVEL_FATAL,'Could not load blood type.');
+            $bloodTypeABPlus = $this->xpdo->getObject('BloodType', 'AB+');
+            if (empty($bloodTypeABPlus)) $this->xpdo->log(xPDO::LOG_LEVEL_FATAL, 'Could not load blood type.');
 
             /* add some people */
-            $person= $this->xpdo->newObject('Person');
+            $person = $this->xpdo->newObject('Person');
             $person->set('first_name', 'Johnathon');
             $person->set('last_name', 'Doe');
             $person->set('middle_name', 'Harry');
@@ -63,25 +58,18 @@ class xPDOCacheDbTest extends xPDOTestCase {
             $person->set('password', 'ohb0ybuddy');
             $person->set('username', 'john.doe@gmail.com');
             $person->set('security_level', 3);
-            $person->set('blood_type',$bloodTypeABPlus->get('type'));
+            $person->set('blood_type', $bloodTypeABPlus->get('type'));
             $person->save();
 
             $phone = $this->xpdo->newObject('Phone');
-            $phone->fromArray(array(
-                    'type' => 'work',
-                    'number' => '555-111-1111',
-                ));
+            $phone->fromArray(array('type' => 'work', 'number' => '555-111-1111',));
             $phone->save();
 
             $personPhone = $this->xpdo->newObject('PersonPhone');
-            $personPhone->fromArray(array(
-                    'person' => 1,
-                    'phone' => 1,
-                    'is_primary' => true,
-                ),'',true,true);
+            $personPhone->fromArray(array('person' => 1, 'phone' => 1, 'is_primary' => true,), '', true, true);
             $personPhone->save();
 
-            $person= $this->xpdo->newObject('Person');
+            $person = $this->xpdo->newObject('Person');
             $person->set('first_name', 'Jane');
             $person->set('last_name', 'Heartstead');
             $person->set('middle_name', 'Cecilia');
@@ -89,40 +77,26 @@ class xPDOCacheDbTest extends xPDOTestCase {
             $person->set('gender', 'F');
             $person->set('password', 'n0w4yimdoingthat');
             $person->set('username', 'jane.heartstead@yahoo.com');
-            $person->set('security_level',1);
-            $person->set('blood_type',$bloodTypeABPlus->get('type'));
+            $person->set('security_level', 1);
+            $person->set('blood_type', $bloodTypeABPlus->get('type'));
             $person->save();
 
             $phone = $this->xpdo->newObject('Phone');
-            $phone->fromArray(array(
-                    'type' => 'work',
-                    'number' => '555-222-2222',
-                ));
+            $phone->fromArray(array('type' => 'work', 'number' => '555-222-2222',));
             $phone->save();
 
             $personPhone = $this->xpdo->newObject('PersonPhone');
-            $personPhone->fromArray(array(
-                    'person' => 2,
-                    'phone' => 2,
-                    'is_primary' => true,
-                ),'',true,true);
+            $personPhone->fromArray(array('person' => 2, 'phone' => 2, 'is_primary' => true,), '', true, true);
             $personPhone->save();
 
             $phone = $this->xpdo->newObject('Phone');
-            $phone->fromArray(array(
-                    'type' => 'home',
-                    'number' => '555-555-5555',
-                ));
+            $phone->fromArray(array('type' => 'home', 'number' => '555-555-5555',));
             $phone->save();
 
             $personPhone = $this->xpdo->newObject('PersonPhone');
-            $personPhone->fromArray(array(
-                    'person' => 2,
-                    'phone' => 3,
-                    'is_primary' => false,
-                ),'',true,true);
+            $personPhone->fromArray(array('person' => 2, 'phone' => 3, 'is_primary' => false,), '', true, true);
             $personPhone->save();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
     }
@@ -130,13 +104,14 @@ class xPDOCacheDbTest extends xPDOTestCase {
     /**
      * Remove dummy data prior to each test.
      */
-    public function tearDown() {
+    public function tearDown()
+    {
         try {
             $this->xpdo->manager->removeObjectContainer('Phone');
             $this->xpdo->manager->removeObjectContainer('Person');
             $this->xpdo->manager->removeObjectContainer('PersonPhone');
             $this->xpdo->manager->removeObjectContainer('BloodType');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         parent::tearDown();
@@ -145,17 +120,18 @@ class xPDOCacheDbTest extends xPDOTestCase {
     /**
      * Ensure cache entries for class do not remain when removing an object.
      */
-    public function testRemoveObject() {
+    public function testRemoveObject()
+    {
         $this->xpdo->setOption(xPDO::OPT_CACHE_DB, true);
 
-        $people= $this->xpdo->getCollection('Person');
+        $people = $this->xpdo->getCollection('Person');
 
         /** @var Person $person */
-        $person= $this->xpdo->getObject('Person', 1);
+        $person = $this->xpdo->getObject('Person', 1);
         $person->remove();
 
-        $people= $this->xpdo->getCollection('Person');
-        $count= count($people);
+        $people = $this->xpdo->getCollection('Person');
+        $count = count($people);
 
         $this->assertEquals(0, $this->xpdo->getCount('Person', 1), "Object still exists after remove");
         $this->assertEquals(1, $count, "Object still exists in cache after removal");

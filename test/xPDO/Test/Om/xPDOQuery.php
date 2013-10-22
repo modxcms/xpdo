@@ -1,31 +1,27 @@
 <?php
 /**
- * Copyright 2010-2013 by MODX, LLC.
+ * This file is part of the xPDO package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
- *
- * @package xpdo-test
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace xPDO\Test\Om;
+
+use xPDO\Om\xPDOObject;
+use xPDO\Om\xPDOQuery;
+use xPDO\Om\xPDOQueryCondition;
+use xPDO\TestCase;
+use xPDO\xPDO;
+
 /**
  * Tests related to the xPDOQuery class.
  *
- * @package xpdo-test
- * @subpackage xpdoquery
+ * @package xPDO\Test\Om
  */
-class xPDOQueryTest extends xPDOTestCase {
+class xPDOQueryTest extends TestCase {
     /**
      * Setup dummy data for each test.
      */
@@ -90,7 +86,7 @@ class xPDOQueryTest extends xPDOTestCase {
             ),'',true,true);
             $personPhone->save();
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
     }
@@ -104,7 +100,7 @@ class xPDOQueryTest extends xPDOTestCase {
             $this->xpdo->manager->removeObjectContainer('Person');
 			$this->xpdo->manager->removeObjectContainer('PersonPhone');
 			$this->xpdo->manager->removeObjectContainer('BloodType');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         parent::tearDown();
@@ -114,17 +110,17 @@ class xPDOQueryTest extends xPDOTestCase {
      * Test xPDOQuery->where() statements
      */
     public function testWhere() {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         $where = array(
             'first_name' => 'Johnathon',
             'last_name' => 'Doe',
         );
-
+        $criteria = null;
+        $person = null;
         try {
             $criteria = $this->xpdo->newQuery('Person');
-            $criteria->where($where,xPDOQuery::SQL_AND,null,0);
+            $criteria->where($where, xPDOQuery::SQL_AND,null,0);
             $person = $this->xpdo->getObject('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
 
@@ -145,14 +141,13 @@ class xPDOQueryTest extends xPDOTestCase {
      * @dataProvider providerEquals
      */
     public function testEquals($a) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:=' => $a,
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: = Clause does not find the correct result.');
@@ -171,14 +166,13 @@ class xPDOQueryTest extends xPDOTestCase {
      * @dataProvider providerNotEquals
      */
     public function testNotEquals($a) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:!=' => $a,
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: != Clause does not find the correct result.');
@@ -197,7 +191,6 @@ class xPDOQueryTest extends xPDOTestCase {
      * @dataProvider providerGreaterThan
      */
     public function testGreaterThan($a) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         /* test > */
         try {
             $criteria = $this->xpdo->newQuery('Person');
@@ -205,7 +198,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'security_level:>' => $a,
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: > Clause does not find the correct result.');
@@ -224,14 +217,13 @@ class xPDOQueryTest extends xPDOTestCase {
      * @dataProvider providerGreaterThanEquals
      */
     public function testGreaterThanEquals($a) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:>=' => $a,
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: >= Clause does not find the correct result.');
@@ -250,14 +242,13 @@ class xPDOQueryTest extends xPDOTestCase {
      * @dataProvider providerLessThan
      */
     public function testLessThan($a) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:<' => $a,
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: < Clause does not find the correct result.');
@@ -276,14 +267,13 @@ class xPDOQueryTest extends xPDOTestCase {
      * @dataProvider providerLessThanEquals
      */
     public function testLessThanEquals() {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:<=' => 3,
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: <= Clause does not find the correct result.');
@@ -302,14 +292,13 @@ class xPDOQueryTest extends xPDOTestCase {
      * @dataProvider providerNotGTLT
      */
     public function testNotGTLT() {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:<>' => 999,
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: <> Clause does not find the correct result.');
@@ -327,7 +316,6 @@ class xPDOQueryTest extends xPDOTestCase {
      * Test LIKE xPDOQuery conditions
      */
     public function testLike() {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         /* test LIKE %.. */
         try {
             $criteria = $this->xpdo->newQuery('Person');
@@ -335,7 +323,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'first_name:LIKE' => '%nathon',
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: LIKE %.. Clause does not find the correct result.');
@@ -347,7 +335,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'first_name:LIKE' => 'John%',
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: LIKE ..% Clause does not find the correct result.');
@@ -359,7 +347,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'first_name:LIKE' => '%Johna%',
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: LIKE %..% Clause does not find the correct result.');
@@ -369,7 +357,6 @@ class xPDOQueryTest extends xPDOTestCase {
      * Test IN xPDOQuery condition
      */
     public function testIn() {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         /* test IN with strings */
         try {
             $criteria = $this->xpdo->newQuery('Person');
@@ -377,7 +364,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'first_name:IN' => array('Johnathon','Mary'),
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result) && count($result) === 1,'xPDOQuery: IN with strings Clause does not find the correct result.');
@@ -389,7 +376,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'security_level:IN' => array(1,3),
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result) && count($result) === 2,'xPDOQuery: IN with INTs Clause does not find the correct result.');
@@ -401,7 +388,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'security_level IN (1,3)',
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result) && count($result) === 2,'xPDOQuery: IN with () condition does not find the correct result.');
@@ -411,7 +398,6 @@ class xPDOQueryTest extends xPDOTestCase {
      * Test NOT IN xPDOQuery condition
      */
     public function testNotIn() {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         /* test NOT IN with strings */
         try {
             $criteria = $this->xpdo->newQuery('Person');
@@ -419,7 +405,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'first_name:NOT IN' => array('Johnathon','Mary'),
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result) && count($result) === 1,'xPDOQuery: NOT IN with strings Clause does not find the correct result.');
@@ -431,7 +417,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'security_level:NOT IN' => array(2,3),
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result) && count($result) === 1,'xPDOQuery: NOT IN with INTs Clause does not find the correct result.');
@@ -443,7 +429,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 'security_level NOT IN (2,3)',
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result) && count($result) === 1,'xPDOQuery: NOT IN with () condition does not find the correct result.');
@@ -454,7 +440,6 @@ class xPDOQueryTest extends xPDOTestCase {
      * @dataProvider providerNestedConditions
      */
     public function testNestedConditions($level,$lastName,$gender) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
@@ -465,7 +450,7 @@ class xPDOQueryTest extends xPDOTestCase {
                 ),
             ));
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: Nested condition clause does not find the correct result.');
@@ -490,15 +475,16 @@ class xPDOQueryTest extends xPDOTestCase {
      * @param mixed $resultValue The expected value of the first result.
      */
     public function testSortBy($sortBy,$sortDir,$resultColumn,$resultValue) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
+        $result = null;
+        $people = array();
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->sortby($sortBy,$sortDir);
             $people = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-
+        /** @var xPDOObject $person */
         foreach ($people as $person) {
             $result = $person;
             break;
@@ -525,12 +511,12 @@ class xPDOQueryTest extends xPDOTestCase {
      * @param boolean $shouldEqual If the result count should equal the limit
      */
     public function testLimit($limit,$shouldEqual) {
-    	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
+        $result = array();
         try {
             $criteria = $this->xpdo->newQuery('Person');
             $criteria->limit($limit);
             $result = $this->xpdo->getCollection('Person',$criteria);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $success = count($result) == $limit;
