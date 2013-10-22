@@ -10,7 +10,7 @@
 
 error_reporting(-1);
 
-$loader = require __DIR__.'/../src/bootstrap.php';
+$loader = require __DIR__ . '/../src/bootstrap.php';
 $loader->add('xPDO\\Test', __DIR__);
 
-require __DIR__.'/xPDO/TestCase.php';
+require __DIR__ . '/xPDO/TestCase.php';
