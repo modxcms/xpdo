@@ -2443,14 +2443,9 @@ class xPDO {
      * @return Om\xPDOQuery The resulting xPDOQuery instance or false if unsuccessful.
      */
     public function newQuery($class, $criteria= null, $cacheFlag= true) {
-        $query= false;
-        if ($this->loadClass($this->config['dbtype'] . '.xPDOQuery', '', false, true)) {
-            $xpdoQueryClass= 'xPDOQuery_' . $this->config['dbtype'];
-            if (!class_exists($xpdoQueryClass, false))
-                include_once dirname(__FILE__) . '/om/' . $this->config['dbtype'] . '/xpdoquery.class.php';
-            if ($query= new $xpdoQueryClass($this, $class, $criteria)) {
-                $query->cacheFlag= $cacheFlag;
-            }
+        $xpdoQueryClass= '\\xPDO\\Om\\' . $this->config['dbtype'] . '\\xPDOQuery';
+        if ($query= new $xpdoQueryClass($this, $class, $criteria)) {
+            $query->cacheFlag= $cacheFlag;
         }
         return $query;
     }
