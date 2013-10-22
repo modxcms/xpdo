@@ -8,13 +8,11 @@
  * file that was distributed with this source code.
  */
 
-namespace xPDO\Om\sqlite;
+namespace xPDO\Om\mysql;
 
 /**
- * Implements extensions to the base xPDOObject class for SQLite.
+ * A base mysql class defining an auto-incremented integer primary key.
  *
- * {@inheritdoc}
- *
- * @package xPDO\Om\sqlite
+ * @package xPDO\Om\mysql
  */
-class xPDOObject extends \xPDO\Om\xPDOObject {}
+class xPDOSimpleObject extends \xPDO\Om\xPDOSimpleObject {}

@@ -11,10 +11,9 @@
 namespace xPDO\Om\sqlite;
 
 /**
- * Implements extensions to the base xPDOObject class for SQLite.
- *
- * {@inheritdoc}
+ * A base sqlite class defining an auto-generated integer primary key.
  *
  * @package xPDO\Om\sqlite
  */
-class xPDOObject extends \xPDO\Om\xPDOObject {}
+class xPDOSimpleObject extends \xPDO\Om\xPDOSimpleObject {}
+

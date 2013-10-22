@@ -1,35 +1,21 @@
 <?php
-/*
- * Copyright 2010-2013 by MODX, LLC.
+/**
+ * This file is part of the xPDO package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-/**
- * Classes implementing a default cache implementation for xPDO.
- *
- * @package xpdo
- * @subpackage cache
- */
+namespace xPDO\Cache;
+
+use xPDO\xPDO;
 
 /**
  * The default cache manager implementation for xPDO.
  *
- * @package xpdo
- * @subpackage cache
+ * @package xPDO\Cache
  */
 class xPDOCacheManager {
     const CACHE_PHP = 0;
@@ -38,6 +24,7 @@ class xPDOCacheManager {
     const CACHE_DIR = 'objects/';
     const LOG_DIR = 'logs/';
 
+    /** @var xPDO */
     protected $xpdo= null;
     protected $caches= array();
     protected $options= array();
@@ -51,6 +38,11 @@ class xPDOCacheManager {
 
     /**
      * Get an instance of a provider which implements the xPDOCache interface.
+     *
+     * @param string $key
+     * @param array $options
+     *
+     * @return xPDOCache|null
      */
     public function & getCacheProvider($key = '', $options = array()) {
         $objCache = null;
@@ -141,37 +133,33 @@ class xPDOCacheManager {
      */
     public function getCachePath() {
         $cachePath= false;
-        if (empty($this->xpdo->cachePath)) {
-            if (!isset ($this->xpdo->config['cache_path'])) {
-                while (true) {
-                    if (!empty ($_ENV['TMP'])) {
-                        if ($cachePath= strtr($_ENV['TMP'], '\\', '/'))
-                            break;
-                    }
-                    if (!empty ($_ENV['TMPDIR'])) {
-                        if ($cachePath= strtr($_ENV['TMPDIR'], '\\', '/'))
-                            break;
-                    }
-                    if (!empty ($_ENV['TEMP'])) {
-                        if ($cachePath= strtr($_ENV['TEMP'], '\\', '/'))
-                            break;
-                    }
-                    if ($temp_file= @ tempnam(md5(uniqid(rand(), TRUE)), '')) {
-                        $cachePath= strtr(dirname($temp_file), '\\', '/');
-                        @ unlink($temp_file);
-                    }
-                    break;
+        if (!isset ($this->xpdo->config['cache_path'])) {
+            while (true) {
+                if (!empty ($_ENV['TMP'])) {
+                    if ($cachePath= strtr($_ENV['TMP'], '\\', '/'))
+                        break;
                 }
-                if ($cachePath) {
-                    if ($cachePath{strlen($cachePath) - 1} != '/') $cachePath .= '/';
-                    $cachePath .= '.xpdo-cache';
+                if (!empty ($_ENV['TMPDIR'])) {
+                    if ($cachePath= strtr($_ENV['TMPDIR'], '\\', '/'))
+                        break;
                 }
+                if (!empty ($_ENV['TEMP'])) {
+                    if ($cachePath= strtr($_ENV['TEMP'], '\\', '/'))
+                        break;
+                }
+                if ($temp_file= @ tempnam(md5(uniqid(rand(), true)), '')) {
+                    $cachePath= strtr(dirname($temp_file), '\\', '/');
+                    @ unlink($temp_file);
+                }
+                break;
             }
-            else {
-                $cachePath= strtr($this->xpdo->config['cache_path'], '\\', '/');
+            if ($cachePath) {
+                if ($cachePath{strlen($cachePath) - 1} != '/') $cachePath .= '/';
+                $cachePath .= '.xpdo-cache';
             }
-        } else {
-            $cachePath= $this->xpdo->cachePath;
+        }
+        else {
+            $cachePath= strtr($this->xpdo->config['cache_path'], '\\', '/');
         }
         if ($cachePath) {
             $perms = $this->getOption('new_folder_permissions', null, $this->getFolderPermissions());
@@ -272,7 +260,7 @@ class xPDOCacheManager {
         if ($this->writeTree($lockDir, $options)) {
             $lockFile = $this->lockFileName($file, $options);
             if (!file_exists($lockFile)) {
-                $myPID = (XPDO_CLI_MODE || !isset($_SERVER['SERVER_ADDR']) ? gethostname() : $_SERVER['SERVER_ADDR']) . '.' . getmypid();
+                $myPID = (php_sapi_name() == 'cli' || !isset($_SERVER['SERVER_ADDR']) ? gethostname() : $_SERVER['SERVER_ADDR']) . '.' . getmypid();
                 $myPID .= mt_rand();
                 $tmpLockFile = "{$lockFile}.{$myPID}";
                 if (file_put_contents($tmpLockFile, $myPID)) {
@@ -588,7 +576,7 @@ class xPDOCacheManager {
      * @todo Add stdObject support.
      *
      * @access public
-     * @param xPDOObject $obj An xPDOObject to generate the cache file for
+     * @param \xPDO\Om\xPDOObject $obj An xPDOObject to generate the cache file for
      * @param string $objName The name of the xPDOObject
      * @param boolean $generateObjVars If true, will also generate maps for all
      * object variables. Defaults to false.
@@ -596,13 +584,13 @@ class xPDOCacheManager {
      * related objects. Defaults to false.
      * @param string $objRef The reference to the xPDO instance, in string
      * format.
-     * @param boolean $format The format to cache in. Defaults to
+     * @param int $format The format to cache in. Defaults to
      * xPDOCacheManager::CACHE_PHP, which is set to cache in executable PHP format.
      * @return string The source map file, in string format.
      */
     public function generateObject($obj, $objName, $generateObjVars= false, $generateRelated= false, $objRef= 'this->xpdo', $format= xPDOCacheManager::CACHE_PHP) {
         $source= false;
-        if (is_object($obj) && $obj instanceof xPDOObject) {
+        if (is_object($obj) && $obj instanceof \xPDO\Om\xPDOObject) {
             $className= $obj->_class;
             $source= "\${$objName}= \${$objRef}->newObject('{$className}');\n";
             $source .= "\${$objName}->fromArray(" . var_export($obj->toArray('', true), true) . ", '', true, true);\n";
@@ -635,12 +623,13 @@ class xPDOCacheManager {
      * @param mixed & $var A reference to the PHP variable representing the item.
      * @param integer $lifetime Seconds the item will be valid in cache.
      * @param array $options Additional options for the cache add operation.
+     * @return boolean True if the add was successful.
      */
     public function add($key, & $var, $lifetime= 0, $options= array()) {
         $return= false;
         if ($cache = $this->getCacheProvider($this->getOption(xPDO::OPT_CACHE_KEY, $options))) {
             $value= null;
-            if (is_object($var) && $var instanceof xPDOObject) {
+            if (is_object($var) && $var instanceof \xPDO\Om\xPDOObject) {
                 $value= $var->toArray('', true);
             } else {
                 $value= $var;
@@ -664,7 +653,7 @@ class xPDOCacheManager {
         $return= false;
         if ($cache = $this->getCacheProvider($this->getOption(xPDO::OPT_CACHE_KEY, $options), $options)) {
             $value= null;
-            if (is_object($var) && $var instanceof xPDOObject) {
+            if (is_object($var) && $var instanceof \xPDO\Om\xPDOObject) {
                 $value= $var->toArray('', true);
             } else {
                 $value= $var;
@@ -688,7 +677,7 @@ class xPDOCacheManager {
         $return= false;
         if ($cache = $this->getCacheProvider($this->getOption(xPDO::OPT_CACHE_KEY, $options), $options)) {
             $value= null;
-            if (is_object($var) && $var instanceof xPDOObject) {
+            if (is_object($var) && $var instanceof \xPDO\Om\xPDOObject) {
                 $value= $var->toArray('', true);
             } else {
                 $value= $var;
@@ -788,287 +777,5 @@ class xPDOCacheManager {
             "\\'"
         );
         return str_replace($q1, $q2, $s);
-    }
-}
-
-/**
- * An abstract class that defines the methods a cache provider must implement.
- *
- * @package xpdo
- * @subpackage cache
- */
-abstract class xPDOCache {
-    public $xpdo= null;
-    protected $options= array();
-    protected $key= '';
-    protected $initialized= false;
-
-    public function __construct(& $xpdo, $options = array()) {
-        $this->xpdo= & $xpdo;
-        $this->options= $options;
-        $this->key = $this->getOption(xPDO::OPT_CACHE_KEY, $options, 'default');
-    }
-
-    /**
-     * Indicates if this xPDOCache instance has been properly initialized.
-     *
-     * @return boolean true if the implementation was initialized successfully.
-     */
-    public function isInitialized() {
-        return (boolean) $this->initialized;
-    }
-
-    /**
-     * Get an option from supplied options, the cache options, or the xpdo config.
-     *
-     * @param string $key Unique identifier for the option.
-     * @param array $options A set of explicit options to override those from xPDO or the xPDOCache
-     * implementation.
-     * @param mixed $default An optional default value to return if no value is found.
-     * @return mixed The value of the option.
-     */
-    public function getOption($key, $options = array(), $default = null) {
-        $option = $default;
-        if (is_array($key)) {
-            if (!is_array($option)) {
-                $default= $option;
-                $option= array();
-            }
-            foreach ($key as $k) {
-                $option[$k]= $this->getOption($k, $options, $default);
-            }
-        } elseif (is_string($key) && !empty($key)) {
-            if (is_array($options) && !empty($options) && array_key_exists($key, $options)) {
-                $option = $options[$key];
-            } elseif (is_array($this->options) && !empty($this->options) && array_key_exists($key, $this->options)) {
-                $option = $this->options[$key];
-            } else {
-                $option = $this->xpdo->cacheManager->getOption($key, null, $default);
-            }
-        }
-        return $option;
-    }
-
-    /**
-     * Get the actual cache key the implementation will use.
-     *
-     * @param string $key The identifier the application uses.
-     * @param array $options Additional options for the operation.
-     * @return string The identifier with any implementation specific prefixes or other
-     * transformations applied.
-     */
-    public function getCacheKey($key, $options = array()) {
-        $prefix = $this->getOption('cache_prefix', $options);
-        if (!empty($prefix)) $key = $prefix . $key;
-        return $this->key . '/' . $key;
-    }
-
-    /**
-     * Adds a value to the cache.
-     *
-     * @access public
-     * @param string $key A unique key identifying the item being set.
-     * @param string $var A reference to the PHP variable representing the item.
-     * @param integer $expire The amount of seconds for the variable to expire in.
-     * @param array $options Additional options for the operation.
-     * @return boolean True if successful
-     */
-    abstract public function add($key, $var, $expire= 0, $options= array());
-
-    /**
-     * Sets a value in the cache.
-     *
-     * @access public
-     * @param string $key A unique key identifying the item being set.
-     * @param string $var A reference to the PHP variable representing the item.
-     * @param integer $expire The amount of seconds for the variable to expire in.
-     * @param array $options Additional options for the operation.
-     * @return boolean True if successful
-     */
-    abstract public function set($key, $var, $expire= 0, $options= array());
-
-    /**
-     * Replaces a value in the cache.
-     *
-     * @access public
-     * @param string $key A unique key identifying the item being set.
-     * @param string $var A reference to the PHP variable representing the item.
-     * @param integer $expire The amount of seconds for the variable to expire in.
-     * @param array $options Additional options for the operation.
-     * @return boolean True if successful
-     */
-    abstract public function replace($key, $var, $expire= 0, $options= array());
-
-    /**
-     * Deletes a value from the cache.
-     *
-     * @access public
-     * @param string $key A unique key identifying the item being deleted.
-     * @param array $options Additional options for the operation.
-     * @return boolean True if successful
-     */
-    abstract public function delete($key, $options= array());
-
-    /**
-     * Gets a value from the cache.
-     *
-     * @access public
-     * @param string $key A unique key identifying the item to fetch.
-     * @param array $options Additional options for the operation.
-     * @return mixed The value retrieved from the cache.
-     */
-    public function get($key, $options= array()) {}
-
-    /**
-     * Flush all values from the cache.
-     *
-     * @access public
-     * @param array $options Additional options for the operation.
-     * @return boolean True if successful.
-     */
-    abstract public function flush($options= array());
-}
-
-/**
- * A simple file-based caching implementation using executable PHP.
- *
- * This can be used to relieve database loads, though the overall performance is
- * about the same as without the file-based cache.  For maximum performance and
- * scalability, use a server with memcached and the PHP memcache extension
- * configured.
- *
- * @package xpdo
- * @subpackage cache
- */
-class xPDOFileCache extends xPDOCache {
-    public function __construct(& $xpdo, $options = array()) {
-        parent :: __construct($xpdo, $options);
-        $this->initialized = true;
-    }
-
-    public function getCacheKey($key, $options = array()) {
-        $cachePath = $this->getOption('cache_path', $options);
-        $cacheExt = $this->getOption('cache_ext', $options, '.cache.php');
-        $key = parent :: getCacheKey($key, $options);
-        return $cachePath . $key . $cacheExt;
-    }
-
-    public function add($key, $var, $expire= 0, $options= array()) {
-        $added= false;
-        if (!file_exists($this->getCacheKey($key, $options))) {
-            if ($expire === true)
-                $expire= 0;
-            $added= $this->set($key, $var, $expire, $options);
-        }
-        return $added;
-    }
-
-    public function set($key, $var, $expire= 0, $options= array()) {
-        $set= false;
-        if ($var !== null) {
-            if ($expire === true)
-                $expire= 0;
-            $expirationTS= $expire ? time() + $expire : 0;
-            $expireContent= '';
-            if ($expirationTS) {
-                $expireContent= 'if(time() > ' . $expirationTS . '){return null;}';
-            }
-            $fileName= $this->getCacheKey($key, $options);
-            $format = (integer) $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, xPDOCacheManager::CACHE_PHP);
-            switch ($format) {
-                case xPDOCacheManager::CACHE_SERIALIZE:
-                    $content= serialize(array('expires' => $expirationTS, 'content' => $var));
-                    break;
-                case xPDOCacheManager::CACHE_JSON:
-                    $content= $this->xpdo->toJSON(array('expires' => $expirationTS, 'content' => $var));
-                    break;
-                case xPDOCacheManager::CACHE_PHP:
-                default:
-                    $content= '<?php ' . $expireContent . ' return ' . var_export($var, true) . ';';
-                    break;
-            }
-            $set= $this->xpdo->cacheManager->writeFile($fileName, $content);
-        }
-        return $set;
-    }
-
-    public function replace($key, $var, $expire= 0, $options= array()) {
-        $replaced= false;
-        if (file_exists($this->getCacheKey($key, $options))) {
-            if ($expire === true)
-                $expire= 0;
-            $replaced= $this->set($key, $var, $expire, $options);
-        }
-        return $replaced;
-    }
-
-    public function delete($key, $options= array()) {
-        $deleted= false;
-        $cacheKey= $this->getCacheKey($key, array_merge($options, array('cache_ext' => '')));
-        if (file_exists($cacheKey) && is_dir($cacheKey)) {
-            $results = $this->xpdo->cacheManager->deleteTree($cacheKey, array_merge(array('deleteTop' => false, 'skipDirs' => false, 'extensions' => array('.cache.php')), $options));
-            if ($results !== false) {
-                $deleted = true;
-            }
-        } else {
-            $cacheKey= $this->getCacheKey($key, $options);
-            if (file_exists($cacheKey)) {
-                $deleted= @ unlink($cacheKey);
-            }
-        }
-        return $deleted;
-    }
-
-    public function get($key, $options= array()) {
-        $value= null;
-        $cacheKey= $this->getCacheKey($key, $options);
-        if (file_exists($cacheKey)) {
-            if ($file = @fopen($cacheKey, 'rb')) {
-                $format = (integer) $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, xPDOCacheManager::CACHE_PHP);
-                if (flock($file, LOCK_SH)) {
-                    switch ($format) {
-                        case xPDOCacheManager::CACHE_PHP:
-                            $value= @include $cacheKey;
-                            break;
-                        case xPDOCacheManager::CACHE_JSON:
-                            $payload = stream_get_contents($file);
-                            if ($payload !== false) {
-                                $payload = $this->xpdo->fromJSON($payload);
-                                if (is_array($payload) && isset($payload['expires']) && (empty($payload['expires']) || time() < $payload['expires'])) {
-                                    if (array_key_exists('content', $payload)) {
-                                        $value= $payload['content'];
-                                    }
-                                }
-                            }
-                            break;
-                        case xPDOCacheManager::CACHE_SERIALIZE:
-                            $payload = stream_get_contents($file);
-                            if ($payload !== false) {
-                                $payload = unserialize($payload);
-                                if (is_array($payload) && isset($payload['expires']) && (empty($payload['expires']) || time() < $payload['expires'])) {
-                                    if (array_key_exists('content', $payload)) {
-                                        $value= $payload['content'];
-                                    }
-                                }
-                            }
-                            break;
-                    }
-                    flock($file, LOCK_UN);
-                    if ($value === null && $this->getOption('removeIfEmpty', $options, true)) {
-                        fclose($file);
-                        @ unlink($cacheKey);
-                        return $value;
-                    }
-                }
-                @fclose($file);
-            }
-        }
-        return $value;
-    }
-
-    public function flush($options= array()) {
-        $cacheKey= $this->getCacheKey('', array_merge($options, array('cache_ext' => '')));
-        $results = $this->xpdo->cacheManager->deleteTree($cacheKey, array_merge(array('deleteTop' => false, 'skipDirs' => false, 'extensions' => array('.cache.php')), $options));
-        return ($results !== false);
     }
 }

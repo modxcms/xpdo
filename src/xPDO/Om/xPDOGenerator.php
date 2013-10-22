@@ -1,29 +1,16 @@
 <?php
-/*
- * Copyright 2010-2013 by MODX, LLC.
+/**
+ * This file is part of the xpdo package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-/**
- * Class for reverse and forward engineering xPDO domain models.
- *
- * @package xpdo
- * @subpackage om
- */
+namespace xPDO\Om;
+
+use xPDO\xPDO;
 
 /**
  * A service for reverse and forward engineering xPDO domain models.
@@ -33,9 +20,7 @@
  * structure.  It can also reverse-engineer XML schemas from an existing
  * database.
  *
- * @abstract
- * @package xpdo
- * @subpackage om
+ * @package xPDO\Om
  */
 abstract class xPDOGenerator {
     /**
@@ -97,14 +82,13 @@ abstract class xPDOGenerator {
      */
     public $map= array ();
     /**
-     * @var SimpleXMLElement
+     * @var \SimpleXMLElement
      */
     public $schema= null;
 
     /**
-     * Constructor
+     * Construct a new xPDOGenerator instance.
      *
-     * @access protected
      * @param xPDOManager &$manager A reference to a valid xPDOManager instance.
      * @return xPDOGenerator
      */
@@ -200,15 +184,15 @@ abstract class xPDOGenerator {
             return false;
         }
 
-        $this->schema = new SimpleXMLElement($schemaFile, 0, true);
+        $this->schema = new \SimpleXMLElement($schemaFile, 0, true);
         if (isset($this->schema)) {
             foreach ($this->schema->attributes() as $attributeKey => $attribute) {
-                /** @var SimpleXMLElement $attribute */
+                /** @var \SimpleXMLElement $attribute */
                 $this->model[$attributeKey] = (string) $attribute;
             }
             if (isset($this->schema->object)) {
                 foreach ($this->schema->object as $object) {
-                    /** @var SimpleXMLElement $object */
+                    /** @var \SimpleXMLElement $object */
                     $class = (string) $object['class'];
                     $extends = isset($object['extends']) ? (string) $object['extends'] : $this->model['baseClass'];
                     $this->classes[$class] = array('extends' => $extends);
@@ -384,7 +368,7 @@ abstract class xPDOGenerator {
                             }
                             if (!empty($aggregateNode)) {
                                 if (isset($aggregate->criteria)) {
-                                    /** @var SimpleXMLElement $criteria */
+                                    /** @var \SimpleXMLElement $criteria */
                                     foreach ($aggregate->criteria as $criteria) {
                                         $criteriaTarget = (string) $criteria['target'];
                                         $expression = (string) $criteria;
@@ -452,7 +436,7 @@ abstract class xPDOGenerator {
         $this->outputMeta($path);
         $this->outputClasses($path);
         $this->outputMaps($path);
-        if ($compile) $this->compile($path, $this->model, $this->classes, $this->maps);
+        if ($compile) $this->compile($path);
         unset($this->model, $this->classes, $this->map);
         return true;
     }
@@ -460,9 +444,8 @@ abstract class xPDOGenerator {
     /**
      * Write the generated class files to the specified path.
      *
-     * @access public
-     * @param string $path An absolute path to write the generated class files
-     * to.
+     * @param string $path An absolute path to write the generated class files to.
+     * @return bool True if successful.
      */
     public function outputClasses($path) {
         $newClassGeneration= false;
@@ -556,6 +539,7 @@ abstract class xPDOGenerator {
                 $this->manager->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not open or create dir: {$path}");
             }
         }
+        return true;
     }
 
     /**
@@ -681,8 +665,6 @@ abstract class xPDOGenerator {
     /**
      * Compile the packages into a single file for quicker loading.
      *
-     * @abstract
-     * @access public
      * @param string $path The absolute path to compile into.
      * @return boolean True if the compiling went successfully.
      */
@@ -691,7 +673,6 @@ abstract class xPDOGenerator {
     /**
      * Return the class template for the class files.
      *
-     * @access public
      * @return string The class template.
      */
     public function getClassTemplate() {
@@ -706,7 +687,8 @@ EOD;
     /**
      * Return the class platform template for the class files.
      *
-     * @access public
+     * @param $platform string The name of the platform.
+     *
      * @return string The class platform template.
      */
     public function getClassPlatformTemplate($platform) {
@@ -722,7 +704,6 @@ EOD;
     /**
      * Gets the map header template.
      *
-     * @access public
      * @return string The map header template.
      */
     public function getMapHeader() {
@@ -736,7 +717,6 @@ EOD;
     /**
      * Gets the map footer template.
      *
-     * @access public
      * @return string The map footer template.
      */
     public function getMapFooter() {

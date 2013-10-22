@@ -1,41 +1,27 @@
 <?php
-/*
- * Copyright 2010-2013 by MODX, LLC.
+/**
+ * This file is part of the xpdo package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-/**
- * The base xPDO validation classes.
- *
- * This file contains the base validation classes used by xPDO.
- *
- * @package xpdo
- * @subpackage validation
- */
+namespace xPDO\Validation;
+
+use xPDO\xPDO;
+use xPDO\Om\xPDOObject;
 
 /**
  * The base validation service class.
  *
  * Extend this class to customize the validation process.
  *
- * @package xpdo
- * @subpackage validation
+ * @package xPDO\Validation
  */
 class xPDOValidator {
+    /** @var xPDOObject */
     public $object = null;
     public $results = array();
     public $messages = array();
@@ -181,146 +167,5 @@ class xPDOValidator {
     public function reset() {
         $this->results= array();
         $this->messages= array();
-    }
-}
-
-/**
- * The base validation rule class.
- *
- * @package xpdo
- * @subpackage validation
- */
-class xPDOValidationRule {
-    public $validator = null;
-    public $field = '';
-    public $name = '';
-    public $message = '';
-
-    /**
-     * Construct a new xPDOValidationRule instance.
-     *
-     * @param xPDOValidator &$validator A reference to the xPDOValidator executing this rule.
-     * @param mixed $field The field being validated.
-     * @param mixed $name The identifying name of the validation rule.
-     * @param string $message An optional message for rule failure.
-     * @return xPDOValidationRule The rule instance.
-     */
-    public function __construct(& $validator, $field, $name, $message= '') {
-        $this->validator = & $validator;
-        $this->field = $field;
-        $this->name = $name;
-        $this->message = (!empty($message) && $message !== '0' ? $message : $name);
-    }
-
-    /**
-     * The public method for executing a validation rule.
-     *
-     * Extend this method to provide a reusable validation rule in your xPDOValidator instance.
-     *
-     * @param mixed $value The value of the field being validated.
-     * @param array $options Any options expected by the rule.
-     * @return boolean True if the validation rule was passed, otherwise false.
-     */
-    public function isValid($value, array $options = array()) {
-        if (isset($options['message'])) {
-            $this->setMessage($options['message']);
-        }
-        return true;
-    }
-
-    /**
-     * Set the failure message for the rule.
-     *
-     * @param string $message A message intended to convey the reason for rule failure.
-     */
-    public function setMessage($message= '') {
-        if (!empty($message) && $message !== '0') {
-            $this->message= $message;
-        }
-    }
-}
-
-class xPDOMinLengthValidationRule extends xPDOValidationRule {
-    public function isValid($value, array $options = array()) {
-        $result= parent :: isValid($value, $options);
-        $minLength= isset($options['value']) ? intval($options['value']) : 0;
-        $result= (is_string($value) && strlen($value) >= $minLength);
-        if ($result === false) {
-            $this->validator->addMessage($this->field, $this->name, $this->message);
-        }
-        return $result;
-    }
-}
-class xPDOMaxLengthValidationRule extends xPDOValidationRule {
-    public function isValid($value, array $options = array()) {
-        $result= parent :: isValid($value, $options);
-        $maxLength= isset($options['value']) ? intval($options['value']) : 0;
-        $result= ($maxLength > 0 && is_string($value) && strlen($value) <= $maxLength);
-        if ($result === false) {
-            $this->validator->addMessage($this->field, $this->name, $this->message);
-        }
-    }
-}
-class xPDOMinValueValidationRule extends xPDOValidationRule {
-    public function isValid($value, array $options = array()) {
-        $result= parent :: isValid($value, $options);
-        $minValue= isset($options['value']) ? intval($options['value']) : 0;
-        $result= ($value >= $minValue);
-        if ($result === false) {
-            $this->validator->addMessage($this->field, $this->name, $this->message);
-        }
-    }
-}
-class xPDOMaxValueValidationRule extends xPDOValidationRule {
-    public function isValid($value, array $options = array()) {
-        $result= parent :: isValid($value, $options);
-        $maxValue= isset($options['value']) ? intval($options['value']) : 0;
-        $result= ($value <= $maxValue);
-        if ($result === false) {
-            $this->validator->addMessage($this->field, $this->name, $this->message);
-        }
-    }
-}
-class xPDOObjectExistsValidationRule extends xPDOValidationRule {
-    public function isValid($value, array $options = array()) {
-        if (!isset($options['pk']) || !isset($options['className'])) return false;
-
-        $result= parent :: isValid($value, $options);
-        $xpdo =& $this->validator->object->xpdo;
-
-        $obj = $xpdo->getObject($options['className'],$options['pk']);
-        $result = ($obj !== null);
-        if ($result === false) {
-            $this->validator->addMessage($this->field, $this->name, $this->message);
-        }
-        return $result;
-    }
-}
-class xPDOForeignKeyConstraint extends xPDOValidationRule {
-    public function isValid($value, array $options = array()) {
-        if (!isset($options['alias'])) return false;
-        parent :: isValid($value, $options);
-        $result= false;
-        $obj=& $this->validator->object;
-        $xpdo=& $obj->xpdo;
-
-        $fkdef= $obj->getFKDefinition($options['alias']);
-        if (isset ($obj->_relatedObjects[$options['alias']])) {
-            if (!is_object($obj->_relatedObjects[$options['alias']])) {
-                $result= false;
-            }
-        }
-
-        $criteria= array ($fkdef['foreign'] => $obj->get($fkdef['local']));
-        if (isset($fkdef['criteria']['foreign'])) {
-            $criteria= array($fkdef['criteria']['foreign'], $criteria);
-        }
-        if ($object= $xpdo->getObject($fkdef['class'], $criteria)) {
-           $result= ($object !== null);
-        }
-        if ($result === false) {
-            $this->validator->addMessage($this->field, $this->name, $this->message);
-        }
-        return $result;
     }
 }

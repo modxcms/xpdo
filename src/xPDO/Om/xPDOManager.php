@@ -1,29 +1,17 @@
 <?php
-/*
- * Copyright 2010-2013 by MODX, LLC.
+/**
+ * This file is part of the xpdo package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-/**
- * The xPDOManager class provides data source management.
- *
- * @package xpdo
- * @subpackage om
- */
+namespace xPDO\Om;
+
+use xPDO\xPDO;
+use xPDO\Transport\xPDOTransport;
 
 /**
  * Provides data source management for an xPDO instance.
@@ -33,9 +21,7 @@
  * structures, etc.  xPDOManager class implementations are specific to a
  * database driver and should include this base class in order to extend it.
  *
- * @abstract
- * @package xpdo
- * @subpackage om
+ * @package xPDO\Om
  */
 abstract class xPDOManager {
     /**
@@ -56,7 +42,7 @@ abstract class xPDOManager {
     /**
      * Get a xPDOManager instance.
      *
-     * @param object $xpdo A reference to a specific modDataSource instance.
+     * @param xPDO &$xpdo A reference to a specific xPDO instance.
      */
     public function __construct(& $xpdo) {
         if ($xpdo !== null && $xpdo instanceof xPDO) {
@@ -67,21 +53,21 @@ abstract class xPDOManager {
     /**
      * Creates the physical container representing a data source.
      *
-     * @param array $dsnArray An array of xPDO configuration properties.
-     * @param string $username Database username with privileges to create tables.
-     * @param string $password Database user password.
+     * @param array|null $dsnArray An array of xPDO configuration properties.
+     * @param string|null $username Database username with privileges to create tables.
+     * @param string|null $password Database user password.
      * @param array $containerOptions An array of options for controlling the creation of the container.
      * @return boolean True if the database is created successfully or already exists.
      */
-    abstract public function createSourceContainer($dsnArray = null, $username= null, $password= null, $containerOptions= array ());
+    abstract public function createSourceContainer($dsnArray = null, $username= null, $password= null, $containerOptions= array());
 
     /**
      * Drops a physical data source container, if it exists.
      *
-     * @param string $dsn Represents the database connection string.
-     * @param string $username Database username with privileges to drop tables.
-     * @param string $password Database user password.
-     * @return boolean Returns true on successful drop, false on failure.
+     * @param string|null $dsnArray Represents the database connection string.
+     * @param string|null $username Database username with privileges to drop tables.
+     * @param string|null $password Database user password.
+     * @return bool Returns true on successful drop, false on failure.
      */
     abstract public function removeSourceContainer($dsnArray = null, $username= null, $password= null);
 
@@ -189,11 +175,8 @@ abstract class xPDOManager {
      */
     public function getGenerator() {
         if ($this->generator === null || !$this->generator instanceof xPDOGenerator) {
-            $loaded= include_once(XPDO_CORE_PATH . 'om/' . $this->xpdo->config['dbtype'] . '/xpdogenerator.class.php');
-            if ($loaded) {
-                $generatorClass = 'xPDOGenerator_' . $this->xpdo->config['dbtype'];
-                $this->generator= new $generatorClass ($this);
-            }
+            $generatorClass = '\\xPDO\\Om\\'  . $this->xpdo->config['dbtype'] . '\\xPDOGenerator';
+            $this->generator= new $generatorClass ($this);
             if ($this->generator === null || !$this->generator instanceof xPDOGenerator) {
                 $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not load xPDOGenerator [{$generatorClass}] class.");
             }
@@ -203,15 +186,13 @@ abstract class xPDOManager {
 
     /**
      * Gets a data transport mechanism for this xPDOManager instance.
+     *
+     * @return xPDOTransport
      */
     public function getTransport() {
         if ($this->transport === null || !$this->transport instanceof xPDOTransport) {
-            if (!isset($this->xpdo->config['xPDOTransport.class']) || !$transportClass= $this->xpdo->loadClass($this->xpdo->config['xPDOTransport.class'], '', false, true)) {
-                $transportClass= $this->xpdo->loadClass('transport.xPDOTransport', XPDO_CORE_PATH, true, true);
-            }
-            if ($transportClass) {
-                $this->transport= new $transportClass ($this);
-            }
+            $transportClass= $this->xpdo->getOption('xPDOTransport.class', null, 'xPDOTransport');
+            $this->transport= new $transportClass($this);
             if ($this->transport === null || !$this->transport instanceof xPDOTransport) {
                 $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not load xPDOTransport [{$transportClass}] class.");
             }

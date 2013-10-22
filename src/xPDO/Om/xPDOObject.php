@@ -1,32 +1,20 @@
 <?php
-/*
- * Copyright 2010-2013 by MODX, LLC.
+/**
+ * This file is part of the xpdo package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-/**
- * The base persistent xPDO object classes.
- *
- * This file contains the base persistent object classes, which your user-
- * defined classes will extend when implementing an xPDO object model.
- *
- * @package xpdo
- * @subpackage om
- */
+namespace xPDO\Om;
+
+use xPDO\Cache\xPDOCache;
+use xPDO\Cache\xPDOCacheManager;
+use xPDO\Validation\xPDOValidator;
+use xPDO\xPDO;
+use xPDO\xPDOIterator;
 
 /**
  * The base persistent xPDO object class.
@@ -39,8 +27,7 @@
  * table; it simply defines the member variables and functions needed for object
  * persistence.
  *
- * @package xpdo
- * @subpackage om
+ * @package xPDO\Om
  */
 class xPDOObject {
     /**
@@ -225,7 +212,7 @@ class xPDOObject {
      * @param xPDO &$xpdo A valid xPDO instance.
      * @param string $className Name of the class.
      * @param xPDOCriteria $criteria A valid xPDOCriteria instance.
-     * @return PDOStatement A reference to a PDOStatement representing the
+     * @return \PDOStatement A reference to a PDOStatement representing the
      * result set.
      */
     public static function & _loadRows(& $xpdo, $className, $criteria) {
@@ -401,9 +388,8 @@ class xPDOObject {
      * @param string $className Name of the class.
      * @param mixed $criteria A valid primary key, criteria array, or
      * xPDOCriteria instance.
-     * @param boolean|integer $cacheFlag Indicates if the objects should be
-     * cached and optionally, by specifying an integer value, for how many
-     * seconds.
+     * @param bool|int $cacheFlag Indicates if the objects should be cached and
+     * optionally, by specifying an integer value, for how many seconds.
      * @return object|null An instance of the requested class, or null if it
      * could not be instantiated.
      */
@@ -414,7 +400,7 @@ class xPDOObject {
             if (!is_object($criteria)) {
                 $criteria= $xpdo->getCriteria($className, $criteria, $cacheFlag);
             }
-            if (is_object($criteria)) {
+            if ($criteria instanceof xPDOCriteria) {
                 $criteria = $xpdo->addDerivativeCriteria($className, $criteria);
                 $row= null;
                 if ($xpdo->_cacheEnabled && $criteria->cacheFlag && $cacheFlag) {
@@ -422,7 +408,7 @@ class xPDOObject {
                 }
                 if ($row === null || !is_array($row)) {
                     if ($rows= xPDOObject :: _loadRows($xpdo, $className, $criteria)) {
-                        $row= $rows->fetch(PDO::FETCH_ASSOC);
+                        $row= $rows->fetch(\PDO::FETCH_ASSOC);
                         $rows->closeCursor();
                     }
                 } else {
@@ -1367,7 +1353,7 @@ class xPDOObject {
                 if ($this->_fieldMeta[$_k]['phptype'] === 'password') {
                     $this->_fields[$_k]= $this->encode($this->_fields[$_k], 'password');
                 }
-                $fieldType= PDO::PARAM_STR;
+                $fieldType= \PDO::PARAM_STR;
                 $fieldValue= $this->_fields[$_k];
                 if (in_array($this->_fieldMeta[$_k]['phptype'], array ('datetime', 'timestamp')) && !empty($this->_fieldMeta[$_k]['attributes']) && $this->_fieldMeta[$_k]['attributes'] == 'ON UPDATE CURRENT_TIMESTAMP') {
                     $this->_fields[$_k]= strftime('%Y-%m-%d %H:%M:%S');
@@ -1375,7 +1361,7 @@ class xPDOObject {
                 }
                 elseif ($fieldValue === null || $fieldValue === 'NULL') {
                     if ($this->_new) continue;
-                    $fieldType= PDO::PARAM_NULL;
+                    $fieldType= \PDO::PARAM_NULL;
                     $fieldValue= null;
                 }
                 elseif (in_array($this->_fieldMeta[$_k]['phptype'], array ('timestamp', 'datetime')) && in_array($fieldValue, $this->xpdo->driver->_currentTimestamps, true)) {
@@ -1387,10 +1373,10 @@ class xPDOObject {
                     continue;
                 }
                 elseif ($this->_fieldMeta[$_k]['phptype'] == 'timestamp' && preg_match('/int/i', $this->_fieldMeta[$_k]['dbtype'])) {
-                    $fieldType= PDO::PARAM_INT;
+                    $fieldType= \PDO::PARAM_INT;
                 }
                 elseif (!in_array($this->_fieldMeta[$_k]['phptype'], array ('string','password','datetime','timestamp','date','time','array','json','float'))) {
-                    $fieldType= PDO::PARAM_INT;
+                    $fieldType= \PDO::PARAM_INT;
                 }
                 if ($this->_new) {
                     $cols[$_k]= $this->xpdo->escape($_k);
@@ -1410,9 +1396,9 @@ class xPDOObject {
                         $iteration= 0;
                         $where= '';
                         foreach ($pkn as $k => $v) {
-                            $vt= PDO::PARAM_INT;
+                            $vt= \PDO::PARAM_INT;
                             if (in_array($this->_fieldMeta[$k]['phptype'], array('string', 'float'))) {
-                                $vt= PDO::PARAM_STR;
+                                $vt= \PDO::PARAM_STR;
                             }
                             if ($iteration) {
                                 $where .= " AND ";
@@ -1424,9 +1410,9 @@ class xPDOObject {
                         }
                     } else {
                         $pkn= $this->getPK();
-                        $pkt= PDO::PARAM_INT;
+                        $pkt= \PDO::PARAM_INT;
                         if (in_array($this->_fieldMeta[$pkn]['phptype'], array('string', 'float'))) {
-                            $pkt= PDO::PARAM_STR;
+                            $pkt= \PDO::PARAM_STR;
                         }
                         $bindings[":{$pkn}"]['value']= $pk;
                         $bindings[":{$pkn}"]['type']= $pkt;
@@ -1768,6 +1754,7 @@ class xPDOObject {
      * relationships with the current object.
      *
      * @param string $k The field name or key to lookup a related class for.
+     * @return bool|null|string
      */
     public function getFKClass($k) {
         $fkclass= null;
@@ -1899,7 +1886,7 @@ class xPDOObject {
                             $fkAddCriteria = array();
                             foreach ($fkCriteria as $fkCritKey => $fkCritVal) {
                                 if (is_numeric($fkCritKey)) continue;
-                                $fkAddCriteria["{$criteria->getAlias()}.{$fkCritKey}"] = $fkCritVal;
+                                $fkAddCriteria["{$query->getAlias()}.{$fkCritKey}"] = $fkCritVal;
                             }
                             if (!empty($fkAddCriteria)) {
                                 $addCriteria = array($fkAddCriteria, $addCriteria);
@@ -1971,6 +1958,7 @@ class xPDOObject {
                 foreach ($this->_relatedObjects as $alias => $branch) {
                     if ($includeRelated === true || array_key_exists($alias, $graph)) {
                         if (is_array($branch)){
+                            /** @var xPDOObject $obj */
                             foreach($branch as $pk => $obj){
                                 $objArray[$alias][$pk] = $obj->toArray($keyPrefix, $rawValues, $excludeLazy, $includeRelated === true ? true : $graph[$alias]);
                             }
@@ -2101,17 +2089,10 @@ class xPDOObject {
      * @return string|boolean The xPDOValidator instance or false if it could
      * not be loaded.
      */
-    public function getValidator() {
-        if (!is_object($this->_validator)) {
-            $validatorClass = $this->xpdo->loadClass('validation.xPDOValidator', XPDO_CORE_PATH, true, true);
-            if ($derivedClass = $this->getOption(xPDO::OPT_VALIDATOR_CLASS, null, '')) {
-                if ($derivedClass = $this->xpdo->loadClass($derivedClass, '', false, true)) {
-                    $validatorClass = $derivedClass;
-                }
-            }
-            if ($validatorClass) {
-                $this->_validator= new $validatorClass($this);
-            }
+    public function &getValidator() {
+        if (!$this->_validator instanceof xPDOValidator) {
+            $validatorClass = $this->getOption(xPDO::OPT_VALIDATOR_CLASS, null, 'xPDOValidator');
+            $this->_validator = new $validatorClass($this);
         }
         return $this->_validator;
     }
@@ -2200,10 +2181,10 @@ class xPDOObject {
      *
      * @access protected
      * @param string $alias The alias representing the relationship.
-     * @param mixed An optional xPDO criteria expression.
-     * @param boolean|integer Indicates if the saved object(s) should
-     * be cached and optionally, by specifying an integer value, for how many
-     * seconds before expiring.  Overrides the cacheFlag for the object.
+     * @param mixed $criteria An optional xPDO criteria expression.
+     * @param bool|int Indicates if the saved object(s) should be cached and
+     * optionally, by specifying an integer value, for how many seconds before
+     * expiring.  Overrides the cacheFlag for the object.
      * @return array A collection of objects matching the criteria.
      */
     protected function & _getRelatedObjectsByFK($alias, $criteria= null, $cacheFlag= true) {
@@ -2426,7 +2407,7 @@ class xPDOObject {
         $criteria= $this->xpdo->newQuery($this->_class, $this->getPrimaryKey());
         $criteria->select($fields);
         if ($rows= xPDOObject :: _loadRows($this->xpdo, $this->_class, $criteria)) {
-            $row= $rows->fetch(PDO::FETCH_ASSOC);
+            $row= $rows->fetch(\PDO::FETCH_ASSOC);
             $rows->closeCursor();
             $this->fromArray($row, '', false, true);
             $this->_lazy= array_diff($this->_lazy, $fields);
@@ -2528,12 +2509,3 @@ class xPDOObject {
         return $aliases;
     }
 }
-
-/**
- * Extend to define a class with a native integer primary key field named id.
- *
- * @see xpdo/om/mysql/xpdosimpleobject.map.inc.php
- * @package xpdo
- * @subpackage om
- */
-class xPDOSimpleObject extends xPDOObject {}

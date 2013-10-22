@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the xpdo package.
+ * This file is part of the xPDO package.
  *
  * Copyright (c) Jason Coward <jason@opengeek.com>
  *
@@ -11,10 +11,8 @@
 namespace xPDO\Om\sqlsrv;
 
 /**
- * Implements extensions to the base xPDOObject class for sqlsrv.
- *
- * {@inheritdoc}
+ * A base sqlsrv class defining an integer primary key.
  *
  * @package xPDO\Om\sqlsrv
  */
-class xPDOObject extends \xPDO\Om\xPDOObject {}
+class xPDOSimpleObject extends \xPDO\Om\xPDOSimpleObject {}

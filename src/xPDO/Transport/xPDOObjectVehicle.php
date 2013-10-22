@@ -1,28 +1,17 @@
 <?php
-/*
- * Copyright 2010-2013 by MODX, LLC.
- *
- * This file is part of xPDO.
- *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
- */
 /**
- * Defines a class that represents an xPDOObject within a transportable package.
+ * This file is part of the xpdo package.
  *
- * @package xpdo
- * @subpackage transport
+ * Copyright (c) Jason Coward <jason@opengeek.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace xPDO\Transport;
+
+use xPDO\Om\xPDOObject;
+use xPDO\xPDO;
 
 /**
  * Represents an xPDOObject within an {@link xPDOTransport} package.
@@ -99,6 +88,7 @@ class xPDOObjectVehicle extends xPDOVehicle {
      * being installed.
      * @param array $fkMeta The foreign key relationship data that defines the relationship with the
      * parentObject.
+     * @return bool
      */
     protected function _installObject(& $transport, $options, $element, & $parentObject, $fkMeta) {
         $saved = false;
@@ -133,6 +123,7 @@ class xPDOObjectVehicle extends xPDOVehicle {
             }
             elseif (isset ($vOptions['key_expr']) && isset ($vOptions['key_format'])) {
                 //TODO: implement ability to generate new keys
+                $criteria = $vOptions['key_expr'];
             } else {
                 $pk = $object->getPK();
                 $nativeKey = $vOptions[xPDOTransport::NATIVE_KEY];
@@ -245,11 +236,13 @@ class xPDOObjectVehicle extends xPDOVehicle {
      * @param xPDOObject &$parent
      * @param array $element
      * @param array $options
+     * @param string $owner
+     *
      * @return bool
      */
     public function _installRelated(& $transport, & $parent, $element, $options, $owner = '') {
         $installed = true;
-        if (is_object($parent) && isset ($element[xPDOTransport::RELATED_OBJECTS]) && is_array($element[xPDOTransport::RELATED_OBJECTS])) {
+        if ($parent instanceof xPDOObject && isset ($element[xPDOTransport::RELATED_OBJECTS]) && is_array($element[xPDOTransport::RELATED_OBJECTS])) {
             foreach ($element[xPDOTransport::RELATED_OBJECTS] as $rAlias => $rVehicles) {
                 $rMeta = $parent->getFKDefinition($rAlias);
                 if ($rMeta) {
@@ -473,7 +466,7 @@ class xPDOObjectVehicle extends xPDOVehicle {
                             $this->_putRelated($transport, $rAlias, $rObj, $relatedObjects[$rAlias][$guid]);
                         }
                     }
-                    elseif (is_object($related)) {
+                    elseif ($related instanceof xPDOObject) {
                         if (!isset ($relatedObjects[$rAlias]))
                             $relatedObjects[$rAlias] = array ();
                         $guid = md5(uniqid(rand(), true));

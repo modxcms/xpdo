@@ -8,13 +8,12 @@
  * file that was distributed with this source code.
  */
 
-namespace xPDO\Om\sqlite;
+namespace xPDO\Om;
 
 /**
- * Implements extensions to the base xPDOObject class for SQLite.
+ * Extend to define a class with a native integer primary key field named id.
  *
- * {@inheritdoc}
- *
- * @package xPDO\Om\sqlite
+ * @see xpdo/om/mysql/xpdosimpleobject.map.inc.php
+ * @package xPDO\Om
  */
-class xPDOObject extends \xPDO\Om\xPDOObject {}
+class xPDOSimpleObject extends xPDOObject {}

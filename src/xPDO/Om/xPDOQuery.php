@@ -1,36 +1,21 @@
 <?php
-/*
- * Copyright 2010-2013 by MODX, LLC.
+/**
+ * This file is part of the xpdo package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-/**
- * A class for constructing complex SQL statements using a model-aware API.
- *
- * @package xpdo
- * @subpackage om
- */
+namespace xPDO\Om;
+
+use xPDO\xPDO;
 
 /**
- * An xPDOCriteria derivative with methods for constructing complex statements.
+ * An xPDOCriteria derivative for constructing complex SQL statements using a model-aware API.
  *
- * @abstract
- * @package xpdo
- * @subpackage om
+ * @package xPDO\Om
  */
 abstract class xPDOQuery extends xPDOCriteria {
     const SQL_AND = 'AND';
@@ -102,6 +87,13 @@ abstract class xPDOQuery extends xPDOCriteria {
         'limit' => '',
     );
 
+    /**
+     * Construct a new xPDOQuery instance.
+     *
+     * @param xPDO &$xpdo
+     * @param string $class
+     * @param mixed|xPDOCriteria $criteria
+     */
     public function __construct(& $xpdo, $class, $criteria= null) {
         parent :: __construct($xpdo);
         if ($class= $this->xpdo->loadClass($class)) {
@@ -123,14 +115,29 @@ abstract class xPDOQuery extends xPDOCriteria {
         }
     }
 
+    /**
+     * Get the name of the class represented by this instance.
+     *
+     * @return string The class name represented by this instance.
+     */
     public function getClass() {
         return $this->_class;
     }
 
+    /**
+     * Get the alias for the class represented by this instance.
+     *
+     * @return string The alias of the class represented by this instance.
+     */
     public function getAlias() {
         return $this->_alias;
     }
 
+    /**
+     * Get the table class for the class represented by this instance.
+     *
+     * @return string The name of the table class.
+     */
     public function getTableClass() {
         return $this->_tableClass;
     }
@@ -230,13 +237,13 @@ abstract class xPDOQuery extends xPDOCriteria {
             }
             if (array_key_exists($key, $fieldMeta)) {
                 if ($value === null) {
-                    $type= PDO::PARAM_NULL;
+                    $type= \PDO::PARAM_NULL;
                 }
                 elseif (!in_array($fieldMeta[$key]['phptype'], $this->_quotable)) {
-                    $type= PDO::PARAM_INT;
+                    $type= \PDO::PARAM_INT;
                 }
                 elseif (strpos($value, '(') === false && !$this->isConditionalClause($value)) {
-                    $type= PDO::PARAM_STR;
+                    $type= \PDO::PARAM_STR;
                 }
                 $this->query['set'][$key]= array('value' => $value, 'type' => $type);
             }
@@ -514,7 +521,7 @@ abstract class xPDOQuery extends xPDOCriteria {
     /**
      * Hydrates a graph of related objects from a single result set.
      *
-     * @param array|PDOStatement $rows A collection of result set rows or an
+     * @param array|\PDOStatement $rows A collection of result set rows or an
      * executed PDOStatement to fetch rows from to hydrating the graph.
      * @param bool $cacheFlag Indicates if the objects should be cached and
      * optionally, by specifying an integer value, for how many seconds.
@@ -528,7 +535,7 @@ abstract class xPDOQuery extends xPDOCriteria {
             if ($cacheFlag && $this->xpdo->_cacheEnabled && $collectionCaching > 0) {
                 $cacheRows = array();
             }
-            while ($row = $rows->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $rows->fetch(\PDO::FETCH_ASSOC)) {
                 $this->hydrateGraphParent($instances, $row);
                 if ($cacheFlag && $this->xpdo->_cacheEnabled && $collectionCaching > 0) {
                     $cacheRows[]= $row;
@@ -585,7 +592,7 @@ abstract class xPDOQuery extends xPDOCriteria {
                 }
             }
         }
-        if (!empty ($relations) && is_object($relObj)) {
+        if (!empty($relations) && $relObj instanceof xPDOObject) {
             while (list($relationAlias, $subRelations)= each($relations)) {
                 if (is_array($subRelations) && !empty($subRelations)) {
                     foreach ($subRelations as $subRelation) {
@@ -608,7 +615,11 @@ abstract class xPDOQuery extends xPDOCriteria {
     /**
      * Prepares the xPDOQuery for execution.
      *
-     * @return PDOStatement The PDOStatement representing the prepared query.
+     * @param array $bindings
+     * @param bool $byValue
+     * @param null|int|bool $cacheFlag
+     *
+     * @return \PDOStatement The PDOStatement representing the prepared query.
      */
     public function prepare($bindings= array (), $byValue= true, $cacheFlag= null) {
         $this->stmt= null;
@@ -646,7 +657,7 @@ abstract class xPDOQuery extends xPDOCriteria {
                     $field['sql']= $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($k) . " = ?";
                     $field['binding']= array (
                         'value' => $conditions[$iteration],
-                        'type' => $isString ? PDO::PARAM_STR : PDO::PARAM_INT,
+                        'type' => $isString ? \PDO::PARAM_STR : \PDO::PARAM_INT,
                         'length' => 0
                     );
                     $field['conjunction']= $conjunction;
@@ -692,16 +703,16 @@ abstract class xPDOQuery extends xPDOCriteria {
                             }
                         }
                         if ($val === null) {
-                            $type= PDO::PARAM_NULL;
+                            $type= \PDO::PARAM_NULL;
                             if (!in_array($operator, array('IS', 'IS NOT'))) {
                                 $operator= $operator === '!=' ? 'IS NOT' : 'IS';
                             }
                         }
                         elseif (isset($fieldMeta[$key]) && !in_array($fieldMeta[$key]['phptype'], $this->_quotable)) {
-                            $type= PDO::PARAM_INT;
+                            $type= \PDO::PARAM_INT;
                         }
                         else {
-                            $type= PDO::PARAM_STR;
+                            $type= \PDO::PARAM_STR;
                         }
                         if (in_array(strtoupper($operator), array('IN', 'NOT IN')) && is_array($val)) {
                             $vals = array();
@@ -710,10 +721,10 @@ abstract class xPDOQuery extends xPDOCriteria {
                                     $vals[] = null;
                                 } else {
                                     switch ($type) {
-                                        case PDO::PARAM_INT:
+                                        case \PDO::PARAM_INT:
                                             $vals[] = (integer) $v;
                                             break;
-                                        case PDO::PARAM_STR:
+                                        case \PDO::PARAM_STR:
                                             $vals[] = $this->xpdo->quote($v);
                                             break;
                                         default:
@@ -752,9 +763,9 @@ abstract class xPDOQuery extends xPDOCriteria {
         }
         elseif (($pktype == 'integer' && is_numeric($conditions)) || ($pktype == 'string' && is_string($conditions))) {
             if ($pktype == 'integer') {
-                $param_type= PDO::PARAM_INT;
+                $param_type= \PDO::PARAM_INT;
             } else {
-                $param_type= PDO::PARAM_STR;
+                $param_type= \PDO::PARAM_STR;
             }
             $field['sql']= $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($pk) . ' = ?';
             $field['binding']= array ('value' => $conditions, 'type' => $param_type, 'length' => 0);
@@ -836,7 +847,7 @@ abstract class xPDOQuery extends xPDOCriteria {
     /**
      * Wrap an existing xPDOCriteria into this xPDOQuery instance.
      *
-     * @param xPDOCriteria $criteria
+     * @param xPDOCriteria|xPDOQuery $criteria
      */
     public function wrap($criteria) {
         if ($criteria instanceof xPDOQuery) {
@@ -849,37 +860,5 @@ abstract class xPDOQuery extends xPDOCriteria {
         $this->stmt= $criteria->stmt;
         $this->bindings= $criteria->bindings;
         $this->cacheFlag= $criteria->cacheFlag;
-    }
-}
-
-/**
- * Abstracts individual query conditions used in xPDOQuery instances.
- *
- * @package xpdo
- * @subpackage om
- */
-class xPDOQueryCondition {
-    /**
-     * @var string The SQL string for the condition.
-     */
-    public $sql = '';
-    /**
-     * @var array An array of value/parameter bindings for the condition.
-     */
-    public $binding = array();
-    /**
-     * @var string The conjunction identifying how the condition is related to the previous condition(s).
-     */
-    public $conjunction = xPDOQuery::SQL_AND;
-
-    /**
-     * The constructor for creating an xPDOQueryCondition instance.
-     *
-     * @param array $properties An array of properties representing the condition.
-     */
-    public function __construct(array $properties) {
-        if (isset($properties['sql'])) $this->sql = $properties['sql'];
-        if (isset($properties['binding'])) $this->binding = $properties['binding'];
-        if (isset($properties['conjunction'])) $this->conjunction = $properties['conjunction'];
     }
 }

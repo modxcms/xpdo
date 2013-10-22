@@ -8,13 +8,14 @@
  * file that was distributed with this source code.
  */
 
-namespace xPDO\Om\sqlsrv;
+namespace xPDO;
 
 /**
- * Implements extensions to the base xPDOObject class for sqlsrv.
+ * Represents an xPDO-related Exception.
  *
- * {@inheritdoc}
- *
- * @package xPDO\Om\sqlsrv
+ * @package xPDO
  */
-class xPDOObject extends \xPDO\Om\xPDOObject {}
+class xPDOException extends \Exception
+{
+
+}
