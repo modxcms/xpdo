@@ -12,8 +12,20 @@
          bootstrap="./bootstrap.php"
         >
     <testsuites>
-        <testsuite name="Full xPDO Test Suite">
-            <directory>./xPDO/</directory>
+        <testsuite name="Complete">
+            <file>./xPDO/Test/SetUpTest.php</file>
+            <file>./xPDO/Test/xPDOTest.php</file>
+            <file>./xPDO/Test/Om/xPDOObjectTest.php</file>
+            <file>./xPDO/Test/Om/xPDOObjectSingleTableInheritanceTest.php</file>
+            <file>./xPDO/Test/Om/xPDOQueryTest.php</file>
+            <file>./xPDO/Test/Om/xPDOQueryHavingTest.php</file>
+            <file>./xPDO/Test/Om/xPDOQueryLimitTest.php</file>
+            <file>./xPDO/Test/Om/xPDOQuerySortByTest.php</file>
+            <file>./xPDO/Test/Cache/xPDOCacheManagerTest.php</file>
+            <file>./xPDO/Test/Cache/xPDOCacheDbTest.php</file>
+            <file>./xPDO/Test/Compression/xPDOZipTest.php</file>
+            <file>./xPDO/Test/Transport/xPDOTransportTest.php</file>
+            <file>./xPDO/Test/TearDownTest.php</file>
         </testsuite>
     </testsuites>
 

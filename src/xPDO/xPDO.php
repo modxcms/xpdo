@@ -267,7 +267,6 @@ class xPDO {
             $initOptions = $this->getOption(xPDO::OPT_CONN_INIT, null, array());
             $this->config = array_merge($this->config, $this->getConnection($initOptions)->config);
             $this->getDriver();
-            $this->setPackage('om', XPDO_CORE_PATH, $this->config[xPDO::OPT_TABLE_PREFIX]);
             if (isset($this->config[xPDO::OPT_BASE_PACKAGES]) && !empty($this->config[xPDO::OPT_BASE_PACKAGES])) {
                 $basePackages= explode(',', $this->config[xPDO::OPT_BASE_PACKAGES]);
                 foreach ($basePackages as $basePackage) {
@@ -567,7 +566,7 @@ class xPDO {
             $class= false;
         }
         if ($class === false) {
-            $this->log(xPDO::LOG_LEVEL_ERROR, "Could not load class: {$classname} from {$fqn}.");
+            $this->log(xPDO::LOG_LEVEL_ERROR, "Could not load class: {$classname} from {$fqn}");
         }
         return $class;
     }
@@ -1794,7 +1793,7 @@ class xPDO {
      *      derivatives in declared packages.
      * @return Cache\xPDOCacheManager The xPDOCacheManager for this xPDO instance.
      */
-    public function getCacheManager($class= 'Cache\\xPDOCacheManager', $options = array('path' => XPDO_CORE_PATH, 'ignorePkg' => true)) {
+    public function getCacheManager($class= 'xPDO\\Cache\\xPDOCacheManager', $options = array('path' => XPDO_CORE_PATH, 'ignorePkg' => true)) {
         if ($this->cacheManager === null || !is_object($this->cacheManager) || !($this->cacheManager instanceof $class)) {
             if ($this->cacheManager= new $class($this, $options)) {
                 $this->_cacheEnabled= true;

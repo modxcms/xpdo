@@ -10,6 +10,8 @@
 
 namespace xPDO\Om\sqlite;
 
+use xPDO\xPDO;
+
 /**
  * Provides SQLite data source management for an xPDO instance.
  *
@@ -30,7 +32,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
                 try {
                     $dbfile = $dsnArray['dbname'];
                     $created = !file_exists($dbfile);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error creating source container: " . $e->getMessage());
                 }
             }
@@ -53,7 +55,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
                     } else {
                         $removed= true;
                     }
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not remove source container: " . $e->getMessage());
                 }
             }
@@ -68,7 +70,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
             if ($instance) {
                 $sql= 'DROP TABLE ' . $this->xpdo->getTableName($className);
                 $removed= $this->xpdo->exec($sql);
-                if ($removed === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== PDO::ERR_NONE) {
+                if ($removed === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== \PDO::ERR_NONE) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not drop table ' . $className . "\nSQL: {$sql}\nERROR: " . print_r($this->xpdo->pdo->errorInfo(), true));
                 } else {
                     $removed= true;
@@ -139,7 +141,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
                 }
                 $sql .= ")";
                 $created= $this->xpdo->exec($sql);
-                if ($created === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== PDO::ERR_NONE) {
+                if ($created === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== \PDO::ERR_NONE) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not create table ' . $tableName . "\nSQL: {$sql}\nERROR: " . print_r($this->xpdo->errorInfo(), true));
                 } else {
                     $created= true;
@@ -148,7 +150,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
                 if ($created === true && !empty($createIndices)) {
                     foreach ($createIndices as $createIndexKey => $createIndex) {
                         $indexCreated = $this->xpdo->exec($createIndex);
-                        if ($indexCreated === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== PDO::ERR_NONE) {
+                        if ($indexCreated === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== \PDO::ERR_NONE) {
                             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not create index {$createIndexKey}: {$createIndex} " . print_r($this->xpdo->errorInfo(), true));
                         } else {
                             $this->xpdo->log(xPDO::LOG_LEVEL_INFO, "Created index {$createIndexKey} on {$tableName}: {$createIndex}");

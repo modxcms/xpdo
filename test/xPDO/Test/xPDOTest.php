@@ -158,11 +158,7 @@ class xPDOTest extends TestCase
      */
     public function testGetAncestry($class, array $correct = array(), $includeSelf = true)
     {
-        $anc = $this->xpdo->getAncestry($class, $includeSelf);
-        $diff = array_diff($correct, $anc);
-        $diff2 = array_diff($anc, $correct);
-        $success = is_array($anc) && empty($diff) && empty($diff2);
-        $this->assertTrue($success);
+        $this->assertEquals($correct, $this->xpdo->getAncestry($class, $includeSelf));
     }
 
     /**
@@ -170,7 +166,17 @@ class xPDOTest extends TestCase
      */
     public function providerGetAncestry()
     {
-        return array(array('Person', array('Person', 'xPDOSimpleObject', 'xPDOObject')), array('Person', array('xPDOSimpleObject', 'xPDOObject'), false),);
+        return array(
+            array(
+                'Person',
+                array('Person', 'xPDO\\Om\\xPDOSimpleObject', 'xPDO\\Om\\xPDOObject')
+            ),
+            array(
+                'Person',
+                array('xPDO\\Om\\xPDOSimpleObject', 'xPDO\\Om\\xPDOObject'),
+                false
+            ),
+        );
     }
 
     /**
@@ -183,11 +189,7 @@ class xPDOTest extends TestCase
      */
     public function testGetDescendants($class, array $correct = array())
     {
-        $derv = $this->xpdo->getDescendants($class);
-        $diff = array_diff($correct, $derv);
-        $diff2 = array_diff($derv, $correct);
-        $success = is_array($derv) && empty($diff) && empty($diff2);
-        $this->assertTrue($success);
+        $this->assertEquals($correct, $this->xpdo->getDescendants($class));
     }
 
     /**
@@ -195,7 +197,16 @@ class xPDOTest extends TestCase
      */
     public function providerGetDescendants()
     {
-        return array(array('xPDOSimpleObject', array(0 => 'Person', 1 => 'Phone', 2 => 'xPDOSample', 3 => 'Item',)), array('xPDOObject', array(0 => 'xPDOSimpleObject', 1 => 'PersonPhone', 2 => 'BloodType', 3 => 'Person', 4 => 'Phone', 5 => 'xPDOSample', 6 => 'Item',)),);
+        return array(
+            array(
+                'xPDOSimpleObject',
+                array(0 => 'Person', 1 => 'Phone', 2 => 'xPDOSample', 3 => 'Item',)
+            ),
+            array(
+                'xPDOObject',
+                array(0 => 'xPDO\\Om\\xPDOSimpleObject', 1 => 'PersonPhone', 2 => 'BloodType', 3 => 'Person', 4 => 'Phone', 5 => 'xPDOSample', 6 => 'Item',)
+            ),
+        );
     }
 
     /**

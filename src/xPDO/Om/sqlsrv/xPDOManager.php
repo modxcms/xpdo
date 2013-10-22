@@ -10,6 +10,8 @@
 
 namespace xPDO\Om\sqlsrv;
 
+use xPDO\xPDO;
+
 /**
  * Provides sqlsrv data source management for an xPDO instance.
  *
@@ -33,16 +35,16 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
                     $sql.= ' COLLATE ' . $containerOptions['collation'];
                 }
                 try {
-                    $pdo = new PDO("sqlsrv:server={$dsnArray['server']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+                    $pdo = new \PDO("sqlsrv:server={$dsnArray['server']}", $username, $password, array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION));
                     $result = $pdo->exec($sql);
                     if ($result !== false) {
                         $created = true;
                     } else {
                         $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not create source container:\n{$sql}\nresult = " . var_export($result, true));
                     }
-                } catch (PDOException $pe) {
+                } catch (\PDOException $pe) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not connect to database server: " . $pe->getMessage());
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not create source container: " . $e->getMessage());
                 }
             }
@@ -61,7 +63,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
             if (is_array($dsnArray) && is_string($username) && is_string($password)) {
                 $sql= 'DROP DATABASE ' . $this->xpdo->escape($dsnArray['dbname']);
                 try {
-                    $pdo = new PDO("sqlsrv:server={$dsnArray['server']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+                    $pdo = new \PDO("sqlsrv:server={$dsnArray['server']}", $username, $password, array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION));
                     $pdo->exec("ALTER DATABASE {$this->xpdo->escape($dsnArray['dbname'])} SET single_user WITH ROLLBACK IMMEDIATE");
                     $result = $pdo->exec($sql);
                     if ($result !== false) {
@@ -69,9 +71,9 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
                     } else {
                         $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not remove source container:\n{$sql}\nresult = " . var_export($result, true));
                     }
-                } catch (PDOException $pe) {
+                } catch (\PDOException $pe) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not connect to database server: " . $pe->getMessage());
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not remove source container: " . $e->getMessage());
                 }
             }
@@ -88,7 +90,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
             if ($instance) {
                 $sql= 'DROP TABLE ' . $this->xpdo->getTableName($className);
                 $removed= $this->xpdo->exec($sql);
-                if ($removed === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== PDO::ERR_NONE) {
+                if ($removed === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== \PDO::ERR_NONE) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not drop table ' . $className . "\nSQL: {$sql}\nERROR: " . print_r($this->xpdo->pdo->errorInfo(), true));
                 } else {
                     $removed= true;
@@ -148,7 +150,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
                 }
                 $sql .= ")";
                 $created= $this->xpdo->exec($sql);
-                if ($created === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== PDO::ERR_NONE) {
+                if ($created === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== \PDO::ERR_NONE) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not create table ' . $tableName . "\nSQL: {$sql}\nERROR: " . print_r($this->xpdo->errorInfo(), true));
                 } else {
                     $created= true;
@@ -157,7 +159,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
                 if ($created === true && !empty($createIndices)) {
                     foreach ($createIndices as $createIndexKey => $createIndex) {
                         $indexCreated = $this->xpdo->exec($createIndex);
-                        if ($indexCreated === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== PDO::ERR_NONE) {
+                        if ($indexCreated === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== \PDO::ERR_NONE) {
                             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not create index {$createIndexKey}: {$createIndex} " . print_r($this->xpdo->errorInfo(), true));
                         } else {
                             $this->xpdo->log(xPDO::LOG_LEVEL_INFO, "Created index {$createIndexKey} on {$tableName}: {$createIndex}");
@@ -424,7 +426,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
         if ($stmt && $stmt->execute(array($table, $table, $name))) {
             $this->xpdo->queryTime += microtime(true) - $tstart;
             $this->xpdo->executedQueries++;
-            $constraints = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $constraints = $stmt->fetchAll(\PDO::FETCH_COLUMN);
         } elseif ($stmt) {
             $this->xpdo->queryTime += microtime(true) - $tstart;
             $this->xpdo->executedQueries++;
