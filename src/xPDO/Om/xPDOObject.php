@@ -476,7 +476,7 @@ class xPDOObject {
             }
         } elseif (is_object($rows)) {
             $cacheRows = array();
-            while ($row = $rows->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $rows->fetch(\PDO::FETCH_ASSOC)) {
                 xPDOObject :: _loadCollectionInstance($xpdo, $objCollection, $className, $criteria, $row, $fromCache, $cacheFlag);
                 if ($collectionCaching > 0 && $xpdo->_cacheEnabled && $cacheFlag && !$fromCache) $cacheRows[] = $row;
             }

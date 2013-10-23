@@ -25,5 +25,5 @@
  * @package xpdo
  * @subpackage om.mysql
  */
-$xpdo_meta_map['xPDOObject']['table']= null;
-$xpdo_meta_map['xPDOObject']['tableMeta']['engine']= 'MyISAM';
+$xpdo_meta_map['xPDO\\Om\\xPDOObject']['table']= null;
+$xpdo_meta_map['xPDO\\Om\\xPDOObject']['tableMeta']['engine']= 'MyISAM';

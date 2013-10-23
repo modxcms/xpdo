@@ -199,12 +199,20 @@ class xPDOTest extends TestCase
     {
         return array(
             array(
-                'xPDOSimpleObject',
+                'xPDO\\Om\\xPDOSimpleObject',
                 array(0 => 'Person', 1 => 'Phone', 2 => 'xPDOSample', 3 => 'Item',)
             ),
             array(
-                'xPDOObject',
-                array(0 => 'xPDO\\Om\\xPDOSimpleObject', 1 => 'PersonPhone', 2 => 'BloodType', 3 => 'Person', 4 => 'Phone', 5 => 'xPDOSample', 6 => 'Item',)
+                'xPDO\\Om\\xPDOObject',
+                array(
+                    0 => 'xPDO\\Om\\xPDOSimpleObject',
+                    1 => 'PersonPhone',
+                    2 => 'BloodType',
+                    3 => 'Person',
+                    4 => 'Phone',
+                    5 => 'xPDOSample',
+                    6 => 'Item',
+                )
             ),
         );
     }
@@ -216,28 +224,49 @@ class xPDOTest extends TestCase
      */
     public function testGetSelectColumns()
     {
-        $fields = array('id', 'first_name', 'last_name', 'middle_name', 'date_modified', 'dob', 'gender', 'blood_type', 'username', 'password', 'security_level');
+        $fields = array(
+            'id',
+            'first_name',
+            'last_name',
+            'middle_name',
+            'date_modified',
+            'dob',
+            'gender',
+            'blood_type',
+            'username',
+            'password',
+            'security_level'
+        );
         $correct = implode(', ', array_map(array($this->xpdo, 'escape'), $fields));
         $columns = $this->xpdo->getSelectColumns('Person');
-        $this->assertEquals($columns, $correct);
+        $this->assertEquals($correct, $columns);
 
         $correct = implode(', ', array_map(array($this, 'prefixWithEscapedPersonAlias'), $fields));
         $columns = $this->xpdo->getSelectColumns('Person', 'Person');
-        $this->assertEquals($columns, $correct);
+        $this->assertEquals($correct, $columns);
 
         $correct = implode(', ', array_map(array($this, 'postfixWithEscapedTestAlias'), $fields));
         $columns = $this->xpdo->getSelectColumns('Person', 'Person', 'test_');
-        $this->assertEquals($columns, $correct);
+        $this->assertEquals($correct, $columns);
 
         $includeColumns = array('dob', 'last_name', 'id');
         $correct = implode(', ', array_map(array($this->xpdo, 'escape'), $includeColumns));
         $columns = $this->xpdo->getSelectColumns('Person', '', '', $includeColumns);
-        $this->assertEquals($columns, $correct);
+        $this->assertEquals($correct, $columns);
 
         $excludeColumns = array('first_name', 'middle_name', 'dob', 'gender', 'security_level', 'blood_type');
-        $correct = implode(', ', array_map(array($this->xpdo, 'escape'), array('id', 'last_name', 'date_modified', 'username', 'password')));
+        $correct = implode(', ', array_map(array(
+            $this->xpdo,
+            'escape'
+        ), array(
+            'id',
+            'last_name',
+            'date_modified',
+            'username',
+            'password'
+        )));
         $columns = $this->xpdo->getSelectColumns('Person', '', '', $excludeColumns, true);
-        $this->assertEquals($columns, $correct);
+        $this->assertEquals($correct, $columns);
     }
 
     private function prefixWithEscapedPersonAlias($string)
@@ -322,7 +351,43 @@ class xPDOTest extends TestCase
      */
     public function providerGetFields()
     {
-        return array(array('Person', array('id' => null, 'first_name' => '', 'last_name' => '', 'middle_name' => '', 'date_modified' => 'CURRENT_TIMESTAMP', 'dob' => '', 'gender' => '', 'blood_type' => null, 'username' => '', 'password' => '', 'security_level' => 1,)), array('xPDOSample', array('id' => null, 'parent' => 0, 'unique_varchar' => null, 'varchar' => null, 'text' => null, 'timestamp' => 'CURRENT_TIMESTAMP', 'unix_timestamp' => 0, 'date_time' => null, 'date' => null, 'enum' => null, 'password' => null, 'integer' => null, 'float' => 1.01230, 'boolean' => null,)),);
+        return array(
+            array(
+                'Person',
+                array(
+                    'id' => null,
+                    'first_name' => '',
+                    'last_name' => '',
+                    'middle_name' => '',
+                    'date_modified' => 'CURRENT_TIMESTAMP',
+                    'dob' => '',
+                    'gender' => '',
+                    'blood_type' => null,
+                    'username' => '',
+                    'password' => '',
+                    'security_level' => 1,
+                )
+            ),
+            array(
+                'xPDOSample',
+                array(
+                    'id' => null,
+                    'parent' => 0,
+                    'unique_varchar' => null,
+                    'varchar' => null,
+                    'text' => null,
+                    'timestamp' => 'CURRENT_TIMESTAMP',
+                    'unix_timestamp' => 0,
+                    'date_time' => null,
+                    'date' => null,
+                    'enum' => null,
+                    'password' => null,
+                    'integer' => null,
+                    'float' => 1.01230,
+                    'boolean' => null,
+                )
+            ),
+        );
     }
 
     /**
@@ -369,7 +434,11 @@ class xPDOTest extends TestCase
      */
     public function providerGetPK()
     {
-        return array(array('Person', 'id'), array('Phone', 'id'), array('PersonPhone', array('person' => 'person', 'phone' => 'phone')),);
+        return array(
+            array('Person', 'id'),
+            array('Phone', 'id'),
+            array('PersonPhone', array('person' => 'person', 'phone' => 'phone')),
+        );
     }
 
     /**
@@ -393,7 +462,11 @@ class xPDOTest extends TestCase
      */
     public function providerGetPKType()
     {
-        return array(array('Person', 'integer'), array('Phone', 'integer'), array('PersonPhone', array('person' => 'integer', 'phone' => 'integer')),);
+        return array(
+            array('Person', 'integer'),
+            array('Phone', 'integer'),
+            array('PersonPhone', array('person' => 'integer', 'phone' => 'integer')),
+        );
     }
 
     /**
@@ -417,7 +490,33 @@ class xPDOTest extends TestCase
      */
     public function providerGetAggregates()
     {
-        return array(array('Person', array('BloodType' => array('class' => 'BloodType', 'local' => 'blood_type', 'foreign' => 'type', 'cardinality' => 'one', 'owner' => 'foreign',),)), array('Phone', array()), array('PersonPhone', array('Person' => array('class' => 'Person', 'local' => 'person', 'foreign' => 'id', 'cardinality' => 'one', 'owner' => 'foreign',),)),);
+        return array(
+            array(
+                'Person',
+                array(
+                    'BloodType' => array(
+                        'class' => 'BloodType',
+                        'local' => 'blood_type',
+                        'foreign' => 'type',
+                        'cardinality' => 'one',
+                        'owner' => 'foreign',
+                    ),
+                )
+            ),
+            array('Phone', array()),
+            array(
+                'PersonPhone',
+                array(
+                    'Person' => array(
+                        'class' => 'Person',
+                        'local' => 'person',
+                        'foreign' => 'id',
+                        'cardinality' => 'one',
+                        'owner' => 'foreign',
+                    ),
+                )
+            ),
+        );
     }
 
     /**
@@ -441,7 +540,44 @@ class xPDOTest extends TestCase
      */
     public function providerGetComposites()
     {
-        return array(array('Person', array('PersonPhone' => array('class' => 'PersonPhone', 'local' => 'id', 'foreign' => 'person', 'cardinality' => 'many', 'owner' => 'local',),)), array('Phone', array('PersonPhone' => array('class' => 'PersonPhone', 'local' => 'id', 'foreign' => 'phone', 'cardinality' => 'many', 'owner' => 'local',),)), array('PersonPhone', array('Phone' => array('class' => 'Phone', 'local' => 'phone', 'foreign' => 'id', 'cardinality' => 'one', 'owner' => 'foreign',),)),);
+        return array(
+            array(
+                'Person',
+                array(
+                    'PersonPhone' => array(
+                        'class' => 'PersonPhone',
+                        'local' => 'id',
+                        'foreign' => 'person',
+                        'cardinality' => 'many',
+                        'owner' => 'local',
+                    ),
+                )
+            ),
+            array(
+                'Phone',
+                array(
+                    'PersonPhone' => array(
+                        'class' => 'PersonPhone',
+                        'local' => 'id',
+                        'foreign' => 'phone',
+                        'cardinality' => 'many',
+                        'owner' => 'local',
+                    ),
+                )
+            ),
+            array(
+                'PersonPhone',
+                array(
+                    'Phone' => array(
+                        'class' => 'Phone',
+                        'local' => 'phone',
+                        'foreign' => 'id',
+                        'cardinality' => 'one',
+                        'owner' => 'foreign',
+                    ),
+                )
+            ),
+        );
     }
 
     /**
@@ -461,7 +597,12 @@ class xPDOTest extends TestCase
 
     public function providerGetGraph()
     {
-        return array(array('Person', 10, array('BloodType' => array(), 'PersonPhone' => array('Phone' => array()))), array('Person', 1, array('BloodType' => array(), 'PersonPhone' => array())), array('Person', 0, array()), array('Person', 1000, array('BloodType' => array(), 'PersonPhone' => array('Phone' => array()))),);
+        return array(
+            array('Person', 10, array('BloodType' => array(), 'PersonPhone' => array('Phone' => array()))),
+            array('Person', 1, array('BloodType' => array(), 'PersonPhone' => array())),
+            array('Person', 0, array()),
+            array('Person', 1000, array('BloodType' => array(), 'PersonPhone' => array('Phone' => array()))),
+        );
     }
 
     /**
@@ -480,7 +621,10 @@ class xPDOTest extends TestCase
 
     public function providerParseBindings()
     {
-        return array(array('SELECT * FROM a WHERE a.a=?', array("$1.00"), "SELECT * FROM a WHERE a.a='$1.00'"), array('SELECT * FROM a WHERE a.a=:a', array(':a' => "$1.00"), "SELECT * FROM a WHERE a.a='$1.00'"),);
+        return array(
+            array('SELECT * FROM a WHERE a.a=?', array("$1.00"), "SELECT * FROM a WHERE a.a='$1.00'"),
+            array('SELECT * FROM a WHERE a.a=:a', array(':a' => "$1.00"), "SELECT * FROM a WHERE a.a='$1.00'"),
+        );
     }
 
     /**

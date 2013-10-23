@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model package="sample" baseClass="xPDOObject" platform="mysql" defaultEngine="MyISAM" version="1.1">
-    <object class="Person" table="person" extends="xPDOSimpleObject">
+<model package="sample" baseClass="xPDO\\Om\\xPDOObject" platform="mysql" defaultEngine="MyISAM" version="1.1">
+    <object class="Person" table="person" extends="xPDO\\Om\\xPDOSimpleObject">
         <field key="first_name" dbtype="varchar" precision="100" phptype="string" null="false" default="" />
         <field key="last_name" dbtype="varchar" precision="100" phptype="string" null="false" default="" />
         <field key="middle_name" dbtype="varchar" precision="100" phptype="string" null="false" default="" />
@@ -26,7 +26,7 @@
             <rule field="password" name="password_length" type="xPDOValidationRule" rule="xPDOMinLengthValidationRule" value="6" />
         </validation>
     </object>
-    <object class="PersonPhone" table="person_phone" extends="xPDOObject">
+    <object class="PersonPhone" table="person_phone" extends="xPDO\\Om\\xPDOObject">
         <field key="person" dbtype="int" precision="11" phptype="integer" null="false" index="pk" />
         <field key="phone" dbtype="int" precision="11" phptype="integer" null="false" index="pk" />
         <field key="is_primary" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="0" />
@@ -39,14 +39,14 @@
         <aggregate alias="Person" class="Person" local="person" foreign="id" cardinality="one" owner="foreign" />
         <composite alias="Phone" class="Phone" local="phone" foreign="id" cardinality="one" owner="foreign" />
     </object>
-    <object class="Phone" table="phone" extends="xPDOSimpleObject">
+    <object class="Phone" table="phone" extends="xPDO\\Om\\xPDOSimpleObject">
         <field key="type" dbtype="enum" precision="'','home','work','mobile'" phptype="string" null="false" default="" />
         <field key="number" dbtype="varchar" precision="20" phptype="string" null="false" />
         <field key="date_modified" dbtype="timestamp" phptype="timestamp" null="false" default="CURRENT_TIMESTAMP" attributes="ON UPDATE CURRENT_TIMESTAMP" />
 
         <composite alias="PersonPhone" class="PersonPhone" local="id" foreign="phone" cardinality="many" owner="local" />
     </object>
-    <object class="xPDOSample" table="xpdosample" extends="xPDOSimpleObject">
+    <object class="xPDOSample" table="xpdosample" extends="xPDO\\Om\\xPDOSimpleObject">
         <field key="parent" dbtype="int" precision="11" phptype="integer" null="false" default="0" />
         <field key="unique_varchar" dbtype="varchar" precision="255" phptype="string" null="false" index="unique" />
         <field key="varchar" dbtype="varchar" precision="100" phptype="string" null="false" />
@@ -65,7 +65,7 @@
             <column key="unique_varchar" collation="A" null="false" />
         </index>
     </object>
-    <object class="BloodType" table="blood_types" extends="xPDOObject">
+    <object class="BloodType" table="blood_types" extends="xPDO\\Om\\xPDOObject">
         <field key="type" dbtype="varchar" precision="100" phptype="string" null="false" index="pk" />
         <field key="description" dbtype="text" phptype="string" null="true" />
 
@@ -75,7 +75,7 @@
 
         <aggregate alias="Person" class="Person" local="type" foreign="blood_type" cardinality="many" owner="foreign" />
     </object>
-    <object class="Item" table="items" extends="xPDOSimpleObject">
+    <object class="Item" table="items" extends="xPDO\\Om\\xPDOSimpleObject">
         <field key="name" dbtype="varchar" precision="255" phptype="string" null="false" default="" index="fk" />
         <field key="color" dbtype="varchar" precision="255" phptype="string" null="false" default="green" index="fk" />
         <field key="description" dbtype="text" phptype="string" null="true" />

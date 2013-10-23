@@ -28,7 +28,7 @@
  * @package xpdo
  * @subpackage om.mysql
  */
-$xpdo_meta_map['xPDOSimpleObject'] = array(
+$xpdo_meta_map['xPDO\\Om\\xPDOSimpleObject'] = array(
     'table' => null,
     'fields' => array(
         'id' => null,

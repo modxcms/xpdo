@@ -109,9 +109,9 @@ class xPDO {
      */
     public $driver= null;
     /**
-     * @var array A map of data source meta data for all loaded classes.
+     * @var xPDOMap A map of data source meta data for all loaded classes.
      */
-    public $map= array ();
+    public $map= null;
     /**
      * @var string A default package for specifying classes by name.
      */
@@ -267,6 +267,8 @@ class xPDO {
             $initOptions = $this->getOption(xPDO::OPT_CONN_INIT, null, array());
             $this->config = array_merge($this->config, $this->getConnection($initOptions)->config);
             $this->getDriver();
+            $this->map = new xPDOMap($this);
+            $this->setPackage('om', XPDO_CORE_PATH, $this->config[xPDO::OPT_TABLE_PREFIX]);
             if (isset($this->config[xPDO::OPT_BASE_PACKAGES]) && !empty($this->config[xPDO::OPT_BASE_PACKAGES])) {
                 $basePackages= explode(',', $this->config[xPDO::OPT_BASE_PACKAGES]);
                 foreach ($basePackages as $basePackage) {
@@ -285,8 +287,6 @@ class xPDO {
                     }
                 }
             }
-            $this->loadClass('xPDOObject');
-            $this->loadClass('xPDOSimpleObject');
             if (isset($this->config[xPDO::OPT_BASE_CLASSES])) {
                 foreach (array_keys($this->config[xPDO::OPT_BASE_CLASSES]) as $baseClass) {
                     $this->loadClass($baseClass);
@@ -494,6 +494,18 @@ class xPDO {
         return $descendants;
     }
 
+    public function getDriverClass($class) {
+        if (strpos($class, '\\') !== false) {
+            $paths = explode('\\', $class);
+            $base = array_pop($paths);
+            array_push($paths, $this->getOption('dbtype'), $base);
+        } else {
+            $paths = array($this->getOption('dbtype'), $class);
+        }
+        $driverClass = implode('\\', $paths);
+        return class_exists($driverClass) ? $driverClass : false;
+    }
+
     /**
      * Load a class by fully qualified name.
      *
@@ -517,13 +529,19 @@ class xPDO {
             $this->log(xPDO::LOG_LEVEL_ERROR, "No class specified for loadClass");
             return false;
         }
+        $pos= strrpos($fqn, '.');
+        if ($pos === false && empty($path) && !$ignorePkg && !$transient) {
+            $driverClass = $this->getDriverClass($fqn);
+            if ($driverClass !== false) {
+                return $fqn;
+            }
+        }
         if (!$transient) {
             $typePos= strrpos($fqn, '_' . $this->config['dbtype']);
             if ($typePos !== false) {
                 $fqn= substr($fqn, 0, $typePos);
+            }
         }
-        }
-        $pos= strrpos($fqn, '.');
         if ($pos === false) {
             $class= $fqn;
             if ($transient) {
@@ -586,14 +604,15 @@ class xPDO {
         if ($class && !$transient && !isset ($this->map[$class])) {
             $mapfile= strtr($fqn, '.', '/') . '.map.inc.php';
             if (file_exists($path . $mapfile)) {
-                $xpdo_meta_map= & $this->map;
+                $xpdo_meta_map= array();
                 $rt= include ($path . $mapfile);
-                if (!$rt || !isset($this->map[$class])) {
+                if (!$rt || !isset($xpdo_meta_map[$class])) {
                     $this->log(xPDO::LOG_LEVEL_WARN, "Could not load metadata map {$mapfile} for class {$class} from {$fqn}");
                 } else {
-                    if (!array_key_exists('fieldAliases', $this->map[$class])) {
-                        $this->map[$class]['fieldAliases'] = array();
+                    if (!array_key_exists('fieldAliases', $xpdo_meta_map[$class])) {
+                        $xpdo_meta_map[$class]['fieldAliases'] = array();
                     }
+                    $this->map[$class] = $xpdo_meta_map[$class];
                 }
             }
         }
