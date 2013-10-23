@@ -39,11 +39,11 @@ class xPDOZip {
         $this->xpdo =& $xpdo;
         $this->_filename = is_string($filename) ? $filename : '';
         $this->_options = is_array($options) ? $options : array();
-        $this->_archive = new ZipArchive();
+        $this->_archive = new \ZipArchive();
         if (!empty($this->_filename) && file_exists(dirname($this->_filename))) {
             if (file_exists($this->_filename)) {
                 if ($this->getOption(xPDOZip::OVERWRITE, null, false) && is_writable($this->_filename)) {
-                    if ($this->_archive->open($this->_filename, ZIPARCHIVE::OVERWRITE) !== true) {
+                    if ($this->_archive->open($this->_filename, \ZipArchive::OVERWRITE) !== true) {
                         $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "xPDOZip: Error opening archive at {$this->_filename} for OVERWRITE");
                     }
                 } else {
@@ -52,7 +52,7 @@ class xPDOZip {
                     }
                 }
             } elseif ($this->getOption(xPDOZip::CREATE, null, false) && is_writable(dirname($this->_filename))) {
-                if ($this->_archive->open($this->_filename, ZIPARCHIVE::CREATE) !== true) {
+                if ($this->_archive->open($this->_filename, \ZipArchive::CREATE) !== true) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "xPDOZip: Could not create archive at {$this->_filename}");
                 }
             } else {

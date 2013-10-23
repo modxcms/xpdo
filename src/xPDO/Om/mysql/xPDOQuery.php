@@ -22,7 +22,6 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
     }
 
     public function construct() {
-        $constructed= false;
         $this->bindings= array ();
         $command= strtoupper($this->query['command']);
         $sql= $this->query['command'] . ' ';
@@ -80,7 +79,7 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
                 while (list($setKey, $setVal) = each($this->query['set'])) {
                     $value = $setVal['value'];
                     $type = $setVal['type'];
-                    if ($value !== null && in_array($type, array(PDO::PARAM_INT, PDO::PARAM_STR))) {
+                    if ($value !== null && in_array($type, array(\PDO::PARAM_INT, \PDO::PARAM_STR))) {
                         $value = $this->xpdo->quote($value, $type);
                     } elseif ($value === null) {
                         $value = 'NULL';

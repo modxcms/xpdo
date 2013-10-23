@@ -71,7 +71,10 @@ class xPDOValidator {
                                     $this->object->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "preg_match validation against {$rule['rule']} resulted in " . print_r($result, 1));
                                 break;
                             case 'xPDOValidationRule':
-                                if ($ruleClass= $this->object->xpdo->loadClass($rule['rule'], '', false, true)) {
+                                if ($ruleClass= $rule['rule']) {
+                                    if (strpos($ruleClass, '\\') === false && strpos($ruleClass, '.') === false) {
+                                        $ruleClass = __NAMESPACE__ . '\\' . $ruleClass;
+                                    }
                                     if ($ruleObject= new $ruleClass($this, $column, $ruleName)) {
                                         $callable= array($ruleObject, 'isValid');
                                         if (is_callable($callable)) {

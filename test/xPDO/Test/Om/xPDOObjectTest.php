@@ -124,7 +124,7 @@ class xPDOObjectTest extends TestCase
     }
 
     /**
-     * Remove dummy data prior to each test.
+     * Remove dummy data after each test.
      */
     public function tearDown()
     {
@@ -294,9 +294,9 @@ class xPDOObjectTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        $this->assertTrue($person instanceof Person, "Error retrieving Person object by primary key");
-        $this->assertTrue($phone instanceof Phone, "Error retrieving Phone object by primary key");
-        $this->assertTrue($personPhone instanceof PersonPhone, "Error retrieving PersonPhone object by primary key");
+        $this->assertTrue($person instanceof \Person, "Error retrieving Person object by primary key");
+        $this->assertTrue($phone instanceof \Phone, "Error retrieving Phone object by primary key");
+        $this->assertTrue($personPhone instanceof \PersonPhone, "Error retrieving PersonPhone object by primary key");
     }
 
     /**
@@ -322,9 +322,9 @@ class xPDOObjectTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        $this->assertTrue($person instanceof Person, "Error retrieving Person object by primary key via getObjectGraph");
-        $this->assertTrue($personPhone instanceof PersonPhone, "Error retrieving retreiving related PersonPhone collection via getObjectGraph");
-        $this->assertTrue($phone instanceof Phone, "Error retrieving related Phone object via getObjectGraph");
+        $this->assertTrue($person instanceof \Person, "Error retrieving Person object by primary key via getObjectGraph");
+        $this->assertTrue($personPhone instanceof \PersonPhone, "Error retrieving retreiving related PersonPhone collection via getObjectGraph");
+        $this->assertTrue($phone instanceof \Phone, "Error retrieving related Phone object via getObjectGraph");
     }
 
     /**
@@ -350,9 +350,9 @@ class xPDOObjectTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        $this->assertTrue($person instanceof Person, "Error retrieving Person object by primary key via getObjectGraph, JSON graph");
-        $this->assertTrue($personPhone instanceof PersonPhone, "Error retrieving retreiving related PersonPhone collection via getObjectGraph, JSON graph");
-        $this->assertTrue($phone instanceof Phone, "Error retrieving related Phone object via getObjectGraph, JSON graph");
+        $this->assertTrue($person instanceof \Person, "Error retrieving Person object by primary key via getObjectGraph, JSON graph");
+        $this->assertTrue($personPhone instanceof \PersonPhone, "Error retrieving retreiving related PersonPhone collection via getObjectGraph, JSON graph");
+        $this->assertTrue($phone instanceof \Phone, "Error retrieving related Phone object via getObjectGraph, JSON graph");
     }
 
     /**
@@ -365,8 +365,8 @@ class xPDOObjectTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        $this->assertTrue(isset($people[1]) && $people[1] instanceof Person, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2] instanceof Person, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[1]) && $people[1] instanceof \Person, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2] instanceof \Person, "Error retrieving all objects.");
         $this->assertTrue(count($people) == 2, "Error retrieving all objects.");
     }
 
@@ -381,10 +381,10 @@ class xPDOObjectTest extends TestCase
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         return;
-        $this->assertTrue($people[1] instanceof Person, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2] instanceof Person, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1'] instanceof PersonPhone && $people[2]->_relatedObjects['PersonPhone']['2-2'] instanceof PersonPhone, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1']->_relatedObjects['Phone'] instanceof Phone && $people[2]->_relatedObjects['PersonPhone']['2-2']->_relatedObjects['Phone'] instanceof Phone, "Error retrieving all objects.");
+        $this->assertTrue($people[1] instanceof \Person, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2] instanceof \Person, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1'] instanceof \PersonPhone && $people[2]->_relatedObjects['PersonPhone']['2-2'] instanceof \PersonPhone, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1']->_relatedObjects['Phone'] instanceof \Phone && $people[2]->_relatedObjects['PersonPhone']['2-2']->_relatedObjects['Phone'] instanceof \Phone, "Error retrieving all objects.");
         $this->assertTrue(count($people) == 2, "Error retrieving all objects.");
     }
 
@@ -399,10 +399,10 @@ class xPDOObjectTest extends TestCase
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         return;
-        $this->assertTrue($people[1] instanceof Person, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2] instanceof Person, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1'] instanceof PersonPhone, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1']->_relatedObjects['Phone'] instanceof Phone, "Error retrieving all objects.");
+        $this->assertTrue($people[1] instanceof \Person, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2] instanceof \Person, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1'] instanceof \PersonPhone, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1']->_relatedObjects['Phone'] instanceof \Phone, "Error retrieving all objects.");
         $this->assertTrue(count($people) == 2, "Error retrieving all objects.");
     }
 
@@ -411,7 +411,7 @@ class xPDOObjectTest extends TestCase
      *
      * @dataProvider providerGetMany
      *
-     * @param string $person The username of the Person to use for the test data.
+     * @param string $person The username of the \Person to use for the test data.
      * @param string $alias The relation alias to grab.
      * @param string $sortby A column to sort the related collection by.
      */
@@ -428,7 +428,7 @@ class xPDOObjectTest extends TestCase
                 $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
             }
         }
-        $this->assertTrue(!empty($personPhones) && count($personPhones) === 2, 'xPDOQuery: getMany failed from Person to PersonPhone.');
+        $this->assertTrue(!empty($personPhones) && count($personPhones) === 2, 'xPDOQuery: getMany failed from \Person to \PersonPhone.');
     }
 
     /**
@@ -446,7 +446,7 @@ class xPDOObjectTest extends TestCase
      *
      * @dataProvider providerGetOne
      *
-     * @param string $username The username of the Person to use for the test data.
+     * @param string $username The username of the \Person to use for the test data.
      * @param string $alias The relation alias to grab.
      * @param string $class
      */
@@ -462,7 +462,7 @@ class xPDOObjectTest extends TestCase
                 $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
             }
         }
-        $this->assertTrue(!empty($one) && $one instanceof $class, 'xPDOQuery: getMany failed from Person `' . $username . '` to ' . $alias . '.');
+        $this->assertTrue(!empty($one) && $one instanceof $class, 'xPDOQuery: getMany failed from \Person `' . $username . '` to ' . $alias . '.');
     }
 
     /**
@@ -490,11 +490,11 @@ class xPDOObjectTest extends TestCase
             }
         }
         $this->assertTrue(
-            $object instanceof Person &&
-            $object->_relatedObjects['PersonPhone']['2-2'] instanceof PersonPhone &&
-            $object->_relatedObjects['PersonPhone']['2-2']->_relatedObjects['Phone'] instanceof Phone &&
-            $object->_relatedObjects['PersonPhone']['2-3'] instanceof PersonPhone &&
-            $object->_relatedObjects['PersonPhone']['2-3']->_relatedObjects['Phone'] instanceof Phone,
+            $object instanceof \Person &&
+            $object->_relatedObjects['PersonPhone']['2-2'] instanceof \PersonPhone &&
+            $object->_relatedObjects['PersonPhone']['2-2']->_relatedObjects['Phone'] instanceof \Phone &&
+            $object->_relatedObjects['PersonPhone']['2-3'] instanceof \PersonPhone &&
+            $object->_relatedObjects['PersonPhone']['2-3']->_relatedObjects['Phone'] instanceof \Phone,
             "Could not retrieve requested graph"
         );
     }
@@ -517,7 +517,7 @@ class xPDOObjectTest extends TestCase
                 $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
             }
         }
-        $this->assertTrue($object instanceof Person && $children[0] instanceof PersonPhone && $children[1] instanceof PersonPhone, "Could not retrieve requested iterator.");
+        $this->assertTrue($object instanceof \Person && $children[0] instanceof \PersonPhone && $children[1] instanceof \PersonPhone, "Could not retrieve requested iterator.");
     }
 
     /**

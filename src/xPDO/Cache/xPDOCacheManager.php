@@ -49,7 +49,7 @@ class xPDOCacheManager {
         if (empty($key)) {
             $key = $this->getOption(xPDO::OPT_CACHE_KEY, $options, 'default');
         }
-        $objCacheClass= 'xPDOFileCache';
+        $objCacheClass= 'xPDO\\Cache\\xPDOFileCache';
         if (!isset($this->caches[$key]) || !is_object($this->caches[$key])) {
             if ($cacheClass = $this->getOption($key . '_' . xPDO::OPT_CACHE_HANDLER, $options, $this->getOption(xPDO::OPT_CACHE_HANDLER, $options))) {
                 $cacheClass = $this->xpdo->loadClass($cacheClass, XPDO_CORE_PATH, false, true);

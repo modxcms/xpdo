@@ -2091,7 +2091,7 @@ class xPDOObject {
      */
     public function &getValidator() {
         if (!$this->_validator instanceof xPDOValidator) {
-            $validatorClass = $this->getOption(xPDO::OPT_VALIDATOR_CLASS, null, 'xPDOValidator');
+            $validatorClass = $this->getOption(xPDO::OPT_VALIDATOR_CLASS, null, 'xPDO\\Validation\\xPDOValidator');
             $this->_validator = new $validatorClass($this);
         }
         return $this->_validator;
