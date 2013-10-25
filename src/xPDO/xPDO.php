@@ -1070,7 +1070,7 @@ class xPDO {
      * @return Om\xPDOQuery The xPDOQuery instance with derivative criteria added.
      */
     public function addDerivativeCriteria($className, $criteria) {
-        if ($criteria instanceof Om\xPDOQuery && !isset($this->map[$className]['table'])) {
+        if ($criteria instanceof Om\xPDOQuery && ($className = $this->loadClass($className)) && !isset($this->map[$className]['table'])) {
             if (isset($this->map[$className]['fields']['class_key']) && !empty($this->map[$className]['fields']['class_key'])) {
                 $criteria->where(array('class_key' => $this->map[$className]['fields']['class_key']));
                 if ($this->getDebug() === true) {

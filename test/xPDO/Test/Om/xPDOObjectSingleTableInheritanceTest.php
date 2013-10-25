@@ -145,9 +145,9 @@ class xPDOObjectSingleTableInheritanceTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        $this->assertTrue($baseObject instanceof baseClass && $baseObject->get('class_key') == 'baseClass', "Error getting base object of the appropriate class.");
-        $this->assertTrue($derivedObject instanceof derivedClass && $derivedObject->get('class_key') == 'derivedClass', "Error getting derived object of the appropriate class.");
-        $this->assertTrue($derivedObject2 instanceof derivedClass2 && $derivedObject2->get('class_key') == 'derivedClass2', "Error getting derived object of the appropriate class.");
+        $this->assertTrue($baseObject instanceof \baseClass && $baseObject->get('class_key') == 'baseClass', "Error getting base object of the appropriate class.");
+        $this->assertTrue($derivedObject instanceof \derivedClass && $derivedObject->get('class_key') == 'derivedClass', "Error getting derived object of the appropriate class.");
+        $this->assertTrue($derivedObject2 instanceof \derivedClass2 && $derivedObject2->get('class_key') == 'derivedClass2', "Error getting derived object of the appropriate class.");
     }
 
     /**
@@ -198,15 +198,15 @@ class xPDOObjectSingleTableInheritanceTest extends TestCase
                 switch ($object->get('field1')) {
                     case 1:
                         $expectedClass = 'baseClass';
-                        $result = ($object instanceof baseClass && $object->get('class_key') == 'baseClass');
+                        $result = ($object instanceof \baseClass && $object->get('class_key') == 'baseClass');
                         break;
                     case 2:
                         $expectedClass = 'derivedClass';
-                        $result = ($object instanceof derivedClass && $object->get('class_key') == 'derivedClass');
+                        $result = ($object instanceof \derivedClass && $object->get('class_key') == 'derivedClass');
                         break;
                     case 3:
                         $expectedClass = 'derivedClass2';
-                        $result = ($object instanceof derivedClass2 && $object->get('class_key') == 'derivedClass2');
+                        $result = ($object instanceof \derivedClass2 && $object->get('class_key') == 'derivedClass2');
                         break;
                 }
                 $this->assertTrue($result, "Error getting derived object of the appropriate class ({$expectedClass}) in collection.");
@@ -260,9 +260,9 @@ class xPDOObjectSingleTableInheritanceTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        $this->assertTrue($baseObject instanceof baseClass && $baseObject->get('class_key') == 'baseClass', "Error getting base object of the appropriate class from graph.");
-        $this->assertTrue($derivedObject instanceof derivedClass && $derivedObject->get('class_key') == 'derivedClass', "Error getting derived object of the appropriate class from graph.");
-        $this->assertTrue($derivedObject2 instanceof derivedClass2 && $derivedObject2->get('class_key') == 'derivedClass2', "Error getting derived object of the appropriate class from graph.");
+        $this->assertTrue($baseObject instanceof \baseClass && $baseObject->get('class_key') == 'baseClass', "Error getting base object of the appropriate class from graph.");
+        $this->assertTrue($derivedObject instanceof \derivedClass && $derivedObject->get('class_key') == 'derivedClass', "Error getting derived object of the appropriate class from graph.");
+        $this->assertTrue($derivedObject2 instanceof \derivedClass2 && $derivedObject2->get('class_key') == 'derivedClass2', "Error getting derived object of the appropriate class from graph.");
     }
 
     /**
@@ -278,15 +278,15 @@ class xPDOObjectSingleTableInheritanceTest extends TestCase
                 switch ($object->get('field1')) {
                     case 1:
                         $expectedClass = 'baseClass';
-                        $result = ($object instanceof baseClass && $object->get('class_key') == 'baseClass');
+                        $result = ($object instanceof \baseClass && $object->get('class_key') == 'baseClass');
                         break;
                     case 2:
                         $expectedClass = 'derivedClass';
-                        $result = ($object instanceof derivedClass && $object->get('class_key') == 'derivedClass');
+                        $result = ($object instanceof \derivedClass && $object->get('class_key') == 'derivedClass');
                         break;
                     case 3:
                         $expectedClass = 'derivedClass2';
-                        $result = ($object instanceof derivedClass2 && $object->get('class_key') == 'derivedClass2');
+                        $result = ($object instanceof \derivedClass2 && $object->get('class_key') == 'derivedClass2');
                         break;
                 }
                 $this->assertTrue($result, "Error getting derived object of the appropriate class ({$expectedClass}) in collection graph.");
