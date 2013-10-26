@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the xpdo package.
+ * This file is part of the xPDO package.
  *
  * Copyright (c) Jason Coward <jason@opengeek.com>
  *

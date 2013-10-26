@@ -89,7 +89,7 @@ class xPDO {
     const LOG_LEVEL_INFO = 3;
     const LOG_LEVEL_DEBUG = 4;
 
-    const SCHEMA_VERSION = '1.1';
+    const SCHEMA_VERSION = '3.0';
 
     /**
      * @var array A static collection of xPDO instances.
