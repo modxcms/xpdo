@@ -55,7 +55,7 @@ class BloodType extends \xPDO\Test\Sample\BloodType
         array (
             'Person' => 
             array (
-                'class' => 'Person',
+                'class' => 'xPDO\\Test\\Sample\\Person',
                 'local' => 'type',
                 'foreign' => 'blood_type',
                 'cardinality' => 'many',

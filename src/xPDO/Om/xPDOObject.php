@@ -618,6 +618,11 @@ class xPDOObject {
         $pos= strrpos($this->_class, '_');
         if ($pos !== false && substr($this->_class, $pos + 1) == $xpdo->config['dbtype']) {
             $this->_class= substr($this->_class, 0, $pos);
+        } elseif (strpos($this->_class, '\\' . $xpdo->config['dbtype'] . '\\')) {
+            $exploded = explode('\\', $this->_class);
+            $class = array_pop($exploded);
+            array_pop($exploded);
+            $this->_class = implode('\\', $exploded) . '\\' . $class;
         }
         $this->_package= $xpdo->getPackage($this->_class);
         $this->_alias= $this->_class;

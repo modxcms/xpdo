@@ -71,7 +71,7 @@ class PersonPhone extends \xPDO\Test\Sample\PersonPhone
         array (
             'Phone' => 
             array (
-                'class' => 'Phone',
+                'class' => 'xPDO\\Test\\Sample\\Phone',
                 'local' => 'phone',
                 'foreign' => 'id',
                 'cardinality' => 'one',
@@ -82,7 +82,7 @@ class PersonPhone extends \xPDO\Test\Sample\PersonPhone
         array (
             'Person' => 
             array (
-                'class' => 'Person',
+                'class' => 'xPDO\\Test\\Sample\\Person',
                 'local' => 'person',
                 'foreign' => 'id',
                 'cardinality' => 'one',

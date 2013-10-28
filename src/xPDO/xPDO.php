@@ -95,6 +95,10 @@ class xPDO {
      * @var array A static collection of xPDO instances.
      */
     protected static $instances = array();
+    /**
+     * @var object A PSR-0 autoloader singleton.
+     */
+    protected static $loader;
 
     /**
      * @var \PDO A reference to the PDO instance used by the current xPDOConnection.
@@ -219,6 +223,20 @@ class xPDO {
             throw new xPDOException("Error getting " . __CLASS__ . " instance, id = {$id}");
         }
         return $instances[$id];
+    }
+
+    /**
+     * Get the Composer autoloader being used by this library.
+     *
+     * @return object The autoloader instance being used by all instances of xPDO.
+     */
+    public static function &getLoader()
+    {
+        $loader =& self::$loader;
+        if ($loader === null) {
+            $loader = include __DIR__ . '/../bootstrap.php';
+        }
+        return $loader;
     }
 
     /**
@@ -450,12 +468,18 @@ class xPDO {
     public function setPackageMeta($pkg, $path = '') {
         $set = false;
         if (is_string($pkg) && !empty($pkg)) {
-            $pkgPath = str_replace('.', '/', $pkg);
+            $pkgPath = str_replace(array('.', '\\'), array('/', '/'), $pkg);
             $mapFile = $path . $pkgPath . '/metadata.' . $this->config['dbtype'] . '.php';
             if (file_exists($mapFile)) {
                 $xpdo_meta_map = array();
                 include $mapFile;
                 if (!empty($xpdo_meta_map)) {
+                    if (isset($xpdo_meta_map['version'])) {
+                        if (version_compare($xpdo_meta_map['version'], '3.0', '>=')) {
+                            self::getLoader()->add($xpdo_meta_map['namespace'], $path);
+                            $xpdo_meta_map = $xpdo_meta_map['class_map'];
+                        }
+                    }
                     foreach ($xpdo_meta_map as $className => $extends) {
                         if (!isset($this->classMap[$className])) {
                             $this->classMap[$className] = array();
@@ -465,7 +489,7 @@ class xPDO {
                     $set = true;
                 }
             } else {
-                $this->log(xPDO::LOG_LEVEL_WARN, "Could not load package metadata for package {$pkg}.");
+                $this->log(xPDO::LOG_LEVEL_WARN, "Could not load package metadata for package {$pkg}. Upgrade your model.");
             }
         } else {
             $this->log(xPDO::LOG_LEVEL_ERROR, 'setPackageMeta called with an invalid package name.');
@@ -504,6 +528,19 @@ class xPDO {
         }
         $driverClass = implode('\\', $paths);
         return class_exists($driverClass) ? $driverClass : false;
+    }
+
+    public function getPlatformClass($domainClass) {
+        if (strpos($domainClass, '\\') !== false) {
+            $exploded = explode('\\', ltrim($domainClass, '\\'));
+            $slice = array_slice($exploded, -1);
+            $class = $slice[0];
+            $namespace = implode('\\', array_slice($exploded, 0, -1));
+            if (!empty($namespace)) $namespace .= '\\';
+            return "\\{$namespace}{$this->getOption('dbtype')}\\{$class}";
+        } else {
+            return "\\{$domainClass}_{$this->getOption('dbtype')}";
+        }
     }
 
     /**
@@ -681,7 +718,7 @@ class xPDO {
         } else {
             $className = $this->loadClass($class);
             if ($className) {
-                $className .= '_' . $this->getOption('dbtype');
+                $className = $this->getPlatformClass($className);
                 $callback = array($className, $method);
             }
         }
@@ -712,11 +749,11 @@ class xPDO {
      */
     public function newObject($className, $fields= array ()) {
         $instance= null;
-        if ($className= $this->loadClass($className)) {
-            $className .=  '_' . $this->config['dbtype'];
+        if ($className = $this->loadClass($className)) {
+            $className = self::getPlatformClass($className);
             /** @var Om\xPDOObject $instance */
-            if ($instance= new $className ($this)) {
-                if (is_array($fields) && !empty ($fields)) {
+            if ($instance = new $className($this)) {
+                if (is_array($fields) && !empty($fields)) {
                     $instance->fromArray($fields);
                 }
             }

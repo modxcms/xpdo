@@ -130,7 +130,7 @@ class Person extends \xPDO\Test\Sample\Person
         array (
             'PersonPhone' => 
             array (
-                'class' => 'PersonPhone',
+                'class' => 'xPDO\\Test\\Sample\\PersonPhone',
                 'local' => 'id',
                 'foreign' => 'person',
                 'cardinality' => 'many',
@@ -141,7 +141,7 @@ class Person extends \xPDO\Test\Sample\Person
         array (
             'BloodType' => 
             array (
-                'class' => 'BloodType',
+                'class' => 'xPDO\\Test\\Sample\\BloodType',
                 'local' => 'blood_type',
                 'foreign' => 'type',
                 'cardinality' => 'one',
@@ -150,7 +150,7 @@ class Person extends \xPDO\Test\Sample\Person
         ),
         'validation' => 
         array (
-            'class' => 'validation.xPDOValidator',
+            'class' => 'xPDO\\Validation\\xPDOValidator',
             'rules' => 
             array (
                 'dob' => 

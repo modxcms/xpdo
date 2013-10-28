@@ -8,15 +8,15 @@
  * file that was distributed with this source code.
  */
 
-namespace xPDO\Test\Om;
+namespace xPDO\Legacy\Om;
 
-use xPDO\TestCase;
+use xPDO\Legacy\TestCase;
 use xPDO\xPDO;
 
 /**
  * Tests related to limit statements.
  *
- * @package xPDO\Test\Om
+ * @package xPDO\Legacy\Om
  */
 class xPDOQueryLimitTest extends TestCase
 {
@@ -29,13 +29,13 @@ class xPDOQueryLimitTest extends TestCase
         try {
             /* ensure we have clear data and identity sequences */
             $this->xpdo->getManager();
-            $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\Item');
+            $this->xpdo->manager->createObjectContainer('Item');
 
             $colors = array('red', 'green', 'yellow', 'blue');
 
             $r = 0;
             for ($i = 1; $i < 40; $i++) {
-                $item = $this->xpdo->newObject('xPDO\\Test\\Sample\\Item');
+                $item = $this->xpdo->newObject('Item');
                 $idx = str_pad($i, 2, '0', STR_PAD_LEFT);
                 $item->set('name', 'item-' . $i);
                 $r++;
@@ -54,7 +54,7 @@ class xPDOQueryLimitTest extends TestCase
     public function tearDown()
     {
         $this->xpdo->getManager();
-        $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Item');
+        $this->xpdo->manager->removeObjectContainer('Item');
         parent::tearDown();
     }
 
@@ -70,9 +70,9 @@ class xPDOQueryLimitTest extends TestCase
     public function testLimit($limit, $start = 0, $shouldEqual = true)
     {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+            $criteria = $this->xpdo->newQuery('Item');
             $criteria->limit($limit, $start);
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Item', $criteria);
+            $result = $this->xpdo->getCollection('Item', $criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -112,10 +112,10 @@ class xPDOQueryLimitTest extends TestCase
     public function testLimitWithGroupBy($limit, $start = 0, $shouldEqual = true)
     {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+            $criteria = $this->xpdo->newQuery('Item');
             $criteria->groupby('color');
             $criteria->limit($limit, $start);
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Item', $criteria);
+            $result = $this->xpdo->getCollection('Item', $criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -148,10 +148,10 @@ class xPDOQueryLimitTest extends TestCase
     public function testLimitWithSortBy($limit, $start = 0, $shouldEqual = true)
     {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+            $criteria = $this->xpdo->newQuery('Item');
             $criteria->sortby('color', 'ASC');
             $criteria->limit($limit, $start);
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Item', $criteria);
+            $result = $this->xpdo->getCollection('Item', $criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }

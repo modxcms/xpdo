@@ -8,18 +8,18 @@
  * file that was distributed with this source code.
  */
 
-namespace xPDO\Test\Om;
+namespace xPDO\Legacy\Om;
 
 use xPDO\Om\xPDOObject;
 use xPDO\Om\xPDOQuery;
 use xPDO\Om\xPDOQueryCondition;
-use xPDO\TestCase;
+use xPDO\Legacy\TestCase;
 use xPDO\xPDO;
 
 /**
  * Tests related to the xPDOQuery class.
  *
- * @package xPDO\Test\Om
+ * @package xPDO\Legacy\Om
  */
 class xPDOQueryTest extends TestCase {
     /**
@@ -31,23 +31,23 @@ class xPDOQueryTest extends TestCase {
             /* ensure we have clear data and identity sequences */
             $this->xpdo->getManager();
 
-            $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\Phone');
-            $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\Person');
-			$this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\PersonPhone');
-			$this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\BloodType');
+            $this->xpdo->manager->createObjectContainer('Phone');
+            $this->xpdo->manager->createObjectContainer('Person');
+			$this->xpdo->manager->createObjectContainer('PersonPhone');
+			$this->xpdo->manager->createObjectContainer('BloodType');
 
             $bloodTypes = array('A+','A-','B+','B-','AB+','AB-','O+','O-');
             foreach ($bloodTypes as $bloodType) {
-                $bt = $this->xpdo->newObject('xPDO\\Test\\Sample\\BloodType');
+                $bt = $this->xpdo->newObject('BloodType');
                 $bt->set('type',$bloodType);
                 $bt->save();
             }
 
-            $bloodTypeABPlus = $this->xpdo->getObject('xPDO\\Test\\Sample\\BloodType','AB+');
+            $bloodTypeABPlus = $this->xpdo->getObject('BloodType','AB+');
             if (empty($bloodTypeABPlus)) $this->xpdo->log(xPDO::LOG_LEVEL_FATAL,'Could not load blood type.');
 
             /* add some people */
-            $person= $this->xpdo->newObject('xPDO\\Test\\Sample\\Person');
+            $person= $this->xpdo->newObject('Person');
             $person->set('first_name', 'Johnathon');
             $person->set('last_name', 'Doe');
             $person->set('middle_name', 'Harry');
@@ -59,7 +59,7 @@ class xPDOQueryTest extends TestCase {
             $person->set('blood_type',$bloodTypeABPlus->get('type'));
             $person->save();
 
-            $person= $this->xpdo->newObject('xPDO\\Test\\Sample\\Person');
+            $person= $this->xpdo->newObject('Person');
             $person->set('first_name', 'Jane');
             $person->set('last_name', 'Heartstead');
             $person->set('middle_name', 'Cecilia');
@@ -71,14 +71,14 @@ class xPDOQueryTest extends TestCase {
             $person->set('blood_type',$bloodTypeABPlus->get('type'));
             $person->save();
 
-            $phone = $this->xpdo->newObject('\\xPDO\\Test\\Sample\\Phone');
+            $phone = $this->xpdo->newObject('Phone');
             $phone->fromArray(array(
                 'type' => 'work',
                 'number' => '555-123-4567',
             ));
             $phone->save();
 
-            $personPhone = $this->xpdo->newObject('xPDO\\Test\\Sample\\PersonPhone');
+            $personPhone = $this->xpdo->newObject('PersonPhone');
             $personPhone->fromArray(array(
                 'person' => $person->get('id'),
                 'phone' => $phone->get('id'),
@@ -96,10 +96,10 @@ class xPDOQueryTest extends TestCase {
      */
     public function tearDown() {
         try {
-            $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Phone');
-            $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Person');
-			$this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\PersonPhone');
-			$this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\BloodType');
+            $this->xpdo->manager->removeObjectContainer('Phone');
+            $this->xpdo->manager->removeObjectContainer('Person');
+			$this->xpdo->manager->removeObjectContainer('PersonPhone');
+			$this->xpdo->manager->removeObjectContainer('BloodType');
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -117,9 +117,9 @@ class xPDOQueryTest extends TestCase {
         $criteria = null;
         $person = null;
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where($where, xPDOQuery::SQL_AND,null,0);
-            $person = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person',$criteria);
+            $person = $this->xpdo->getObject('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -133,7 +133,7 @@ class xPDOQueryTest extends TestCase {
         $this->assertTrue(is_object($conditions[0]) && $conditions[0] instanceof xPDOQueryCondition,'xPDOQuery->where(): Condition is not an xPDOQueryCondition type.');
 
         /* test for results */
-        $this->assertTrue(is_object($person) && $person instanceof \xPDO\Test\Sample\Person,'xPDOQuery->where(): Query did not return correct results.');
+        $this->assertTrue(is_object($person) && $person instanceof \Person,'xPDOQuery->where(): Query did not return correct results.');
     }
 
     /**
@@ -142,11 +142,11 @@ class xPDOQueryTest extends TestCase {
      */
     public function testEquals($a) {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:=' => $a,
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -167,11 +167,11 @@ class xPDOQueryTest extends TestCase {
      */
     public function testNotEquals($a) {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:!=' => $a,
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -193,11 +193,11 @@ class xPDOQueryTest extends TestCase {
     public function testGreaterThan($a) {
         /* test > */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:>' => $a,
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -218,11 +218,11 @@ class xPDOQueryTest extends TestCase {
      */
     public function testGreaterThanEquals($a) {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:>=' => $a,
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -243,11 +243,11 @@ class xPDOQueryTest extends TestCase {
      */
     public function testLessThan($a) {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:<' => $a,
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -268,11 +268,11 @@ class xPDOQueryTest extends TestCase {
      */
     public function testLessThanEquals() {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:<=' => 3,
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -293,11 +293,11 @@ class xPDOQueryTest extends TestCase {
      */
     public function testNotGTLT() {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:<>' => 999,
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -318,11 +318,11 @@ class xPDOQueryTest extends TestCase {
     public function testLike() {
         /* test LIKE %.. */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'first_name:LIKE' => '%nathon',
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -330,11 +330,11 @@ class xPDOQueryTest extends TestCase {
         
         /* test LIKE ..% */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'first_name:LIKE' => 'John%',
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -342,11 +342,11 @@ class xPDOQueryTest extends TestCase {
 
         /* test LIKE %..% */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'first_name:LIKE' => '%Johna%',
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -359,11 +359,11 @@ class xPDOQueryTest extends TestCase {
     public function testIn() {
         /* test IN with strings */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'first_name:IN' => array('Johnathon','Mary'),
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -371,11 +371,11 @@ class xPDOQueryTest extends TestCase {
 
         /* test IN with ints */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:IN' => array(1,3),
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -383,11 +383,11 @@ class xPDOQueryTest extends TestCase {
 
         /* test IN with () condition */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level IN (1,3)',
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -400,11 +400,11 @@ class xPDOQueryTest extends TestCase {
     public function testNotIn() {
         /* test NOT IN with strings */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'first_name:NOT IN' => array('Johnathon','Mary'),
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -412,11 +412,11 @@ class xPDOQueryTest extends TestCase {
 
         /* test IN with ints */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:NOT IN' => array(2,3),
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -424,11 +424,11 @@ class xPDOQueryTest extends TestCase {
 
         /* test IN with () condition */
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level NOT IN (2,3)',
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -441,7 +441,7 @@ class xPDOQueryTest extends TestCase {
      */
     public function testNestedConditions($level,$lastName,$gender) {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->where(array(
                 'security_level:>' => $level,
                 array(
@@ -449,7 +449,7 @@ class xPDOQueryTest extends TestCase {
                     'gender:=' => $gender,
                 ),
             ));
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -478,9 +478,9 @@ class xPDOQueryTest extends TestCase {
         $result = null;
         $people = array();
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->sortby($sortBy,$sortDir);
-            $people = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $people = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -513,9 +513,9 @@ class xPDOQueryTest extends TestCase {
     public function testLimit($limit,$shouldEqual) {
         $result = array();
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+            $criteria = $this->xpdo->newQuery('Person');
             $criteria->limit($limit);
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person',$criteria);
+            $result = $this->xpdo->getCollection('Person',$criteria);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }

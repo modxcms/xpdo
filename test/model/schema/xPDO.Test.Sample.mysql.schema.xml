@@ -18,10 +18,10 @@
             <column key="username" collation="A" null="false" />
         </index>
 
-        <composite alias="PersonPhone" class="PersonPhone" local="id" foreign="person" cardinality="many" owner="local" />
-        <aggregate alias="BloodType" class="BloodType" local="blood_type" foreign="type" cardinality="one" owner="foreign" />
+        <composite alias="PersonPhone" class="xPDO\Test\Sample\PersonPhone" local="id" foreign="person" cardinality="many" owner="local" />
+        <aggregate alias="BloodType" class="xPDO\Test\Sample\BloodType" local="blood_type" foreign="type" cardinality="one" owner="foreign" />
 
-        <validation class="validation.xPDOValidator">
+        <validation class="xPDO\Validation\xPDOValidator">
             <rule field="dob" name="date_format" type="preg_match" rule="/\d{4}-\d{2}-\d{2}/" />
             <rule field="password" name="password_length" type="xPDOValidationRule" rule="xPDOMinLengthValidationRule" value="5" />
         </validation>
@@ -36,15 +36,15 @@
             <column key="phone" collation="A" null="false" />
         </index>
 
-        <aggregate alias="Person" class="Person" local="person" foreign="id" cardinality="one" owner="foreign" />
-        <composite alias="Phone" class="Phone" local="phone" foreign="id" cardinality="one" owner="foreign" />
+        <aggregate alias="Person" class="xPDO\Test\Sample\Person" local="person" foreign="id" cardinality="one" owner="foreign" />
+        <composite alias="Phone" class="xPDO\Test\Sample\Phone" local="phone" foreign="id" cardinality="one" owner="foreign" />
     </object>
     <object class="Phone" table="phone" extends="xPDO\Om\xPDOSimpleObject">
         <field key="type" dbtype="enum" precision="'','home','work','mobile'" phptype="string" null="false" default="" />
         <field key="number" dbtype="varchar" precision="20" phptype="string" null="false" />
         <field key="date_modified" dbtype="timestamp" phptype="timestamp" null="false" default="CURRENT_TIMESTAMP" attributes="ON UPDATE CURRENT_TIMESTAMP" />
 
-        <composite alias="PersonPhone" class="PersonPhone" local="id" foreign="phone" cardinality="many" owner="local" />
+        <composite alias="PersonPhone" class="xPDO\Test\Sample\PersonPhone" local="id" foreign="phone" cardinality="many" owner="local" />
     </object>
     <object class="xPDOSample" table="xpdosample" extends="xPDO\Om\xPDOSimpleObject">
         <field key="parent" dbtype="int" precision="11" phptype="integer" null="false" default="0" />
@@ -73,7 +73,7 @@
             <column key="type" collation="A" null="false" />
         </index>
 
-        <aggregate alias="Person" class="Person" local="type" foreign="blood_type" cardinality="many" owner="foreign" />
+        <aggregate alias="Person" class="xPDO\Test\Sample\Person" local="type" foreign="blood_type" cardinality="many" owner="foreign" />
     </object>
     <object class="Item" table="items" extends="xPDO\Om\xPDOSimpleObject">
         <field key="name" dbtype="varchar" precision="255" phptype="string" null="false" default="" index="fk" />

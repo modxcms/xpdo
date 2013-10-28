@@ -8,16 +8,16 @@
  * file that was distributed with this source code.
  */
 
-namespace xPDO\Test\Om;
+namespace xPDO\Legacy\Om;
 
 use xPDO\Om\xPDOObject;
-use xPDO\TestCase;
+use xPDO\Legacy\TestCase;
 use xPDO\xPDO;
 
 /**
  * Tests related to having statements.
  *
- * @package xPDO\Test\Om
+ * @package xPDO\Legacy\Om
  */
 class xPDOQueryHavingTest extends TestCase
 {
@@ -30,13 +30,13 @@ class xPDOQueryHavingTest extends TestCase
         try {
             /* ensure we have clear data and identity sequences */
             $this->xpdo->getManager();
-            $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\Item');
+            $this->xpdo->manager->createObjectContainer('Item');
 
             $colors = array('red', 'green', 'yellow', 'blue');
 
             $r = 0;
             for ($i = 1; $i < 40; $i++) {
-                $item = $this->xpdo->newObject('xPDO\\Test\\Sample\\Item');
+                $item = $this->xpdo->newObject('Item');
                 $idx = str_pad($i, 2, '0', STR_PAD_LEFT);
                 $item->set('name', 'item-' . $idx);
                 $r++;
@@ -55,7 +55,7 @@ class xPDOQueryHavingTest extends TestCase
     public function tearDown()
     {
         $this->xpdo->getManager();
-        $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Item');
+        $this->xpdo->manager->removeObjectContainer('Item');
         parent::tearDown();
     }
 
@@ -67,12 +67,12 @@ class xPDOQueryHavingTest extends TestCase
     public function testHaving($having, $nameOfFirst)
     {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+            $criteria = $this->xpdo->newQuery('Item');
             $criteria->groupby('id');
             $criteria->groupby('name');
             $criteria->groupby('color');
             $criteria->having($having);
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Item', $criteria);
+            $result = $this->xpdo->getCollection('Item', $criteria);
             if (is_array($result) && !empty($result)) {
                 foreach ($result as $r) {
                     /** @var xPDOObject $result */
@@ -112,10 +112,10 @@ class xPDOQueryHavingTest extends TestCase
     public function testHavingWithGroupBy($having, $nameOfFirst)
     {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+            $criteria = $this->xpdo->newQuery('Item');
             $criteria->groupby('name');
             $criteria->having($having);
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Item', $criteria);
+            $result = $this->xpdo->getCollection('Item', $criteria);
             if (is_array($result) && !empty($result)) {
                 $match = null;
                 foreach ($result as $r) {
@@ -156,13 +156,13 @@ class xPDOQueryHavingTest extends TestCase
     public function testHavingWithLimit($having, $limit, $start, $nameOfFirst)
     {
         try {
-            $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+            $criteria = $this->xpdo->newQuery('Item');
             $criteria->groupby('id');
             $criteria->groupby('name');
             $criteria->groupby('color');
             $criteria->having($having);
             $criteria->limit($limit, $start);
-            $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Item', $criteria);
+            $result = $this->xpdo->getCollection('Item', $criteria);
             if (is_array($result) && !empty($result)) {
                 foreach ($result as $r) {
                     /** @var xPDOObject $result */

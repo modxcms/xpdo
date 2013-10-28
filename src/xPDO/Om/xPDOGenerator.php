@@ -598,9 +598,18 @@ abstract class xPDOGenerator {
             }
             $classMap[$parent][] = $this->model['namespace'] . '\\' . $className;
         }
+        if (version_compare($this->model['version'], '3.0', '>=')) {
+            $metaData = array(
+                'version' => $this->model['version'],
+                'namespace' => $this->model['namespace'],
+                'class_map' => $classMap
+            );
+        } else {
+            $metaData = $classMap;
+        }
         $written = false;
         if ($this->manager->xpdo->getCacheManager()) {
-            $placeholders['map'] = static::varExport($classMap, 0);
+            $placeholders['map'] = static::varExport($metaData, 0);
             $replaceVars = array();
             foreach ($placeholders as $varKey => $varValue) {
                 if (is_scalar($varValue)) $replaceVars["[+{$varKey}+]"]= (string) $varValue;
