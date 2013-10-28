@@ -5,7 +5,7 @@
         <field key="field2" dbtype="varchar" precision="100" phptype="string" null="false" default="" />
         <field key="date_modified" dbtype="timestamp" phptype="timestamp" null="false" default="CURRENT_TIMESTAMP" attributes="ON UPDATE CURRENT_TIMESTAMP" />
         <field key="fkey" dbtype="int" precision="11" phptype="integer" null="true" index="fk" />
-        <field key="class_key" dbtype="varchar" precision="255" phptype="string" null="false" default="baseClass" />
+        <field key="class_key" dbtype="varchar" precision="255" phptype="string" null="false" default="xPDO\Test\Sample\STI\baseClass" />
 
         <index alias="fkey" name="fkey" primary="false" unique="false">
             <column key="fkey" collation="A" null="false" />
@@ -15,10 +15,10 @@
         <composite alias="relMany" class="xPDO\Test\Sample\STI\relClassMany" local="id" foreign="fkey" cardinality="many" owner="local" />
     </object>
     <object class="derivedClass" extends="xPDO\Test\Sample\STI\baseClass">
-        <field key="class_key" dbtype="varchar" precision="255" phptype="string" null="false" default="derivedClass" />
+        <field key="class_key" dbtype="varchar" precision="255" phptype="string" null="false" default="xPDO\Test\Sample\STI\derivedClass" />
     </object>
     <object class="derivedClass2" extends="xPDO\Test\Sample\STI\derivedClass">
-        <field key="class_key" dbtype="varchar" precision="255" phptype="string" null="false" default="derivedClass2" />
+        <field key="class_key" dbtype="varchar" precision="255" phptype="string" null="false" default="xPDO\Test\Sample\STI\derivedClass2" />
         <field key="field3" dbtype="varchar" precision="32" phptype="string" null="false" default="" />
     </object>
     <object class="relClassOne" table="sti_related_one" extends="xPDO\Om\xPDOSimpleObject">

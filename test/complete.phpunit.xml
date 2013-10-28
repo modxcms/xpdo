@@ -27,18 +27,18 @@
             <file>./xPDO/Test/Transport/xPDOTransportTest.php</file>
             <file>./xPDO/Test/TearDownTest.php</file>
         </testsuite>
-        <!--<testsuite name="Legacy">-->
-            <!--<file>./xPDO/Test/SetUpTest.php</file>-->
-            <!--<file>./xPDO/Legacy/xPDOTest.php</file>-->
-            <!--<file>./xPDO/Legacy/Om/xPDOObjectTest.php</file>-->
-            <!--<file>./xPDO/Legacy/Om/xPDOObjectSingleTableInheritanceTest.php</file>-->
-            <!--<file>./xPDO/Legacy/Om/xPDOQueryTest.php</file>-->
-            <!--<file>./xPDO/Legacy/Om/xPDOQueryHavingTest.php</file>-->
-            <!--<file>./xPDO/Legacy/Om/xPDOQueryLimitTest.php</file>-->
-            <!--<file>./xPDO/Legacy/Om/xPDOQuerySortByTest.php</file>-->
-            <!--<file>./xPDO/Legacy/Cache/xPDOCacheDbTest.php</file>-->
-            <!--<file>./xPDO/Test/TearDownTest.php</file>-->
-        <!--</testsuite>-->
+        <testsuite name="Legacy">
+            <file>./xPDO/Legacy/SetUpTest.php</file>
+            <file>./xPDO/Legacy/xPDOTest.php</file>
+            <file>./xPDO/Legacy/Om/xPDOObjectTest.php</file>
+            <file>./xPDO/Legacy/Om/xPDOObjectSingleTableInheritanceTest.php</file>
+            <file>./xPDO/Legacy/Om/xPDOQueryTest.php</file>
+            <file>./xPDO/Legacy/Om/xPDOQueryHavingTest.php</file>
+            <file>./xPDO/Legacy/Om/xPDOQueryLimitTest.php</file>
+            <file>./xPDO/Legacy/Om/xPDOQuerySortByTest.php</file>
+            <file>./xPDO/Legacy/Cache/xPDOCacheDbTest.php</file>
+            <file>./xPDO/Legacy/TearDownTest.php</file>
+        </testsuite>
     </testsuites>
 
     <filter>

@@ -81,6 +81,7 @@ abstract class xPDOCache {
     public function getCacheKey($key, $options = array()) {
         $prefix = $this->getOption('cache_prefix', $options);
         if (!empty($prefix)) $key = $prefix . $key;
+        $key = str_replace('\\', '/', $key);
         return $this->key . '/' . $key;
     }
 

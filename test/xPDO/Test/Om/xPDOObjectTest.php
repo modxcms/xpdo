@@ -382,8 +382,8 @@ class xPDOObjectTest extends TestCase
         }
         $this->assertTrue($people[1] instanceof \xPDO\Test\Sample\Person, "Error retrieving all objects.");
         $this->assertTrue(isset($people[2]) && $people[2] instanceof \xPDO\Test\Sample\Person, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1'] instanceof \xPDO\Test\Sample\PersonPhone && $people[2]->_relatedObjects['PersonPhone']['2-2'] instanceof \xPDO\Test\Sample\PersonPhone, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1']->_relatedObjects['Phone'] instanceof \xPDO\Test\Sample\Phone && $people[2]->_relatedObjects['PersonPhone']['2-2']->_relatedObjects['Phone'] instanceof \xPDO\Test\Sample\Phone, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-2'] instanceof \xPDO\Test\Sample\PersonPhone && $people[2]->_relatedObjects['PersonPhone']['2-3'] instanceof \xPDO\Test\Sample\PersonPhone, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-2']->_relatedObjects['Phone'] instanceof \xPDO\Test\Sample\Phone && $people[2]->_relatedObjects['PersonPhone']['2-3']->_relatedObjects['Phone'] instanceof \xPDO\Test\Sample\Phone, "Error retrieving all objects.");
         $this->assertTrue(count($people) == 2, "Error retrieving all objects.");
     }
 
@@ -399,8 +399,8 @@ class xPDOObjectTest extends TestCase
         }
         $this->assertTrue($people[1] instanceof \xPDO\Test\Sample\Person, "Error retrieving all objects.");
         $this->assertTrue(isset($people[2]) && $people[2] instanceof \xPDO\Test\Sample\Person, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1'] instanceof \xPDO\Test\Sample\PersonPhone, "Error retrieving all objects.");
-        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-1']->_relatedObjects['Phone'] instanceof \xPDO\Test\Sample\Phone, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-2'] instanceof \xPDO\Test\Sample\PersonPhone, "Error retrieving all objects.");
+        $this->assertTrue(isset($people[2]) && $people[2]->_relatedObjects['PersonPhone']['2-2']->_relatedObjects['Phone'] instanceof \xPDO\Test\Sample\Phone, "Error retrieving all objects.");
         $this->assertTrue(count($people) == 2, "Error retrieving all objects.");
     }
 
@@ -469,7 +469,7 @@ class xPDOObjectTest extends TestCase
     public function providerGetOne()
     {
         return array(
-            array('jane.heartstead@yahoo.com', 'BloodType', 'BloodType'),
+            array('jane.heartstead@yahoo.com', 'BloodType', 'xPDO\\Test\\Sample\\BloodType'),
         );
     }
 
@@ -507,7 +507,7 @@ class xPDOObjectTest extends TestCase
         $object = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', 2);
         if ($object) {
             try {
-                $iterator = $object->getIterator('xPDO\\Test\\Sample\\PersonPhone');
+                $iterator = $object->getIterator('PersonPhone');
                 foreach ($iterator as $child) {
                     $children[] = $child;
                 }

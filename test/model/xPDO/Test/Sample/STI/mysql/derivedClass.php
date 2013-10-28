@@ -12,7 +12,7 @@ class derivedClass extends \xPDO\Test\Sample\STI\derivedClass
         'extends' => 'xPDO\\Test\\Sample\\STI\\baseClass',
         'fields' => 
         array (
-            'class_key' => 'derivedClass',
+            'class_key' => 'xPDO\\Test\\Sample\\STI\\derivedClass',
         ),
         'fieldMeta' => 
         array (
@@ -22,7 +22,7 @@ class derivedClass extends \xPDO\Test\Sample\STI\derivedClass
                 'precision' => '255',
                 'phptype' => 'string',
                 'null' => false,
-                'default' => 'derivedClass',
+                'default' => 'xPDO\\Test\\Sample\\STI\\derivedClass',
             ),
         ),
     );

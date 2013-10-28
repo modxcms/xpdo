@@ -126,7 +126,7 @@ class xPDOCacheDbTest extends TestCase
 
         $people = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Person');
 
-        /** @var xPDO\\Test\\Sample\\Person $person */
+        /** @var \xPDO\Test\Sample\Person $person */
         $person = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', 1);
         $person->remove();
 

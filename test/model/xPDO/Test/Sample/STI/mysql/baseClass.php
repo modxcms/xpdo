@@ -18,7 +18,7 @@ class baseClass extends \xPDO\Test\Sample\STI\baseClass
             'field2' => '',
             'date_modified' => 'CURRENT_TIMESTAMP',
             'fkey' => NULL,
-            'class_key' => 'baseClass',
+            'class_key' => 'xPDO\\Test\\Sample\\STI\\baseClass',
         ),
         'fieldMeta' => 
         array (
@@ -60,7 +60,7 @@ class baseClass extends \xPDO\Test\Sample\STI\baseClass
                 'precision' => '255',
                 'phptype' => 'string',
                 'null' => false,
-                'default' => 'baseClass',
+                'default' => 'xPDO\\Test\\Sample\\STI\\baseClass',
             ),
         ),
         'indexes' => 

@@ -99,6 +99,10 @@ abstract class xPDOQuery extends xPDOCriteria {
         if ($class= $this->xpdo->loadClass($class)) {
             $this->_class= $class;
             $this->_alias= $class;
+            if (strpos($class, '\\') !== false) {
+                $explodedClass = explode('\\', $class);
+                $this->_alias= array_pop($explodedClass);
+            }
             $this->_tableClass = $this->xpdo->getTableClass($this->_class);
             $this->query['from']['tables'][0]= array (
                 'table' => $this->xpdo->getTableName($this->_class),
@@ -643,7 +647,7 @@ abstract class xPDOQuery extends xPDOCriteria {
         $fieldMeta= $this->xpdo->getFieldMeta($this->_class, true);
         $fieldAliases= $this->xpdo->getFieldAliases($this->_class);
         $command= strtoupper($this->query['command']);
-        $alias= $command == 'SELECT' ? $this->_class : $this->xpdo->getTableName($this->_class, false);
+        $alias= $command == 'SELECT' ? $this->_alias : $this->xpdo->getTableName($this->_class, false);
         $alias= trim($alias, $this->xpdo->_escapeCharOpen . $this->xpdo->_escapeCharClose);
         if (is_array($conditions)) {
             if (isset($conditions[0]) && is_scalar($conditions[0]) && !$this->isConditionalClause($conditions[0]) && is_array($pk) && count($conditions) == count($pk)) {
@@ -679,7 +683,6 @@ abstract class xPDOQuery extends xPDOCriteria {
                             continue;
                         }
                     } elseif (is_scalar($val) || is_array($val) || $val === null) {
-                        $alias= $command == 'SELECT' ? $this->_class : trim($this->xpdo->getTableName($this->_class, false), $this->xpdo->_escapeCharOpen . $this->xpdo->_escapeCharClose);
                         $operator= '=';
                         $conj = $conjunction;
                         $key_operator= explode(':', $key);

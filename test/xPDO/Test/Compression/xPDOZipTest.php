@@ -82,7 +82,6 @@ class xPDOZipTest extends TestCase
         $sourcePath = self::$properties['xpdo_test_path'] . "fs/zip/{$source}";
         $archivePath = self::$properties['xpdo_test_path'] . "fs/{$archive}";
         try {
-            $this->xpdo->loadClass('compression.xPDOZip', XPDO_CORE_PATH, true, true);
             $zip = new xPDOZip($this->xpdo, $archivePath, $options);
             $result = $zip->pack($sourcePath, $packOptions);
             while (list($idx, $entry) = each($result)) $result[$idx] = str_replace($sourcePath, $source, $entry);
@@ -142,7 +141,6 @@ class xPDOZipTest extends TestCase
         $targetPath = self::$properties['xpdo_test_path'] . "fs/unzip/{$target}";
         $archivePath = self::$properties['xpdo_test_path'] . "fs/{$archive}";
         try {
-            $this->xpdo->loadClass('compression.xPDOZip', XPDO_CORE_PATH, true, true);
             $archive = new xPDOZip($this->xpdo, $archivePath, $options);
             $result = $archive->unpack($targetPath, $unpackOptions);
             $this->xpdo->log(xPDO::LOG_LEVEL_INFO, "Unpack results for {$archivePath}: " . print_r($result, true));

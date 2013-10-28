@@ -1664,7 +1664,7 @@ class xPDOObject {
                             $this->getOption('cache_db_key', null, 'db'),
                             array(
                                 xPDO::OPT_CACHE_KEY => $this->getOption('cache_db_key', null, 'db'),
-                                xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, null, $this->getOption(xPDO::OPT_CACHE_HANDLER, null, 'cache.xPDOFileCache')),
+                                xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, null, $this->getOption(xPDO::OPT_CACHE_HANDLER, null, 'xPDO\\Cache\\xPDOFileCache')),
                                 xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, xPDOCacheManager::CACHE_PHP)),
                                 xPDO::OPT_CACHE_EXPIRES => (integer) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
                                 xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', null, xPDOCacheManager::CACHE_DIR)
