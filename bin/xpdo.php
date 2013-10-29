@@ -48,7 +48,7 @@ $opt = function($find) use ($argv) {
 $platforms = array('mysql', 'sqlite', 'sqlsrv');
 
 switch ($command) {
-    case 'parse':
+    case 'parse-schema':
         $platform = $arg(1);
         if ($platform === null || !in_array(strtolower($platform), $platforms)) {
             echo "fatal: no valid platform specified" . PHP_EOL;
@@ -85,18 +85,18 @@ switch ($command) {
         );
         exit(0);
         break;
-    case 'write':
-
+    case 'write-schema':
+        echo "write-schema command not yet implemented" . PHP_EOL;
         break;
     default:
-
+        echo "unknown command {$command}" . PHP_EOL;
         break;
 }
 
 echo <<<'EOF'
 Example usage:
-  generator parse [[--compile|-c]|--update=[0-2]|--regen=[0-2]] PLATFORM SCHEMA_FILE PATH
-  generator write [?] PLATFORM SCHEMA_FILE PATH
+  xpdo parse-schema [[--compile|-c]|--update=[0-2]|--regen=[0-2]] PLATFORM SCHEMA_FILE PATH
+  xpdo write-schema [?] PLATFORM SCHEMA_FILE PATH
 
 EOF;
 exit(0);

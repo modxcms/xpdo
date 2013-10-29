@@ -144,7 +144,7 @@ if (!empty($argv) && $argc > 1) {
 }
 /* load external properties from default or specified file */
 if (!empty($include) && file_exists($include)) {
-    if (!include ($include)) {
+    if (!include $include) {
         die("[{$scriptTitle}] FATAL: Error loading " . ($defaultInclude ? " default " : "") . "external properties file --include={$include}.\n");
     }
 } elseif (!empty($include) && !$defaultInclude) {
@@ -175,7 +175,9 @@ if ($debug === true && !empty($write)) {
 if (!file_exists("{$xpdo_path}xpdo.class.php")) {
     die("[{$scriptTitle}] FATAL: xPDO class not found; invalid xpdo_path: {$xpdo_path}.\n");
 }
-include_once ("{$xpdo_path}xpdo.class.php");
+require $xpdo_path . 'src/bootstrap.php';
+
+use xPDO\xPDO;
 
 $xpdo= new xPDO($dsn, $dbuser, $dbpass);
 if (!is_object($xpdo)) {
@@ -199,13 +201,13 @@ $xpdo->setPackage($pkg, $pkg_path);
 $xpdo->getCacheManager();
 
 if (!file_exists("{$schema_path}{$schema_name}")) {
-    $xpdo->log(xPDO::LOG_LEVEL_FATAL, "Could not find schema: {$schema_path}{$schema_file}");
+    $xpdo->log(xPDO::LOG_LEVEL_FATAL, "Could not find schema: {$schema_path}{$schema_name}");
 }
 /* load the schema file as a DOMDocument */
 $schema = new DOMDocument();
 $loaded = $schema->load("{$schema_path}{$schema_name}");
 if ($loaded === false) {
-    $xpdo->log(xPDO::LOG_LEVEL_FATAL, "Error loading schema file: {$schema_path}{$schema_file}");
+    $xpdo->log(xPDO::LOG_LEVEL_FATAL, "Error loading schema file: {$schema_path}{$schema_name}");
 }
 $schema->formatOutput = true;
 

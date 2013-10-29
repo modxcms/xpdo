@@ -26,6 +26,12 @@ if (!defined('XPDO_CORE_PATH')) {
     define('XPDO_CORE_PATH', $xpdo_core_path);
     unset($xpdo_core_path);
 }
+if (!defined('XPDO_CLI_MODE')) {
+    /**
+     * @var bool Indicates if the PHP_SAPI is cli.
+     */
+    define('XPDO_CLI_MODE', PHP_SAPI === 'cli');
+}
 
 /**
  * A wrapper for PDO that powers an object-relational data model.
