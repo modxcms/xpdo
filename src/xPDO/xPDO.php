@@ -578,6 +578,8 @@ class xPDO {
             if ($driverClass !== false) {
                 return $fqn;
             }
+        } elseif (strpos($fqn, '\\') !== false && class_exists($fqn)) {
+            return $fqn;
         }
         if (!$transient) {
             $typePos= strrpos($fqn, '_' . $this->config['dbtype']);

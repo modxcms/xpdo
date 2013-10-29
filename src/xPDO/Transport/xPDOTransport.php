@@ -201,7 +201,6 @@ class xPDOTransport {
                 $this->version= $nameAndVersion[1];
             }
         }
-        $xpdo->loadClass('transport.xPDOVehicle', XPDO_CORE_PATH, true, true);
     }
 
     /**
@@ -219,18 +218,24 @@ class xPDOTransport {
         $vehiclePackage = isset($options['vehicle_package']) ? $options['vehicle_package'] : '';
         $vehiclePackagePath = isset($options['vehicle_package_path']) ? $options['vehicle_package_path'] : '';
         $vehicleClass = isset($options['vehicle_class']) ? $options['vehicle_class'] : '';
-        if (empty($vehiclePackage)) $vehiclePackage = $options['vehicle_package'] = 'transport';
-        if (empty($vehicleClass)) $vehicleClass = $options['vehicle_class'] = 'xPDOObjectVehicle';
-        if ($className = $this->xpdo->loadClass("{$vehiclePackage}.{$vehicleClass}", $vehiclePackagePath, true, true)) {
+        if (empty($vehicleClass)) $vehicleClass = $attributes['vehicle_class'] = 'xPDO\\Transport\\xPDOObjectVehicle';
+        $legacyClass = (strpos($vehicleClass, '\\') === false);
+        if (empty($vehiclePackage) && $legacyClass) {
+            $vehiclePackage = $attributes['vehicle_package'] = 'transport';
+        }
+        if (!empty($vehiclePackage)) {
+            $vehiclePackage .= $legacyClass ? '.' : '\\';
+        }
+        if ($className = $this->xpdo->loadClass("{$vehiclePackage}{$vehicleClass}", $vehiclePackagePath, true, true)) {
             $vehicle = new $className();
-        if (file_exists($objFile)) {
+            if (file_exists($objFile)) {
                 $payload = include ($objFile);
                 if ($payload) {
                     $vehicle->payload = $payload;
                 }
             }
         } else {
-            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "The specified xPDOVehicle class ({$vehiclePackage}.{$vehicleClass}) could not be loaded.");
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "The specified xPDOVehicle class ({$vehiclePackage}{$vehicleClass}) could not be loaded.");
         }
         return $vehicle;
     }
@@ -323,8 +328,8 @@ class xPDOTransport {
             $vehiclePackage = isset($attributes['vehicle_package']) ? $attributes['vehicle_package'] : '';
             $vehiclePackagePath = isset($attributes['vehicle_package_path']) ? $attributes['vehicle_package_path'] : '';
             $vehicleClass = isset($attributes['vehicle_class']) ? $attributes['vehicle_class'] : '';
-            $legacyClass = (strpos($vehicleClass, '\\') === false);
             if (empty($vehicleClass)) $vehicleClass = $attributes['vehicle_class'] = 'xPDO\\Transport\\xPDOObjectVehicle';
+            $legacyClass = (strpos($vehicleClass, '\\') === false);
             if (empty($vehiclePackage) && $legacyClass) {
                 $vehiclePackage = $attributes['vehicle_package'] = 'transport';
             }
@@ -339,7 +344,7 @@ class xPDOTransport {
                     $this->registerVehicle($vehicle);
                 }
             } else {
-                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "The specified xPDOVehicle class ({$vehiclePackage}.{$vehicleClass}) could not be loaded.");
+                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "The specified xPDOVehicle class ({$vehiclePackage}{$vehicleClass}) could not be loaded.");
             }
         }
         return $added;
