@@ -323,9 +323,15 @@ class xPDOTransport {
             $vehiclePackage = isset($attributes['vehicle_package']) ? $attributes['vehicle_package'] : '';
             $vehiclePackagePath = isset($attributes['vehicle_package_path']) ? $attributes['vehicle_package_path'] : '';
             $vehicleClass = isset($attributes['vehicle_class']) ? $attributes['vehicle_class'] : '';
-            if (empty($vehiclePackage)) $vehiclePackage = $attributes['vehicle_package'] = 'transport';
-            if (empty($vehicleClass)) $vehicleClass = $attributes['vehicle_class'] = 'xPDOObjectVehicle';
-            if ($className = $this->xpdo->loadClass("{$vehiclePackage}.{$vehicleClass}", $vehiclePackagePath, true, true)) {
+            $legacyClass = (strpos($vehicleClass, '\\') === false);
+            if (empty($vehicleClass)) $vehicleClass = $attributes['vehicle_class'] = 'xPDO\\Transport\\xPDOObjectVehicle';
+            if (empty($vehiclePackage) && $legacyClass) {
+                $vehiclePackage = $attributes['vehicle_package'] = 'transport';
+            }
+            if (!empty($vehiclePackage)) {
+                $vehiclePackage .= $legacyClass ? '.' : '\\';
+            }
+            if ($className = $this->xpdo->loadClass("{$vehiclePackage}{$vehicleClass}", $vehiclePackagePath, true, true)) {
                 /** @var xPDOVehicle $vehicle */
                 $vehicle = new $className();
                 $vehicle->put($this, $artifact, $attributes);
@@ -370,7 +376,7 @@ class xPDOTransport {
         $packed = false;
         $packResults = false;
         $errors = array();
-        if ($xpdo->getOption(xPDOTransport::ARCHIVE_WITH, null, 0) != xPDOTransport::ARCHIVE_WITH_PCLZIP && class_exists('ZipArchive', true) && $xpdo->loadClass('compression.xPDOZip', XPDO_CORE_PATH, true, true)) {
+        if ($xpdo->getOption(xPDOTransport::ARCHIVE_WITH, null, 0) != xPDOTransport::ARCHIVE_WITH_PCLZIP && class_exists('ZipArchive')) {
             if ($xpdo->getDebug() === true) {
                 $xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Using xPDOZip / native ZipArchive", null, __METHOD__, __FILE__, __LINE__);
             }
@@ -733,7 +739,7 @@ class xPDOTransport {
      */
     public static function _unpack(& $xpdo, $from, $to) {
         $resources = false;
-        if ($xpdo->getOption(xPDOTransport::ARCHIVE_WITH, null, 0) != xPDOTransport::ARCHIVE_WITH_PCLZIP && class_exists('ZipArchive', true) && $xpdo->loadClass('compression.xPDOZip', XPDO_CORE_PATH, true, true)) {
+        if ($xpdo->getOption(xPDOTransport::ARCHIVE_WITH, null, 0) != xPDOTransport::ARCHIVE_WITH_PCLZIP && class_exists('ZipArchive')) {
             $archive = new xPDOZip($xpdo, $from);
             if ($archive) {
                 $resources = $archive->unpack($to);
