@@ -31,7 +31,7 @@ abstract class xPDOVehicle {
      */
     public $payload = array ();
 
-    public $class = 'xPDOVehicle';
+    public $class = 'xPDO\\Transport\\xPDOVehicle';
 
     /**
      * Build a manifest entry to be registered in a transport for this vehicle.
@@ -42,7 +42,7 @@ abstract class xPDOVehicle {
      * an xPDOTransport manifest.
      */
     public function register(& $transport) {
-        $vPackage = isset($this->payload['vehicle_package']) ? $this->payload['vehicle_package'] : 'transport';
+        $vPackage = isset($this->payload['vehicle_package']) ? $this->payload['vehicle_package'] : '';
         $vClass = isset($this->payload['vehicle_class']) ? $this->payload['vehicle_class'] : $this->class;
         $class = isset($this->payload['class']) ? $this->payload['class'] : $vClass;
         $entry = array(
@@ -51,7 +51,7 @@ abstract class xPDOVehicle {
             'class' => $class,
             'guid' => $this->payload['guid'],
             'native_key' => array_key_exists('native_key', $this->payload) ? $this->payload['native_key'] : null,
-            'filename' => $class . '/' . $this->payload['filename'],
+            'filename' => str_replace('\\', '/', $class) . '/' . $this->payload['filename'],
         );
         if (isset($this->payload['namespace'])) {
             $entry['namespace'] = $this->payload['namespace'];

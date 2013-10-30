@@ -19,7 +19,7 @@ use xPDO\xPDO;
  * @subpackage transport
  */
 class xPDOTransportVehicle extends xPDOVehicle {
-    public $class = 'xPDOTransportVehicle';
+    public $class = 'xPDO\\Transport\\xPDOTransportVehicle';
 
     /**
      * Copies the transport into the vehicle and transforms the payload for storage.
@@ -32,7 +32,7 @@ class xPDOTransportVehicle extends xPDOVehicle {
             if (isset($this->payload['object'])) {
                 $object = $this->payload['object'];
                 $fileSource = $object['source'];
-                $body['source'] = $transport->signature . '/' . $this->payload['class'] . '/' . $this->payload['signature'] . '/';
+                $body['source'] = $transport->signature . '/' . str_replace('\\', '/', $this->payload['class']) . '/' . $this->payload['signature'] . '/';
                 $fileTarget = $transport->path . $body['source'];
                 $body['target'] = $object['target'];
                 $fileName = isset ($object['name']) ? $object['name'] : basename($fileSource);
@@ -137,7 +137,7 @@ class xPDOTransportVehicle extends xPDOVehicle {
      */
     public function put(& $transport, & $object, $attributes = array ()) {
         if (!isset ($this->payload['class'])) {
-            $this->payload['class'] = 'xPDOTransportVehicle';
+            $this->payload['class'] = $this->class;
         }
         if (is_array($object) && isset ($object['source']) && isset ($object['target'])) {
             if (!isset($object['name'])) $object['name'] = basename($object['source']);

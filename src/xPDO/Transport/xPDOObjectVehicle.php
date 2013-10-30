@@ -20,7 +20,7 @@ use xPDO\xPDO;
  * @subpackage transport
  */
 class xPDOObjectVehicle extends xPDOVehicle {
-    public $class = 'xPDOObjectVehicle';
+    public $class = 'xPDO\\Transport\\xPDOObjectVehicle';
 
     /**
      * Retrieve an xPDOObject instance represented in this vehicle.

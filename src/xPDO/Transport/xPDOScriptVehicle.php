@@ -19,7 +19,7 @@ use xPDO\xPDO;
  * @subpackage transport
  */
 class xPDOScriptVehicle extends xPDOVehicle {
-    public $class = 'xPDOScriptVehicle';
+    public $class = 'xPDO\\Transport\\xPDOScriptVehicle';
 
     /**
      * Execute a PHP script represented by and stored in this vehicle.
@@ -69,7 +69,7 @@ class xPDOScriptVehicle extends xPDOVehicle {
      */
     public function put(& $transport, & $object, $attributes = array ()) {
         if (!isset ($this->payload['class'])) {
-            $this->payload['class'] = 'xPDOScriptVehicle';
+            $this->payload['class'] = $this->class;
         }
         if (is_array($object) && isset ($object['source'])) {
             $this->payload['object'] = $object;
@@ -89,7 +89,7 @@ class xPDOScriptVehicle extends xPDOVehicle {
                 $object = $this->payload['object'];
                 $fileSource = $object['source'];
                 $scriptName = basename($fileSource, '.php');
-                $body['source'] = $transport->signature . '/' . $this->payload['class'] . '/' . $this->payload['signature'] . '.' . $scriptName . '.script';
+                $body['source'] = $transport->signature . '/' . str_replace('\\', '/', $this->payload['class']) . '/' . $this->payload['signature'] . '.' . $scriptName . '.script';
                 $fileTarget = $transport->path . $body['source'];
                 $body = array_merge($object, $body);
                 if (!$cacheManager->copyFile($fileSource, $fileTarget)) {
