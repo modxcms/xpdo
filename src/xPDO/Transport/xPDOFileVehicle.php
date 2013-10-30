@@ -68,7 +68,7 @@ class xPDOFileVehicle extends xPDOVehicle {
                     $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, "Installing files from {$fileSource} to {$fileTargetPath}");
                     $copied = array();
                     if ($preExistingMode === xPDOTransport::PRESERVE_PREEXISTING && file_exists($fileTargetPath)) {
-                        $preservedArchive = $transport->path . $transport->signature . '/' . $this->payload['class'] . '/' . $this->payload['signature'] . '.preserved.zip';
+                        $preservedArchive = $transport->path . $transport->signature . '/' . str_replace('\\', '/', $this->payload['class']) . '/' . $this->payload['signature'] . '.preserved.zip';
                         $transport->xpdo->log(xPDO::LOG_LEVEL_INFO, "Attempting to preserve files at {$fileTargetPath} into archive {$preservedArchive}");
                         $preserved = xPDOTransport::_pack($transport->xpdo, $preservedArchive, $fileTarget, $fileName);
                     }
@@ -143,7 +143,7 @@ class xPDOFileVehicle extends xPDOVehicle {
                     $transport->xpdo->log(xPDO::LOG_LEVEL_INFO,'Skipping removal of files according to vehicle attributes.');
                     $uninstalled = true;
                 }
-                $preservedArchive = $transport->path . $transport->signature . '/' . $this->payload['class'] . '/' . $this->payload['signature'] . '.preserved.zip';
+                $preservedArchive = $transport->path . $transport->signature . '/' . str_replace('\\', '/', $this->payload['class']) . '/' . $this->payload['signature'] . '.preserved.zip';
                 if ($preExistingMode === xPDOTransport::RESTORE_PREEXISTING && file_exists($preservedArchive)) {
                     $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Attempting to restore files to {$fileTarget} from archive {$preservedArchive}");
                     $unpackedResult = xPDOTransport::_unpack($transport->xpdo, $preservedArchive, $fileTarget);

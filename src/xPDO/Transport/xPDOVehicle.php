@@ -141,7 +141,7 @@ abstract class xPDOVehicle {
                         $fileSource = $transport->path . $fileMeta['source'];
                         $fileTarget = eval ($fileMeta['target']);
                         $fileTargetPath = $fileTarget . $fileName;
-                        $preservedArchive = $transport->path . $transport->signature . '/' . $this->payload['class'] . '/' . $this->payload['signature'] . '.' . $rKey . '.preserved.zip';
+                        $preservedArchive = $transport->path . $transport->signature . '/' . str_replace('\\', '/', $this->payload['class']) . '/' . $this->payload['signature'] . '.' . $rKey . '.preserved.zip';
                         $cacheManager = $transport->xpdo->getCacheManager();
                         switch ($options[xPDOTransport::PACKAGE_ACTION]) {
                             case xPDOTransport::ACTION_UPGRADE:
@@ -293,7 +293,7 @@ abstract class xPDOVehicle {
             $this->payload['package'] = $packageName;
         }
         if (!isset($this->payload['class'])) {
-            $className = 'xPDOVehicle';
+            $className = $this->class;
             if (is_object($object)) {
                 if ($object instanceof xPDOObject) {
                     $className = $object->_class;
@@ -353,7 +353,7 @@ abstract class xPDOVehicle {
             $content .= var_export($this->payload, true);
             $content .= ';';
             $this->payload['filename'] = $this->payload['signature'] . '.vehicle';
-            $vFileName = $transport->path . $transport->signature . '/' . $this->payload['class'] . '/' . $this->payload['filename'];
+            $vFileName = $transport->path . $transport->signature . '/' . str_replace('\\', '/', $this->payload['class']) . '/' . $this->payload['filename'];
             if (!($stored = $cacheManager->writeFile($vFileName, $content))) {
                 $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not store vehicle to file ' . $vFileName);
             }
@@ -377,7 +377,7 @@ abstract class xPDOVehicle {
                     switch ($type) {
                         case 'file' :
                             $fileSource = $r['source'];
-                            $body['source'] = $transport->signature . '/' . $this->payload['class'] . '/' . $this->payload['signature'] . '/' . $rKey . '/';
+                            $body['source'] = $transport->signature . '/' . str_replace('\\', '/', $this->payload['class']) . '/' . $this->payload['signature'] . '/' . $rKey . '/';
                             $fileTarget = $transport->path . $body['source'];
                             $body['target'] = $r['target'];
                             $fileName = isset ($r['name']) ? $r['name'] : basename($fileSource);
@@ -406,7 +406,7 @@ abstract class xPDOVehicle {
                         case 'php' :
                             $fileSource = $r['source'];
                             $scriptName = basename($fileSource, '.php');
-                            $body['source'] = $transport->signature . '/' . $this->payload['class'] . '/' . $this->payload['signature'] . '.' . $scriptName . '.resolver';
+                            $body['source'] = $transport->signature . '/' . str_replace('\\', '/', $this->payload['class']) . '/' . $this->payload['signature'] . '.' . $scriptName . '.resolver';
                             $fileTarget = $transport->path . $body['source'];
                             $body['name'] = $scriptName;
                             $body = array_merge($r, $body);
@@ -438,7 +438,7 @@ abstract class xPDOVehicle {
                         case 'php' :
                             $fileSource = $v['source'];
                             $scriptName = basename($fileSource, '.php');
-                            $body['source'] = $transport->signature . '/' . $this->payload['class'] . '/' . $this->payload['signature'] . '.' . $scriptName . '.validator';
+                            $body['source'] = $transport->signature . '/' . str_replace('\\', '/', $this->payload['class']) . '/' . $this->payload['signature'] . '.' . $scriptName . '.validator';
                             $fileTarget = $transport->path . $body['source'];
                             $body['name'] = $scriptName;
                             $body = array_merge($v, $body);
