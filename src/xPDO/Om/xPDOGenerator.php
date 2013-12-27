@@ -776,6 +776,7 @@ EOD;
     protected function _loadClass($class, &$meta) {
         $meta['class-header'] = $this->_constructClassHeader($class, $meta);
         $meta['class-declaration'] = $this->_constructClassDeclaration($class, $meta);
+        $meta['class-traits'] = '';
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
             $meta['class-traits'] = implode("\n", $this->_constructClassTraits($class, $meta));
         }
