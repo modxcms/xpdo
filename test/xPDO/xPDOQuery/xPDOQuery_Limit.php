@@ -108,6 +108,10 @@ class xPDOQueryLimitTest extends xPDOTestCase {
      * @param boolean $shouldEqual If the result count should equal the limit
      */
     public function testLimitWithGroupBy($limit,$start = 0,$shouldEqual = true) {
+        // skip pgsql, oci
+        if (in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
     	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Item');
@@ -126,6 +130,45 @@ class xPDOQueryLimitTest extends xPDOTestCase {
      * @see testLimitWithGroupBy
      */
     public function providerLimitWithGroupBy() {
+        return array(
+            array(3,0,true), /* limit 3, start at 0 */
+        );
+    }
+
+    /**
+     * Test limit with groupby clause
+     * @dataProvider providerLimitWithGroupByANSI
+     * @param int $limit A number to limit by
+     * @param int $start The index to start on
+     * @param boolean $shouldEqual If the result count should equal the limit
+     */
+    public function testLimitWithGroupByANSI($limit,$start = 0,$shouldEqual = true) {
+        // skip mysql, test above is for it
+        if (!in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
+        if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
+        try {
+            $criteria = $this->xpdo->newQuery('Item');
+            $criteria->select(array(
+                $this->xpdo->getSelectColumns('Item', 'Item', '', array('id', 'color'))
+            ));
+            $criteria->groupby('id');
+            $criteria->groupby('color');
+            $criteria->limit($limit,$start);
+            $result = $this->xpdo->getCollection('Item',$criteria);
+        } catch (Exception $e) {
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
+        }
+        $success = count($result) == $limit;
+        if (!$shouldEqual) $success = !$success;
+        $this->assertTrue($success,'xPDOQuery: Limit clause grouped by color returned more than desired '.$limit.' result.');
+    }
+    /**
+     * Data provider for testLimit
+     * @see testLimitWithGroupBy
+     */
+    public function providerLimitWithGroupByANSI() {
         return array(
             array(3,0,true), /* limit 3, start at 0 */
         );

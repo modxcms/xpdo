@@ -85,14 +85,14 @@ class xPDOManager_pgsql extends xPDOManager {
             if ($dsnArray === null) $dsnArray = xPDO::parseDSN($this->xpdo->getOption('dsn'));
             if ($username === null) $username = $this->xpdo->getOption('username', null, '');
             if ($password === null) $password = $this->xpdo->getOption('password', null, '');
-            if (is_array($dsnArray) && is_string($username) && is_string($password)) {
+            if (is_array($dsnArray) && is_string($username) && is_string($password) && $this->xpdo->connect()) {
                 //Make sure noone can connect to database
                 if ($this->xpdo->exec("update pg_database set datallowconn = 'false' where datname = '{$dsnArray['dbname']}'")) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Updated database to prevent connections to it\n");
                     
                 }
                 //Force kill connections to database
-                if (version_compare($this->xpdo->pdo->getAttribute(PDO::ATTR_SERVER_VERSION), '9.2', '>=')) {
+                if (version_compare($this->xpdo->getAttribute(PDO::ATTR_SERVER_VERSION), '9.2', '>=')) {
                     $procpid = 'pid';
                 } else {
                     $procpid = 'procpid';

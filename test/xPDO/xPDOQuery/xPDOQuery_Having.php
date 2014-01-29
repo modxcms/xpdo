@@ -66,6 +66,10 @@ class xPDOQueryHavingTest extends xPDOTestCase {
      * Test getCount with a groupby set.
      */
     public function testGetCountWithGroupBy() {
+        // Skip postgresql and oci due to ansi compliance with group by
+        if (in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
         $criteria = $this->xpdo->newQuery('Item');
         $criteria->select(array(
             'color' => $this->xpdo->escape('color'),
@@ -77,10 +81,33 @@ class xPDOQueryHavingTest extends xPDOTestCase {
     }
 
     /**
+     * Test getCount with a groupby set.
+     */
+    public function testGetCountWithGroupByANSI() {
+        // skip mysql, test above is for it
+        if (!in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
+        $criteria = $this->xpdo->newQuery('Item');
+        $criteria->select(array(
+            'color' => $this->xpdo->escape('color'),
+            'color_count' => "COUNT({$this->xpdo->escape('id')})"
+        ));
+        $criteria->groupby('color');
+        $criteria->prepare();
+        $criteria->stmt->execute();
+        $this->assertEquals(4, count($criteria->stmt->fetchAll(PDO::FETCH_ASSOC)));
+    }
+
+    /**
      * Test having
      * @dataProvider providerHaving
      */
     public function testHaving($having, $nameOfFirst) {
+        // Skip postgresql and oci due to ansi compliance with group by
+        if (in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
     	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         $success = false;
         try {
@@ -114,10 +141,59 @@ class xPDOQueryHavingTest extends xPDOTestCase {
     }
 
     /**
+     * Test having
+     * @dataProvider providerHaving
+     */
+    public function testHavingANSI($having, $nameOfFirst) {
+        // skip mysql, test above is for it
+        if (!in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
+        if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
+        $success = false;
+        try {
+            $criteria = $this->xpdo->newQuery('Item');
+            $criteria->select(array(
+                $this->xpdo->getSelectColumns('Item', 'Item', '', array('id', 'name', 'color'))
+            ));
+            $criteria->groupby('id');
+            $criteria->groupby('name');
+            $criteria->groupby('color');
+            $criteria->sortby('name', 'ASC'); // Cannot rely on order which DB returns
+            $criteria->having($having);
+            $result = $this->xpdo->getCollection('Item',$criteria);
+            if (is_array($result) && !empty($result)) {
+                foreach ($result as $r) { $result = $r; break; }
+                $name = $result->get('name');
+                $this->assertEquals($nameOfFirst,$name,'xPDOQuery: Having clause did not return expected result, returned `'.$name.'` instead.');
+            } else {
+                throw new Exception('xPDOQuery: Having test getCollection call did not return an array');
+            }
+        } catch (Exception $e) {
+            $this->assertTrue(false,$e->getMessage());
+        }
+    }
+    /**
+     * Data provider for testHaving
+     * @see testHaving
+     */
+    public function providerHavingANSI() {
+        return array(
+            array(array('color' => 'red'),'item-04'),
+            array(array('color' => 'green'),'item-01'),
+            array(array('id:<' => 3, 'AND:id:>' => 1),'item-02'),
+        );
+    }
+
+    /**
      * Test having with groupby statement
      * @dataProvider providerHavingWithGroupBy
      */
     public function testHavingWithGroupBy($having,$nameOfFirst) {
+        // skip pgsql and oci
+        if (in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
     	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         try {
             $criteria = $this->xpdo->newQuery('Item');
@@ -148,12 +224,60 @@ class xPDOQueryHavingTest extends xPDOTestCase {
         );
     }
 
+    /**
+     * Test having with groupby statement
+     * @dataProvider providerHavingWithGroupByANSI
+     */
+    public function testHavingWithGroupByANSI($having,$nameOfFirst) {
+        // skip mysql, test above is for it
+        if (!in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
+        if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
+        try {
+            $criteria = $this->xpdo->newQuery('Item');
+            $criteria->select(array(
+                $this->xpdo->getSelectColumns('Item', 'Item', '', array('id','name')) // id cause of xPDO requires it
+            ));
+            $criteria->groupby('id');
+            $criteria->groupby('name');
+            $criteria->having($having);
+            $criteria->sortby('name', 'ASC'); // Cannot rely on order which DB returns
+            $result = $this->xpdo->getCollection('Item',$criteria);
+            if (is_array($result) && !empty($result)) {
+                $match = null;
+                foreach ($result as $r) { $match = $r; break; }
+                $name = $match->get('name');
+                $this->assertEquals($nameOfFirst,$name,'xPDOQuery: Having did not return expected result, returned `'.$name.'` instead.');
+            } else {
+                throw new Exception('xPDOQuery: Having test with groupby call did not return an array');
+            }
+        } catch (Exception $e) {
+            $this->assertTrue(false,$e->getMessage());
+        }
+    }
+    /**
+     * Data provider for testHavingWithGroupBy
+     * @see testHavingWithGroupBy
+     */
+    public function providerHavingWithGroupByANSI() {
+        return array(
+            array(array('color' => 'red'),'item-04'),
+            array(array('color' => 'green'),'item-01'),
+            array(array('id:<' => 3, 'AND:id:>' => 1),'item-02'),
+        );
+    }
+
 
     /**
      * Test having with limit statement
      * @dataProvider providerHavingWithLimit
      */
     public function testHavingWithLimit($having,$limit,$start,$nameOfFirst) {
+        // skip pgsql and oci
+        if (in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
     	if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         $success = false;
         try {
@@ -180,6 +304,52 @@ class xPDOQueryHavingTest extends xPDOTestCase {
      * @see testHavingWithLimit
      */
     public function providerHavingWithLimit() {
+        return array(
+            array(array('color' => 'red'),1,0,'item-04'),
+            array(array('color' => 'green'),1,0,'item-01'),
+            array(array('id:<' => 3, 'AND:id:>' => 1),1,0,'item-02'),
+        );
+    }
+
+    /**
+     * Test having with limit statement
+     * @dataProvider providerHavingWithLimitANSI
+     */
+    public function testHavingWithLimitANSI($having,$limit,$start,$nameOfFirst) {
+        // skip mysql, test above is for it
+        if (!in_array(xPDOTestHarness::$properties['xpdo_driver'], array('pgsql', 'oci'))) {
+            return true;
+        }
+        if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
+        $success = false;
+        try {
+            $criteria = $this->xpdo->newQuery('Item');
+            $criteria->select(array(
+                $this->xpdo->getSelectColumns('Item', 'Item', '', array('id', 'name', 'color'))
+            ));
+            $criteria->groupby('id');
+            $criteria->groupby('name');
+            $criteria->groupby('color');
+            $criteria->having($having);
+            $criteria->sortby('name', 'ASC'); // Cannot rely on order which DB returns
+            $criteria->limit($limit,$start);
+            $result = $this->xpdo->getCollection('Item',$criteria);
+            if (is_array($result) && !empty($result)) {
+                foreach ($result as $r) { $result = $r; break; }
+                $name = $result->get('name');
+                $this->assertEquals($nameOfFirst,$name,'xPDOQuery: Having did not return expected result `'.$nameOfFirst.'`, returned `'.$name.'` instead: '.$criteria->toSql());
+            } else {
+                throw new Exception('xPDOQuery: Having test with limit call did not return an array');
+            }
+        } catch (Exception $e) {
+            $this->assertTrue(false,$e->getMessage());
+        }
+    }
+    /**
+     * Data provider for testHavingWithGroupBy
+     * @see testHavingWithLimit
+     */
+    public function providerHavingWithLimitANSI() {
         return array(
             array(array('color' => 'red'),1,0,'item-04'),
             array(array('color' => 'green'),1,0,'item-01'),
