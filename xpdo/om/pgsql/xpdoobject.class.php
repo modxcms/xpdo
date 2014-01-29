@@ -45,7 +45,7 @@ if (!class_exists('xPDOObject')) {
 class xPDOObject_pgsql extends xPDOObject {
     public static function _save(xPDOObject &$obj, $cacheFlag= null) {
         if ($obj->isLazy()) {
-            $obj->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Attempt to save lazy object: ' . print_r($this->toArray('', true), 1));
+            $obj->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Attempt to save lazy object: ' . print_r($obj->toArray('', true), 1));
             return false;
         }
         $result= true;

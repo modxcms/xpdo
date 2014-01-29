@@ -92,7 +92,12 @@ class xPDOManager_pgsql extends xPDOManager {
                     
                 }
                 //Force kill connections to database
-                if ($this->xpdo->exec("SELECT pg_terminate_backend(procpid) FROM pg_stat_activity WHERE datname = '{$dsnArray['dbname']}'")) {
+                if (version_compare($this->xpdo->pdo->getAttribute(PDO::ATTR_SERVER_VERSION), '9.2', '>=')) {
+                    $procpid = 'pid';
+                } else {
+                    $procpid = 'procpid';
+                }
+                if ($this->xpdo->exec("SELECT pg_terminate_backend({$procpid}) FROM pg_stat_activity WHERE datname = '{$dsnArray['dbname']}'")) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "All connections to database dropped\n");
                 }
                 $sql= 'DROP DATABASE IF EXISTS ' . $this->xpdo->escape($dsnArray['dbname']);
@@ -104,6 +109,7 @@ class xPDOManager_pgsql extends xPDOManager {
                     } else {
                         $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not remove source container:\n{$sql}\nresult = " . var_export($result, true));
                     }
+                    $pdo = null;
                 } catch (PDOException $pe) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not connect to database server: " . $pe->getMessage());
                 } catch (Exception $e) {
