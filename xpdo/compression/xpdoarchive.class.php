@@ -248,7 +248,9 @@ class xPDOArchive {
 
                 if (!empty($sysfns)) {
                     $sysfn = key($sysfns); // get the first available system function
-                    if (!empty($sysfn('which tar'))) {
+                    $library = $options['type'] === 'zip' ? $sysfn('which unzip') : $sysfn('which tar');
+                    
+                    if (!empty($library)) {
                         $command = implode(' ', array(
                             $options['type'] === 'zip' ? 'unzip' : 'tar',
                             $options['type'] === 'zip' ? '' : ('-xv' . (stristr($options['type'], 'gz') ? 'z' : (stristr($options['type'], 'bz2') ? 'j' : '')) . 'f'),
