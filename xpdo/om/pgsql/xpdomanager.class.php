@@ -89,7 +89,6 @@ class xPDOManager_pgsql extends xPDOManager {
                 //Make sure noone can connect to database
                 if ($this->xpdo->exec("update pg_database set datallowconn = 'false' where datname = '{$dsnArray['dbname']}'")) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Updated database to prevent connections to it\n");
-                    
                 }
                 //Force kill connections to database
                 if (version_compare($this->xpdo->getAttribute(PDO::ATTR_SERVER_VERSION), '9.2', '>=')) {
@@ -102,7 +101,7 @@ class xPDOManager_pgsql extends xPDOManager {
                 }
                 $sql= 'DROP DATABASE IF EXISTS ' . $this->xpdo->escape($dsnArray['dbname']);
                 try {
-                    $pdo = new PDO("pgsql:host={$dsnArray['host']};port={$dsnArray['port']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+                    $pdo = new PDO("pgsql:host={$dsnArray['host']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
                     $result = $pdo->exec($sql);
                     if ($result !== false) {
                         $removed = true;
