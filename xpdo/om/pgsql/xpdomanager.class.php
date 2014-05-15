@@ -97,12 +97,12 @@ class xPDOManager_pgsql extends xPDOManager {
                 } else {
                     $procpid = 'procpid';
                 }
-                if ($this->xpdo->exec("SELECT pg_terminate_backend({$procpid}) FROM pg_stat_activity WHERE datname = '{$dsnArray['dbname']}'")) {
+                if ($this->xpdo->exec("SELECT pg_terminate_backend(pg_stat_activity.{$procpid}) FROM pg_stat_activity WHERE pg_stat_activity.datname = '{$dsnArray['dbname']}'")) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "All connections to database dropped\n");
                 }
                 $sql= 'DROP DATABASE IF EXISTS ' . $this->xpdo->escape($dsnArray['dbname']);
                 try {
-                    $pdo = new PDO("pgsql:host={$dsnArray['host']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+                    $pdo = new PDO("pgsql:host={$dsnArray['host']};port={$dsnArray['port']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
                     $result = $pdo->exec($sql);
                     if ($result !== false) {
                         $removed = true;
