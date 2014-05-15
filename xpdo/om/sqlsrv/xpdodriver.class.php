@@ -71,4 +71,8 @@ class xPDODriver_sqlsrv extends xPDODriver {
         $this->dbtypes['binary']= array('/BINARY$/i','/^IMAGE$/i');
         $this->dbtypes['bit']= array('/^BIT$/i');
     }
+
+    public function lastInsertId($className = null, $column = null) {
+        return $this->xpdo->pdo->lastInsertId();
+    }
 }

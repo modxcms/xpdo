@@ -82,4 +82,8 @@ class xPDODriver_mysql extends xPDODriver {
         $this->dbtypes['binary']= array('/BINARY/i','/BLOB/i');
         $this->dbtypes['bit']= array('/^BIT$/i');
     }
+
+    public function lastInsertId($className = null, $column = null) {
+        return $this->xpdo->pdo->lastInsertId();
+    }
 }
