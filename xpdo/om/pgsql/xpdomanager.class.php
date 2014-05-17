@@ -51,13 +51,13 @@ class xPDOManager_pgsql extends xPDOManager {
             if (is_array($dsnArray) && is_string($username) && is_string($password)) {
                 $sql= 'CREATE DATABASE ' . $this->xpdo->escape($dsnArray['dbname']);
                 if (isset ($containerOptions['charset'])) {
-                    $sql.= ' WITH ENCODING ' . $containerOptions['charset'];
+                    $sql.= ' WITH ENCODING ' . $this->xpdo->quote($containerOptions['charset']);
                 }
                 if (isset ($containerOptions['collation'])) {
                     if (!isset ($containerOptions['charset'])) {
                         $sql . " WITH";
                     }
-                    $sql.= ' LC_COLLATE ' . $containerOptions['collation'];
+                    $sql.= ' LC_COLLATE ' .$this->xpdo->quote($containerOptions['collation']);
                 }
                 try {
                     $pdo = new PDO("pgsql:host={$dsnArray['host']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
