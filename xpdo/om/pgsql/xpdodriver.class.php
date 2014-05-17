@@ -91,7 +91,6 @@ class xPDODriver_pgsql extends xPDODriver {
             if ($sequence = $seqStmt->fetchColumn()) {
                 $return = intval($sequence);
             }
-            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "SEQUENCE ID: " . $return);
         }
         return $return;
     }
