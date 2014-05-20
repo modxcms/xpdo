@@ -69,13 +69,14 @@ class xPDODriver_pgsql extends xPDODriver {
         parent :: __construct($xpdo);
         $this->dbtypes['integer']= array('/INT/i', '/SERIAL$/i');
         $this->dbtypes['boolean']= array('/^BOOLEAN$/i');
-        $this->dbtypes['float']= array('/^DECIMAL$/i','/^NUMERIC$/i','/^REAL/i','/^DOUBLE/i','/^REAL/i');
-        $this->dbtypes['string']= array('/CHAR/i','/^TEXT$/i','/^ENUM$/i', '/^CIDR$/i', '/^INET$/i', '/^MACADDR$/i');
+        $this->dbtypes['float']= array('/^DECIMAL$/i','/^NUMERIC$/i','/^REAL/i','/^DOUBLE/i');
+        $this->dbtypes['string']= array('/CHAR/i','/^TEXT$/i','/^ENUM$/i', '/^CIDR$/i', '/^INET$/i', '/^MACADDR$/i', '/^MONEY$/i');
         $this->dbtypes['timestamp']= array('/^TIMESTAMP$/i');
         $this->dbtypes['date']= array('/^DATE$/i');
         $this->dbtypes['time']= array('/^TIME$/i');
         $this->dbtypes['binary']= array('/BYTEA/i');
         $this->dbtypes['bit']= array('/^BIT/i');
+        $this->dbtypes['json'] = array('/^JSON$/i');
     }
     
     public function lastInsertId($className = null, $column = null) {
