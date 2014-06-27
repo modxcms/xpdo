@@ -780,7 +780,7 @@ class xPDOObject {
     public function set($k, $v= null, $vType= '') {
         $set= false;
         $callback= '';
-        if ($this->_fieldMeta[$k]['generated'] === 'callback' && isset($this->_fieldMeta[$k]['callback']) && empty($vType)) {
+        if (iseet($this->_fieldMeta[$k]['generated']) && $this->_fieldMeta[$k]['generated'] === 'callback' && isset($this->_fieldMeta[$k]['callback']) && empty($vType)) {
             $callable = is_callable($this->_fieldMeta[$k]['callback'], false, $callback);
         } else {
             $callable= !empty($vType) && is_callable($vType, false, $callback) ? true : false;
