@@ -2,7 +2,7 @@
 #
 # This script runs the xPDO Test Harness.
 #
-# Copyright 2010-2013 by MODX, LLC.
+# Copyright 2010-2014 by MODX, LLC.
 #
 # This file is part of xPDO.
 #
@@ -20,4 +20,4 @@
 # Suite 330, Boston, MA 02111-1307 USA
 #
 
-phpunit --colors xPDOTestHarness
+phpunit --colors --syntax-check xPDOTestHarness
