@@ -1,8 +1,8 @@
 <?php
-/*
+/**
  * This file is part of the xPDO package.
  *
- * Copyright (c) 2010-2013 MODX, LLC
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -11,8 +11,8 @@
 /**
  * This is the main xPDO class.
  *
- * @author Jason Coward <xpdo@opengeek.com>
- * @copyright Copyright (C) 2006-2013, Jason Coward
+ * @author Jason Coward <jason@opengeek.com>
+ * @copyright Copyright (C) 2006-2014, Jason Coward
  * @license http://opensource.org/licenses/gpl-2.0.php GNU Public License v2
  * @package xpdo
  */
