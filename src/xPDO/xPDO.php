@@ -294,7 +294,7 @@ class xPDO {
             $this->config = array_merge($this->config, $this->getConnection($initOptions)->config);
             $this->getDriver();
             $this->map = new xPDOMap($this);
-            $this->setPackage('om', XPDO_CORE_PATH, $this->config[xPDO::OPT_TABLE_PREFIX]);
+            $this->setPackage('Om', XPDO_CORE_PATH, $this->config[xPDO::OPT_TABLE_PREFIX]);
             if (isset($this->config[xPDO::OPT_BASE_PACKAGES]) && !empty($this->config[xPDO::OPT_BASE_PACKAGES])) {
                 $basePackages= explode(',', $this->config[xPDO::OPT_BASE_PACKAGES]);
                 foreach ($basePackages as $basePackage) {
