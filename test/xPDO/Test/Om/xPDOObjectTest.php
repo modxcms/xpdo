@@ -586,7 +586,7 @@ class xPDOObjectTest extends TestCase
     /**
      * Test removing an object
      */
-    public function testRemoveObject()
+    public function testRemove()
     {
         $result = false;
 
@@ -608,6 +608,24 @@ class xPDOObjectTest extends TestCase
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue($result == true, "Error removing data.");
+    }
+
+    /**
+     * Test xPDO->removeObject()
+     */
+    public function testRemoveObject() {
+        $person = $this->xpdo->newObject('xPDO\\Test\\Sample\\Person');
+        $person->set('first_name', 'Kurt');
+        $person->set('last_name', 'Dirt');
+        $person->set('middle_name', 'Remover');
+        $person->set('dob', '1978-10-23');
+        $person->set('gender', 'F');
+        $person->set('password', 'fdsfdsfdsfds');
+        $person->set('username', 'dirt@remover.com');
+        $person->set('security_level',1);
+        $person->save();
+
+        $this->assertTrue($this->xpdo->removeObject('xPDO\\Test\\Sample\\Person', array('first_name' => 'Kurt', 'last_name' => 'Dirt')), 'Error removing object with xPDO->removeObject()');
     }
 
     /**
