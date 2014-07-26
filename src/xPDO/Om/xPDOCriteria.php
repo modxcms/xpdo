@@ -153,12 +153,13 @@ class xPDOCriteria {
     /**
      * Converts the current xPDOQuery to parsed SQL.
      *
-     * @access public
+     * @param bool $parseBindings If true, bindings are parsed locally; otherwise
+     * they are left in place.
      * @return string The parsed SQL query.
      */
-    public function toSQL() {
+    public function toSQL($parseBindings = true) {
         $sql = $this->sql;
-        if (!empty($this->bindings)) {
+        if ($parseBindings && !empty($this->bindings)) {
             $sql = $this->xpdo->parseBindings($sql, $this->bindings);
         }
         return $sql;
