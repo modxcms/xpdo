@@ -33,8 +33,8 @@ class xPDOQueryTest extends TestCase {
 
             $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\Phone');
             $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\Person');
-			$this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\PersonPhone');
-			$this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\BloodType');
+            $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\PersonPhone');
+            $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\BloodType');
 
             $bloodTypes = array('A+','A-','B+','B-','AB+','AB-','O+','O-');
             foreach ($bloodTypes as $bloodType) {
@@ -98,14 +98,14 @@ class xPDOQueryTest extends TestCase {
         try {
             $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Phone');
             $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Person');
-			$this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\PersonPhone');
-			$this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\BloodType');
+            $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\PersonPhone');
+            $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\BloodType');
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         parent::tearDown();
     }
-    
+
     /**
      * Test xPDOQuery->where() statements
      */
@@ -311,7 +311,7 @@ class xPDOQueryTest extends TestCase {
             array(4,999,'abc'),
         );
     }
-    
+
     /**
      * Test LIKE xPDOQuery conditions
      */
@@ -327,7 +327,7 @@ class xPDOQueryTest extends TestCase {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue(!empty($result),'xPDOQuery: LIKE %.. Clause does not find the correct result.');
-        
+
         /* test LIKE ..% */
         try {
             $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
@@ -531,6 +531,27 @@ class xPDOQueryTest extends TestCase {
             array(1,true),
             array(2,true),
             array(5,false),
+        );
+    }
+
+    /**
+     * @param $clause
+     * @dataProvider providerInvalidClauses
+     */
+    public function testInvalidClauses($clause) {
+        $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+        $criteria->where($clause);
+        $result = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person');
+
+        $this->assertTrue($result === null, 'xPDOQuery allowed invalid clause');
+    }
+    public function providerInvalidClauses() {
+        return array(
+            array("1=1;DROP TABLE `person`"),
+            array("1=1 UNION SELECT * FROM `person` WHERE id = 2"),
+            array("1=1 UNION SELECT * FROM `person` WHERE id = 2;"),
+            array(array("1=1; DROP TABLE `person`;" => '')),
+            array(array("1=1 UNION SELECT * FROM `person` WHERE id = 2" => '')),
         );
     }
 }

@@ -11,6 +11,7 @@
 namespace xPDO\Om;
 
 use xPDO\xPDO;
+use xPDO\xPDOException;
 
 /**
  * An xPDOCriteria derivative for constructing complex SQL statements using a model-aware API.
@@ -370,7 +371,12 @@ abstract class xPDOQuery extends xPDOCriteria {
     public function condition(& $target, $conditions= '1', $conjunction= xPDOQuery::SQL_AND, $binding= null, $condGroup= 0) {
         $condGroup= intval($condGroup);
         if (!isset ($target[$condGroup])) $target[$condGroup]= array ();
-        $target[$condGroup][]= $this->parseConditions($conditions, $conjunction);
+        try {
+            $target[$condGroup][] = $this->parseConditions($conditions, $conjunction);
+        } catch (xPDOException $e) {
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage());
+            $this->where("2=1");
+        }
         return $this;
     }
 
@@ -422,7 +428,12 @@ abstract class xPDOQuery extends xPDOCriteria {
     }
 
     public function having($conditions) {
-        $this->query['having'][] = $this->parseConditions((array) $conditions);
+        try {
+            $this->query['having'][] = $this->parseConditions((array)$conditions);
+        } catch (xPDOException $e) {
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage());
+            $this->where("2=1");
+        }
         return $this;
     }
 
@@ -636,8 +647,10 @@ abstract class xPDOQuery extends xPDOCriteria {
     /**
      * Parses an xPDO condition expression into one or more xPDOQueryConditions.
      *
-     * @param mixed $conditions A valid xPDO condition expression.
+     * @param mixed  $conditions A valid xPDO condition expression.
      * @param string $conjunction The optional conjunction for the condition( s ).
+     *
+     * @throws \xPDO\xPDOException
      * @return array||xPDOQueryCondition An xPDOQueryCondition or array of xPDOQueryConditions.
      */
     public function parseConditions($conditions, $conjunction = xPDOQuery::SQL_AND) {
@@ -683,6 +696,8 @@ abstract class xPDOQuery extends xPDOCriteria {
                             continue;
                         }
                     } elseif (is_scalar($val) || is_array($val) || $val === null) {
+                        $alias= $command == 'SELECT' ? $this->_alias : $this->xpdo->getTableName($this->_class, false);
+                        $alias= trim($alias, $this->xpdo->_escapeCharOpen . $this->xpdo->_escapeCharClose);
                         $operator= '=';
                         $conj = $conjunction;
                         $key_operator= explode(':', $key);
@@ -703,56 +718,62 @@ abstract class xPDOQuery extends xPDOCriteria {
                         if (!array_key_exists($key, $fieldMeta)) {
                             if (array_key_exists($key, $fieldAliases)) {
                                 $key= $fieldAliases[$key];
+                            } else {
+                                $key= '';
                             }
                         }
-                        if ($val === null) {
-                            $type= \PDO::PARAM_NULL;
-                            if (!in_array($operator, array('IS', 'IS NOT'))) {
-                                $operator= $operator === '!=' ? 'IS NOT' : 'IS';
-                            }
-                        }
-                        elseif (isset($fieldMeta[$key]) && !in_array($fieldMeta[$key]['phptype'], $this->_quotable)) {
-                            $type= \PDO::PARAM_INT;
-                        }
-                        else {
-                            $type= \PDO::PARAM_STR;
-                        }
-                        if (in_array(strtoupper($operator), array('IN', 'NOT IN')) && is_array($val)) {
-                            $vals = array();
-                            foreach ($val as $v) {
-                                if ($v === null) {
-                                    $vals[] = null;
-                                } else {
-                                    switch ($type) {
-                                        case \PDO::PARAM_INT:
-                                            $vals[] = (integer) $v;
-                                            break;
-                                        case \PDO::PARAM_STR:
-                                            $vals[] = $this->xpdo->quote($v);
-                                            break;
-                                        default:
-                                            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error parsing {$operator} condition with key {$key}: " . print_r($v, true));
-                                            break;
-                                    }
+                        if (!empty($key)) {
+                            if ($val === null) {
+                                $type= \PDO::PARAM_NULL;
+                                if (!in_array($operator, array('IS', 'IS NOT'))) {
+                                    $operator= $operator === '!=' ? 'IS NOT' : 'IS';
                                 }
                             }
-                            if (empty($vals)) {
-                                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Encountered empty {$operator} condition with key {$key}");
+                            elseif (isset($fieldMeta[$key]) && !in_array($fieldMeta[$key]['phptype'], $this->_quotable)) {
+                                $type= \PDO::PARAM_INT;
                             }
-                            $val = "(" . implode(',', $vals) . ")";
-                            $sql = "{$this->xpdo->escape($alias)}.{$this->xpdo->escape($key)} {$operator} {$val}";
-                            $result[]= new xPDOQueryCondition(array('sql' => $sql, 'binding' => null, 'conjunction' => $conj));
-                            continue;
+                            else {
+                                $type= \PDO::PARAM_STR;
+                            }
+                            if (in_array(strtoupper($operator), array('IN', 'NOT IN')) && is_array($val)) {
+                                $vals = array();
+                                foreach ($val as $v) {
+                                    if ($v === null) {
+                                        $vals[] = null;
+                                    } else {
+                                        switch ($type) {
+                                            case \PDO::PARAM_INT:
+                                                $vals[] = (integer) $v;
+                                                break;
+                                            case \PDO::PARAM_STR:
+                                                $vals[] = $this->xpdo->quote($v);
+                                                break;
+                                            default:
+                                                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error parsing {$operator} condition with key {$key}: " . print_r($v, true));
+                                                break;
+                                        }
+                                    }
+                                }
+                                if (empty($vals)) {
+                                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Encountered empty {$operator} condition with key {$key}");
+                                }
+                                $val = "(" . implode(',', $vals) . ")";
+                                $sql = "{$this->xpdo->escape($alias)}.{$this->xpdo->escape($key)} {$operator} {$val}";
+                                $result[]= new xPDOQueryCondition(array('sql' => $sql, 'binding' => null, 'conjunction' => $conj));
+                                continue;
+                            }
+                            $field= array ();
+                            $field['sql']= $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($key) . ' ' . $operator . ' ?';
+                            $field['binding']= array (
+                                'value' => $val,
+                                'type' => $type,
+                                'length' => 0
+                            );
+                            $field['conjunction']= $conj;
+                            $result[]= new xPDOQueryCondition($field);
+                        } else {
+                            throw new xPDOException("Invalid query expression");
                         }
-                        $field= array ();
-                        $field['sql']= $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($key) . ' ' . $operator . ' ?';
-                        $field['binding']= array (
-                            'value' => $val,
-                            'type' => $type,
-                            'length' => 0
-                        );
-                        $field['conjunction']= $conj;
-                        $result[]= new xPDOQueryCondition($field);
                     }
                 }
             }
@@ -760,11 +781,11 @@ abstract class xPDOQuery extends xPDOCriteria {
         elseif ($this->isConditionalClause($conditions)) {
             $result= new xPDOQueryCondition(array(
                 'sql' => $conditions
-                ,'binding' => null
-                ,'conjunction' => $conjunction
+            ,'binding' => null
+            ,'conjunction' => $conjunction
             ));
         }
-        elseif (($pktype == 'integer' && is_numeric($conditions)) || ($pktype == 'string' && is_string($conditions))) {
+        elseif (($pktype == 'integer' && is_numeric($conditions)) || ($pktype == 'string' && is_string($conditions) && $this->isValidClause($conditions))) {
             if ($pktype == 'integer') {
                 $param_type= \PDO::PARAM_INT;
             } else {
@@ -782,11 +803,16 @@ abstract class xPDOQuery extends xPDOCriteria {
      * Determines if a string contains a conditional operator.
      *
      * @param string $string The string to evaluate.
+     *
+     * @throws \xPDO\xPDOException
      * @return boolean True if the string is a complete conditional SQL clause.
      */
     public function isConditionalClause($string) {
         $matched= false;
         if (is_string($string)) {
+            if (!$this->isValidClause($string)) {
+                throw new xPDOException("SQL injection attempt detected: {$string}");
+            }
             foreach ($this->_operators as $operator) {
                 if (strpos(strtoupper($string), $operator) !== false) {
                     $matched= true;
@@ -795,6 +821,15 @@ abstract class xPDOQuery extends xPDOCriteria {
             }
         }
         return $matched;
+    }
+
+    protected function isValidClause($clause) {
+        $output = rtrim($clause, ' ;');
+        $output = preg_replace("/\\\\'.*?\\\\'/", '{mask}', $output);
+        $output = preg_replace('/\\".*?\\"/', '{mask}', $output);
+        $output = preg_replace("/'.*?'/", '{mask}', $output);
+        $output = preg_replace('/".*?"/', '{mask}', $output);
+        return strpos($output, ';') === false && strpos(strtolower($output), 'union') === false;
     }
 
     /**
