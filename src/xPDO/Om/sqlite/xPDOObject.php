@@ -17,4 +17,8 @@ namespace xPDO\Om\sqlite;
  *
  * @package xPDO\Om\sqlite
  */
-class xPDOObject extends \xPDO\Om\xPDOObject {}
+class xPDOObject extends \xPDO\Om\xPDOObject {
+    public static $metaMap = array(
+        'table' => null
+    );
+}

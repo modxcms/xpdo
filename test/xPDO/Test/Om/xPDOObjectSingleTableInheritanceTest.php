@@ -138,6 +138,9 @@ class xPDOObjectSingleTableInheritanceTest extends TestCase
      */
     public function testGetDerivedObject()
     {
+        $baseObject = null;
+        $derivedObject = null;
+        $derivedObject2 = null;
         try {
             $baseObject = $this->xpdo->getObject('xPDO\\Test\\Sample\\STI\\baseClass', array('field1' => 1));
             $derivedObject = $this->xpdo->getObject('xPDO\\Test\\Sample\\STI\\baseClass', array('field1' => 2));
