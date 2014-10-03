@@ -1571,7 +1571,7 @@ class xPDOObject {
         $cardinality= $fkMeta['cardinality'];
         $owner= isset ($fkMeta['owner']) ? $fkMeta['owner'] : '';
         if (!$owner) {
-            $owner= $cardinality === 'many' ? 'foreign' : 'local';
+            $owner= $cardinality === 'many' ? 'local' : 'foreign';
         }
         $criteria = isset($fkMeta['criteria']) ? $fkMeta['criteria'] : null;
         if ($owner === 'local' && $fk= $this->get($local)) {
