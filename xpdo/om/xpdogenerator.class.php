@@ -511,7 +511,38 @@ abstract class xPDOGenerator {
             $newClass= false;
             $classDef['class']= $className;
             $classDef['class-lowercase']= strtolower($className);
+            $classDef['properties'] = '';
             $classDef= array_merge($model, $classDef);
+
+            $classFieldMetaArray = $this->map[$className]['fieldMeta'];
+            
+            if ($classFieldMetaArray) {
+            	$numItems = count ( $classFieldMetaArray );
+            	$count = 1;
+            	foreach ( $classFieldMetaArray as $field => $m ) {
+            		$classDef['properties'] .= ' * @property ' . $m ['phptype'] . ' $' . $field . (isset ( $m ['comment'] ) ? ' ' . $m ['comment'] : '') . (($count ++ < $numItems) ? PHP_EOL : '');
+            	}
+            }
+            
+            $aggregates = isset($this->map[$className]['aggregates']) ? $this->map[$className]['aggregates'] : array();
+            $composites = isset($this->map[$className]['composites'])?  $this->map[$className]['composites'] : array();
+            
+            $classRelationsArray = array_merge($aggregates, $composites);
+            
+            if ($classRelationsArray) {
+            	$classDef['properties'] .= PHP_EOL .' *' . PHP_EOL;
+            	$numItems = count ( $classRelationsArray );
+            	$count = 1;
+            	foreach ( $classRelationsArray as $relation => $rm ) {
+            
+            		if ($rm ['cardinality'] == 'one') {
+            			$classDef['properties'] .= ' * @property ' . $rm ['class'] . ' $' . $relation . (($count ++ < $numItems) ? PHP_EOL : '');
+            		} elseif ($rm ['cardinality'] == 'many') {
+            			$classDef['properties'] .= ' * @property array $' . $relation . ' An array of ' . $rm ['class'] . ' objects' . (($count ++ < $numItems) ? PHP_EOL : '');
+            		}
+            	}
+            }
+             
             $replaceVars= array ();
             foreach ($classDef as $varKey => $varValue) {
                 if (is_scalar($varValue)) $replaceVars["[+{$varKey}+]"]= $varValue;
@@ -698,7 +729,21 @@ abstract class xPDOGenerator {
         if ($this->classTemplate) return $this->classTemplate;
         $template= <<<EOD
 <?php
-class [+class+] extends [+extends+] {}
+class [+class+] extends [+extends+] {
+/*
+ * This file is part of [+package+].
+ */       		
+/**
+ * This line should be a description of the class.
+ *
+[+properties+]
+ *       		
+ * @author
+ * @copyright
+ * @license
+ * [+phpdoc-package+]
+ */	   
+}
 EOD;
         return $template;
     }
