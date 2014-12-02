@@ -730,7 +730,7 @@ abstract class xPDOGenerator {
         $template= <<<EOD
 <?php
 /**
- * 
+ * File info goes here.
  * 
  * @author 
  * @copyright Copyright (c) YYYY by 
@@ -738,13 +738,13 @@ abstract class xPDOGenerator {
  * @license        		         
  */
 /**
- * Provides access to geographical attached to major subdivisions of countries: state, province, etc.
+ * File summary which will appear in documentation.
  *
  * [+phpdoc-package+]
  */
 class [+class+] extends [+extends+] {      		
 /**
- * 
+ * Class summary goes here.
  *
 [+properties+]
  */	   
