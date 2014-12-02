@@ -729,19 +729,24 @@ abstract class xPDOGenerator {
         if ($this->classTemplate) return $this->classTemplate;
         $template= <<<EOD
 <?php
-class [+class+] extends [+extends+] {
-/*
- * This file is part of [+package+].
- */       		
 /**
- * This line should be a description of the class.
+ * 
+ * 
+ * @author 
+ * @copyright Copyright (c) YYYY by 
+ * @link http://xpdo.org/ Built with xPDO 
+ * @license        		         
+ */
+/**
+ * Provides access to geographical attached to major subdivisions of countries: state, province, etc.
+ *
+ * [+phpdoc-package+]
+ */
+class [+class+] extends [+extends+] {      		
+/**
+ * 
  *
 [+properties+]
- *       		
- * @author
- * @copyright
- * @license
- * [+phpdoc-package+]
  */	   
 }
 EOD;
