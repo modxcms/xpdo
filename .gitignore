@@ -1,2 +1,5 @@
 # ignore various IDE project files
 .idea/
+/.settings
+/.gitignore
+/.project
