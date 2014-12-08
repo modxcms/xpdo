@@ -735,20 +735,17 @@ abstract class xPDOGenerator {
  * @author 
  * @copyright Copyright (c) YYYY by 
  * @link http://xpdo.org/ Built with xPDO 
- * @license        		         
+ * @license
+ * [+phpdoc-package+]       		      		         
  */
 /**
- * File summary which will appear in documentation.
+ * Class summary which will appear in documentation.
  *
- * [+phpdoc-package+]
+[+properties+] 
+ *
+ * [+phpdoc-package+] 
  */
-class [+class+] extends [+extends+] {      		
-/**
- * Class summary goes here.
- *
-[+properties+]
- */	   
-}
+class [+class+] extends [+extends+] {}
 EOD;
         return $template;
     }
