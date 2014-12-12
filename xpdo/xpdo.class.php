@@ -2034,12 +2034,31 @@ class xPDO {
             if (!empty ($line)) {
                 $line= " : {$line}";
             }
-            switch ($target) {
-                case 'HTML' :
-                    echo '<h5>[' . strftime('%Y-%m-%d %H:%M:%S') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ')</h5><pre>' . $msg . '</pre>' . "\n";
+            switch (gettype($msg)) {
+                case 'array' :
+                    $log = print_r($msg, true);
+                    break;
+                case 'object' :
+                    if ($msg instanceof xPDOObject) {
+                        $log = print_r($msg->toArray(), true);
+                    } elseif ($msg instanceof xPDOQuery) {
+                        if (empty($msg->sql)) {
+                            $msg->prepare();
+                        }
+                        $log = $msg->toSQL();
+                    } else {
+                        $log = $msg;
+                    }
                     break;
                 default :
-                    echo '[' . strftime('%Y-%m-%d %H:%M:%S') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $msg . "\n";
+                    $log = $msg;
+            }
+            switch ($target) {
+                case 'HTML' :
+                    echo '<h5>[' . strftime('%Y-%m-%d %H:%M:%S') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ')</h5><pre>' . $log . '</pre>' . "\n";
+                    break;
+                default :
+                    echo '[' . strftime('%Y-%m-%d %H:%M:%S') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $log . "\n";
             }
             $content= @ob_get_contents();
             @ob_end_clean();
