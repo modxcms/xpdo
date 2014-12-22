@@ -86,7 +86,7 @@ class xPDOGenerator_mysql extends xPDOGenerator {
      * specified tablePrefix; if tablePrefix is empty, this is ignored.
      * @return boolean True on success, false on failure.
      */
-    public function writeSchema($schemaFile, $package= '', $baseClass= '', $tablePrefix= '', $restrictPrefix= false) {
+    public function writeSchema($schemaFile, $package= '', $baseClass= '', $tablePrefix= '', $restrictPrefix= false, $classPrefix= '') {
         if (empty ($package))
             $package= $this->manager->xpdo->package;
         if (empty ($baseClass))
@@ -201,7 +201,7 @@ class xPDOGenerator_mysql extends xPDOGenerator {
             } else {
                 $this->manager->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Error getting indexes for table ' .  $table[0]);
             }
-            $xmlObject[] = "\t<object class=\"{$class}\" table=\"{$tableName}\" extends=\"{$extends}\">";
+            $xmlObject[] = "\t<object class=\"{$classPrefix}{$class}\" table=\"{$tableName}\" extends=\"{$extends}\">";
             $xmlObject[] = implode("\n", $xmlFields);
             if (!empty($xmlIndices)) {
                 $xmlObject[] = '';
