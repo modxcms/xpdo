@@ -12,7 +12,7 @@
  * This is the main xPDO class.
  *
  * @author Jason Coward <jason@opengeek.com>
- * @copyright Copyright (C) 2006-2014, Jason Coward
+ * @copyright Copyright (C) 2006-2015, Jason Coward
  * @license http://opensource.org/licenses/gpl-2.0.php GNU Public License v2
  * @package xpdo
  */
