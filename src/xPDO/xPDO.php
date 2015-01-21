@@ -1101,11 +1101,15 @@ class xPDO {
             if (!$criteria instanceof Om\xPDOCriteria) {
                 $this->log(xPDO::LOG_LEVEL_WARN, "Invalid criteria object of class {$type} encountered.", '', __METHOD__, __FILE__, __LINE__);
                 $type = null;
+            } elseif ($criteria instanceof Om\xPDOQuery) {
+                $type = 'xPDOQuery';
+            } else {
+                $type = 'xPDOCriteria';
             }
         }
         return $type;
     }
-
+0
     /**
      * Add criteria when requesting a derivative class row automatically.
      *

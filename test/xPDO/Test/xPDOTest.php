@@ -151,6 +151,17 @@ class xPDOTest extends TestCase
     }
 
     /**
+     * Verify xPDO::getCriteriaType returns "xPDOQuery"
+     */
+    public function testGetCriteriaType()
+    {
+        $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+        $criteriaType = $this->xpdo->getCriteriaType($criteria);
+        $success = $criteriaType === 'xPDOQuery';
+        $this->assertTrue($success, 'Unexpected criteriaType ' . $criteriaType);
+    }
+
+    /**
      * Tests xPDO::getAncestry and make sure it returns an array of the correct
      * data.
      *
