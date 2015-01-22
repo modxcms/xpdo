@@ -1109,7 +1109,7 @@ class xPDO {
         }
         return $type;
     }
-0
+
     /**
      * Add criteria when requesting a derivative class row automatically.
      *
