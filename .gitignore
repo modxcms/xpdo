@@ -1,2 +1,5 @@
 # ignore various IDE project files
 .idea/
+
+# ignore composer.lock
+composer.lock

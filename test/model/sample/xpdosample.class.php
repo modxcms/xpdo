@@ -5,6 +5,8 @@
  * @package sample
  */
 
+use xPDO\Om\xPDOSimpleObject;
+
 /**
  * Represents a Sample xPDO class with various row types for testing purposes.
  *

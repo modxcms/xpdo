@@ -1,24 +1,14 @@
 <?php
 /**
- * Copyright 2010-2015 by MODX, LLC.
+ * This file is part of the xPDO package.
  *
- * This file is part of xPDO.
+ * Copyright (c) Jason Coward <jason@opengeek.com>
  *
- * xPDO is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * xPDO is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * xPDO; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
- *
- * @package xpdo-test
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+use xPDO\xPDO;
+
 $properties['xpdo_test_path'] = dirname(__FILE__) . '/';
 
 /* mysql */
@@ -101,5 +91,5 @@ $properties['sqlsrv_array_options']= array(
 /* PHPUnit test config */
 $properties['xpdo_driver']= 'mysql';
 $properties['logLevel']= xPDO::LOG_LEVEL_INFO;
-$properties['logTarget']= XPDO_CLI_MODE ? 'ECHO' : 'HTML';
+$properties['logTarget']= php_sapi_name() === 'cli' ? 'ECHO' : 'HTML';
 //$properties['debug']= -1;
