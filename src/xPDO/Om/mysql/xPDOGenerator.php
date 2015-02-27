@@ -69,7 +69,7 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
         if (empty ($package))
             $package= $this->manager->xpdo->package;
         if (empty ($baseClass))
-            $baseClass= 'xPDOObject';
+            $baseClass= 'xPDO\Om\xPDOObject';
         if (empty ($tablePrefix))
             $tablePrefix= $this->manager->xpdo->config[xPDO::OPT_TABLE_PREFIX];
         $schemaVersion = xPDO::SCHEMA_VERSION;
@@ -126,8 +126,8 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
                         $Default= $this->getDefault($Default);
                         if (!empty ($Extra)) {
                             if ($Extra === 'auto_increment') {
-                                if ($baseClass === 'xPDOObject' && $Field === 'id') {
-                                    $extends= 'xPDOSimpleObject';
+                                if ($baseClass === 'xPDO\Om\xPDOObject' && $Field === 'id') {
+                                    $extends= 'xPDO\Om\xPDOSimpleObject';
                                     continue;
                                 } else {
                                     $Extra= ' generated="native"';
@@ -145,7 +145,7 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
             } else {
                 $this->manager->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Error retrieving columns for table ' .  $table[0]);
             }
-            $whereClause= ($extends === 'xPDOSimpleObject' ? " WHERE `Key_name` != 'PRIMARY'" : '');
+            $whereClause= ($extends === 'xPDO\Om\xPDOSimpleObject' ? " WHERE `Key_name` != 'PRIMARY'" : '');
             $indexesStmt= $this->manager->xpdo->query('SHOW INDEXES FROM ' . $this->manager->xpdo->escape($table[0]) . $whereClause);
             if ($indexesStmt) {
                 $indexes= $indexesStmt->fetchAll(PDO::FETCH_ASSOC);
