@@ -11,6 +11,7 @@
 namespace xPDO\Cache;
 
 use xPDO\xPDO;
+use Memcached;
 
 /**
  * Provides a memcached-powered xPDOCache implementation.
