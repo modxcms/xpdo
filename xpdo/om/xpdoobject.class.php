@@ -1642,6 +1642,8 @@ class xPDOObject {
                                 }
                                 if (!$one->remove($ancestors)) {
                                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error removing dependent object: " . print_r($one->toArray('', true), true));
+                                } else {
+                                    $ancestors[$composite['class']][] = $one->getPrimaryKey();
                                 }
                                 $ancestors[$composite['class']][]= $one->getPrimaryKey();
                             }
