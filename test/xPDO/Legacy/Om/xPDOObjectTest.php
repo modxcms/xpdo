@@ -636,7 +636,6 @@ class xPDOObjectTest extends TestCase
      * Test removing nested composite objects
      */
     public function testRemoveNestedComposites() {
-        if (!empty(xPDOTestHarness::$debug)) print "\n" . __METHOD__ . " = ";
         $result= false;
 
         $person= $this->xpdo->newObject('Person');
@@ -668,7 +667,7 @@ class xPDOObjectTest extends TestCase
                     $phone= $this->xpdo->getObject('Phone', $phone->getPrimaryKey());
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue($result == true, "Error removing parent object.");
