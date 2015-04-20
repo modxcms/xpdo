@@ -248,6 +248,9 @@ abstract class xPDOGenerator {
                     foreach ($object->attributes() as $objAttrKey => $objAttr) {
                         if ($objAttrKey == 'class') continue;
                         $this->map[$class][$objAttrKey]= (string) $objAttr;
+                        if (!in_array($objAttrKey, array('package', 'version', 'extends', 'table'))) {
+                            $this->classes[$class][$objAttrKey] = (string) $objAttr;
+                        }
                     }
 
                     $engine = (string) $object['engine'];
@@ -862,13 +865,13 @@ EOD;
 
     protected function _constructClassDeclaration($class, $meta) {
         if ($class === $meta['class-platform']) {
-            $tpl = "class {$meta['class-shortname']} extends \\{$meta['class-fullname']}";
+            $tpl = "class {$meta['class-shortname']} extends \\" . $meta['class-fullname'];
             if (!empty($meta['class-platform-implements'])) {
                 $tpl .= " implements " . implode(', ', $meta['class-platform-implements']);
             }
             $tpl .= "\n{";
         } else {
-            $tpl = "class {$meta['class-shortname']} extends \\{$meta['extends']}";
+            $tpl = "class {$meta['class-shortname']} extends \\" . $meta['extends'];
             if (!empty($meta['class-implements'])) {
                 $tpl .= " implements " . implode(', ', $meta['class-implements']);
             }
