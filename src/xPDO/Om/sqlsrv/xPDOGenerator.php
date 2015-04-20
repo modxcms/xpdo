@@ -53,7 +53,7 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
         if (empty ($package))
             $package= $this->manager->xpdo->package;
         if (empty ($baseClass))
-            $baseClass= 'xPDOObject';
+            $baseClass= 'xPDO\Om\xPDOObject';
         if (empty ($tablePrefix))
             $tablePrefix= $this->manager->xpdo->config[xPDO::OPT_TABLE_PREFIX];
         $xmlContent = array();
@@ -95,8 +95,8 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
                 $Extra= '';
                 if (!empty($pk)) {
                     if (preg_match('/INT/i', $type)) {
-                        if ($baseClass === 'xPDOObject' && $Field === 'id') {
-                            $extends= 'xPDOSimpleObject';
+                        if ($baseClass === 'xPDO\Om\xPDOObject' && $Field === 'id') {
+                            $extends= 'xPDO\Om\xPDOSimpleObject';
                             continue;
                         } elseif ($cid == 0) {
                             $Extra= ' generated="native"';
