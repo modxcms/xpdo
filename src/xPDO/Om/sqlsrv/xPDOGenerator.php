@@ -10,6 +10,9 @@
 
 namespace xPDO\Om\sqlsrv;
 
+use PDO;
+use xPDO\xPDO;
+
 /**
  * An extension for generating {@link xPDOObject} class and map files for sqlsrv.
  *

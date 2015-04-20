@@ -10,6 +10,9 @@
 
 namespace xPDO\Om\sqlite;
 
+use PDO;
+use xPDO\xPDO;
+
 /**
  * An extension for generating {@link xPDOObject} class and map files for SQLite.
  *
