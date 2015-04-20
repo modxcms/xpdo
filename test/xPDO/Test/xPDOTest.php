@@ -54,6 +54,40 @@ class xPDOTest extends TestCase
     }
 
     /**
+     * Test table engine override.
+     */
+    public function testOverrideTableType() {
+        $result = false;
+        try {
+            $this->xpdo->getManager();
+            $oldType = $this->xpdo->getOption(xPDO::OPT_OVERRIDE_TABLE_TYPE);
+
+            $this->xpdo->setOption(xPDO::OPT_OVERRIDE_TABLE_TYPE, 'INNODB');
+
+            $result[] = $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Person');
+            $result[] = $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\Person');
+
+            $result[] = $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Phone');
+            $result[] = $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\Phone');
+
+            $result[] = $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\PersonPhone');
+            $result[] = $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\PersonPhone');
+
+            $result[] = $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\BloodType');
+            $result[] = $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\BloodType');
+
+            $result[] = $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Item');
+            $result[] = $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\Item');
+
+            $this->xpdo->setOption(xPDO::OPT_OVERRIDE_TABLE_TYPE, $oldType);
+        } catch (\Exception $e) {
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
+        }
+        $result = !array_search(false, $result, true);
+        $this->assertTrue($result, 'Error creating tables with table type override.');
+    }
+
+    /**
      * Tests xPDO::escape
      */
     public function testEscape()
