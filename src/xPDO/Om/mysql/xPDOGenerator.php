@@ -10,6 +10,9 @@
 
 namespace xPDO\Om\mysql;
 
+use xPDO\xPDO;
+use PDO;
+
 /**
  * An extension for generating {@link xPDOObject} class and map files for MySQL.
  *
