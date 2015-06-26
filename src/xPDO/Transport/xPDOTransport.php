@@ -218,10 +218,11 @@ class xPDOTransport {
         $vehiclePackage = isset($options['vehicle_package']) ? $options['vehicle_package'] : '';
         $vehiclePackagePath = isset($options['vehicle_package_path']) ? $options['vehicle_package_path'] : '';
         $vehicleClass = isset($options['vehicle_class']) ? $options['vehicle_class'] : '';
-        if (empty($vehicleClass)) $vehicleClass = $attributes['vehicle_class'] = 'xPDO\\Transport\\xPDOObjectVehicle';
-        $legacyClass = (strpos($vehicleClass, '\\') === false);
-        if (empty($vehiclePackage) && $legacyClass) {
-            $vehiclePackage = $attributes['vehicle_package'] = 'transport';
+        if (empty($vehicleClass)) $vehicleClass = $attributes['vehicle_class'] = 'xPDOObjectVehicle';
+        $legacyClass = (strpos($vehicleClass, '.') !== false);
+        $fqClass = (strpos($vehicleClass, '\\') !== false);
+        if ((empty($vehiclePackage) || $vehiclePackage === 'transport') && !$legacyClass && !$fqClass) {
+            $vehiclePackage = $attributes['vehicle_package'] = 'xPDO\Transport';
         }
         if (!empty($vehiclePackage)) {
             $vehiclePackage .= $legacyClass ? '.' : '\\';
@@ -290,7 +291,7 @@ class xPDOTransport {
             $options= array(xPDOTransport::PACKAGE_ACTION => xPDOTransport::ACTION_UNINSTALL);
         } elseif (!isset($options[xPDOTransport::PACKAGE_ACTION])) {
             $options[xPDOTransport::PACKAGE_ACTION]= xPDOTransport::ACTION_UNINSTALL;
-                        }
+        }
         if (!empty ($this->vehicles)) {
             $this->_preserved = $this->loadPreserved();
             $vehicleArray = array_reverse($this->vehicles, true);
@@ -298,7 +299,7 @@ class xPDOTransport {
                 $vOptions = array_merge($options, $vehicleMeta);
                 if ($this->xpdo->getDebug() === true) {
                     $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Removing Vehicle: " . print_r($vOptions, true));
-                    }
+                }
                 if ($vehicle = $this->get($vehicleMeta['filename'], $vOptions)) {
                     $processed[$vehicleMeta['guid']] = $vehicle->uninstall($this, $vOptions);
                 } else {
