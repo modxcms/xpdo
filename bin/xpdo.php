@@ -8,12 +8,11 @@
  * file that was distributed with this source code.
  */
 
-require __DIR__ . '/../src/bootstrap.php';
+require dirname(__DIR__) . '/src/bootstrap.php';
 
 use xPDO\xPDO;
 
 $properties = array();
-require __DIR__ . '/../test/properties.inc.php';
 
 array_shift($argv);
 $command = array_shift($argv);
@@ -46,6 +45,21 @@ $opt = function($find) use ($argv) {
 };
 
 $platforms = array('mysql', 'sqlite', 'sqlsrv');
+
+$verbose = $opt('verbose') || $opt('v');
+
+$config = $opt('config') || $opt('C');
+if (empty($config) || !is_readable($config)) {
+    $config = dirname(__DIR__) . '/test/properties.inc.php';
+}
+$configLoaded = $includeIfReadable($config);
+if (!$configLoaded || !is_array($properties)) {
+    echo "fatal: no valid configuration file specified" . PHP_EOL;
+    exit(128);
+}
+if ($verbose) {
+    echo "using config from {$config}" . PHP_EOL;
+}
 
 switch ($command) {
     case 'parse-schema':
@@ -84,9 +98,12 @@ switch ($command) {
             )
         );
         exit(0);
-        break;
     case 'write-schema':
         echo "write-schema command not yet implemented" . PHP_EOL;
+        exit(0);
+    case '--help':
+    case 'help':
+    case '-h':
         break;
     default:
         echo "unknown command {$command}" . PHP_EOL;
@@ -95,8 +112,8 @@ switch ($command) {
 
 echo <<<'EOF'
 Example usage:
-  xpdo parse-schema [[--compile|-c]|--update=[0-2]|--regen=[0-2]] PLATFORM SCHEMA_FILE PATH
-  xpdo write-schema [?] PLATFORM SCHEMA_FILE PATH
+  xpdo parse-schema [[--config|-C]=CONFIG/FILE] [[--compile|-c]|--update=[0-2]|--regen=[0-2]] PLATFORM SCHEMA_FILE PATH
+  xpdo write-schema [[--config|-C]=CONFIG/FILE] [?] PLATFORM SCHEMA_FILE PATH
 
 EOF;
 exit(0);
