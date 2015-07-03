@@ -31,9 +31,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      */
     public static function setUpBeforeClass()
     {
-        $properties = array();
-        include(__DIR__ . '/../properties.inc.php');
-        self::$properties = $properties;
+        self::$properties = include(__DIR__ . '/../properties.inc.php');
     }
 
     /**

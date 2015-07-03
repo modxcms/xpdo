@@ -14,8 +14,7 @@ require __DIR__ . '/../../bootstrap.php';
 
 use xPDO\xPDO;
 
-$properties = array();
-include __DIR__ . '/../../properties.inc.php';
+$properties = include __DIR__ . '/../../properties.inc.php';
 
 $dbtypes = array('mysql'/*, 'sqlite', 'sqlsrv'*/);
 

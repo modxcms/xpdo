@@ -50,11 +50,14 @@ $verbose = $opt('verbose') || $opt('v');
 
 $config = $opt('config') || $opt('C');
 if (empty($config) || !is_readable($config)) {
+    if ($verbose) {
+        echo "no config specified; looking for test/properties.inc.php" . PHP_EOL;
+    }
     $config = dirname(__DIR__) . '/test/properties.inc.php';
 }
-$configLoaded = $includeIfReadable($config);
-if (!$configLoaded || !is_array($properties)) {
-    echo "fatal: no valid configuration file specified" . PHP_EOL;
+$properties = require $config;
+if (!is_array($properties)) {
+    echo "fatal: no valid configuration file found" . PHP_EOL;
     exit(128);
 }
 if ($verbose) {

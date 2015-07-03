@@ -93,3 +93,5 @@ $properties['xpdo_driver']= 'mysql';
 $properties['logLevel']= xPDO::LOG_LEVEL_INFO;
 $properties['logTarget']= php_sapi_name() === 'cli' ? 'ECHO' : 'HTML';
 //$properties['debug']= -1;
+
+return $properties;
