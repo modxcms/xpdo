@@ -48,16 +48,29 @@ $platforms = array('mysql', 'sqlite', 'sqlsrv');
 
 $verbose = $opt('verbose') || $opt('v');
 
-$config = $opt('config') || $opt('C');
+$config = $opt('config');
 if (empty($config) || !is_readable($config)) {
-    if ($verbose) {
-        echo "no config specified; looking for test/properties.inc.php" . PHP_EOL;
+    $config = false;
+    $locations = array(
+        dirname(__DIR__) . '/test/properties.inc.php',
+        getcwd() . '/test/properties.inc.php',
+        getcwd() . '/properties.inc.php',
+    );
+    foreach ($locations as $location) {
+        if ($verbose) {
+            echo "no config specified; looking for {$location}" . PHP_EOL;
+        }
+        if (is_readable($location)) {
+            $config = $location;
+            break;
+        };
     }
-    $config = dirname(__DIR__) . '/test/properties.inc.php';
 }
-$properties = require $config;
+if (!empty($config) && is_readable($config)) {
+    $properties = require $config;
+}
 if (!is_array($properties)) {
-    echo "fatal: no valid configuration file found" . PHP_EOL;
+    echo "fatal: no valid configuration file could be loaded" . PHP_EOL;
     exit(128);
 }
 if ($verbose) {
