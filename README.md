@@ -27,7 +27,7 @@ $xpdoMySQL = \xPDO\xPDO::getInstance('aMySQLDatabase', [
             'username' => 'test',
             'password' => 'test',
             'options' => [
-                xPDO::OPT_CONN_MUTABLE => true,
+                \xPDO\xPDO::OPT_CONN_MUTABLE => true,
             ],
             'driverOptions' => [],
         ],
@@ -45,7 +45,7 @@ $xpdoSQLite = \xPDO\xPDO::getInstance('aSQLiteDatabase', [
             'username' => '',
             'password' => '',
             'options' => [
-                xPDO::OPT_CONN_MUTABLE => true,
+                \xPDO\xPDO::OPT_CONN_MUTABLE => true,
             ],
             'driverOptions' => [],
         ],
