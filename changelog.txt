@@ -4,6 +4,9 @@ xPDO 3.0.0 (TBD)
 ====================================
 - Refactor for 5.3+ in the \xPDO namespace
 
+
+- Optimize xPDO::getOption() for significant performance increase
+
 xPDO 2.4.0-pl (June 26, 2015)
 ====================================
 - Add ability to override mysql table engine via options
