@@ -239,7 +239,7 @@ class xPDO {
      *
      * @return object The autoloader instance being used by all instances of xPDO.
      */
-    public static function &getLoader()
+    public static function getLoader()
     {
         $loader =& self::$loader;
         if ($loader === null) {
@@ -369,7 +369,7 @@ class xPDO {
      * @param array $options An array of options for getting the connection.
      * @return xPDOConnection|null An xPDOConnection instance or null if no connection could be retrieved.
      */
-    public function &getConnection(array $options = array()) {
+    public function getConnection(array $options = array()) {
         $conn =& $this->connection;
         $mutable = $this->getOption(xPDO::OPT_CONN_MUTABLE, $options, null);
         if (!($conn instanceof xPDOConnection) || ($mutable !== null && (($mutable == true && !$conn->isMutable()) || ($mutable == false && $conn->isMutable())))) {
@@ -1189,7 +1189,7 @@ class xPDO {
      * @return object|null A reference to the service class instance or null if
      * it could not be loaded.
      */
-    public function &getService($name, $class= '', $path= '', $params= array ()) {
+    public function getService($name, $class= '', $path= '', $params= array ()) {
         $service= null;
         if (!isset ($this->services[$name]) || !is_object($this->services[$name])) {
             if (empty ($class) && isset ($this->config[$name . '.class'])) {

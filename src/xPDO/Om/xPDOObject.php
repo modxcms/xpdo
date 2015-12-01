@@ -215,7 +215,7 @@ class xPDOObject {
      * @return \PDOStatement A reference to a PDOStatement representing the
      * result set.
      */
-    public static function & _loadRows(& $xpdo, $className, $criteria) {
+    public static function _loadRows(& $xpdo, $className, $criteria) {
         $rows= null;
         if ($criteria->prepare()) {
             if ($xpdo->getDebug() === true) $xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Attempting to execute query using PDO statement object: " . print_r($criteria->sql, true) . print_r($criteria->bindings, true));
@@ -1096,7 +1096,7 @@ class xPDOObject {
      * seconds.
      * @return xPDOObject|null The related object or null if no instance exists.
      */
-    public function & getOne($alias, $criteria= null, $cacheFlag= true) {
+    public function getOne($alias, $criteria= null, $cacheFlag= true) {
         $object= null;
         if ($fkdef= $this->getFKDefinition($alias)) {
             $k= $fkdef['local'];
@@ -1137,7 +1137,7 @@ class xPDOObject {
      * seconds.
      * @return array A collection of related objects or an empty array.
      */
-    public function & getMany($alias, $criteria= null, $cacheFlag= true) {
+    public function getMany($alias, $criteria= null, $cacheFlag= true) {
         $collection= $this->_getRelatedObjectsByFK($alias, $criteria, $cacheFlag);
         return $collection;
     }
@@ -2122,7 +2122,7 @@ class xPDOObject {
      * @return string|boolean The xPDOValidator instance or false if it could
      * not be loaded.
      */
-    public function &getValidator() {
+    public function getValidator() {
         if (!$this->_validator instanceof xPDOValidator) {
             $validatorClass = $this->getOption(xPDO::OPT_VALIDATOR_CLASS, null, 'xPDO\\Validation\\xPDOValidator');
             if ($validatorClass = $this->xpdo->loadClass($validatorClass, '', false, true)) {
@@ -2222,7 +2222,7 @@ class xPDOObject {
      * expiring.  Overrides the cacheFlag for the object.
      * @return array A collection of objects matching the criteria.
      */
-    protected function & _getRelatedObjectsByFK($alias, $criteria= null, $cacheFlag= true) {
+    protected function _getRelatedObjectsByFK($alias, $criteria= null, $cacheFlag= true) {
         $collection= array ();
         if (isset($this->_relatedObjects[$alias]) && (is_object($this->_relatedObjects[$alias]) || (is_array($this->_relatedObjects[$alias]) && !empty ($this->_relatedObjects[$alias])))) {
             $collection= & $this->_relatedObjects[$alias];

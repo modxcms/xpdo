@@ -44,7 +44,7 @@ class xPDOCacheManager {
      *
      * @return xPDOCache|null
      */
-    public function & getCacheProvider($key = '', $options = array()) {
+    public function getCacheProvider($key = '', $options = array()) {
         $objCache = null;
         if (empty($key)) {
             $key = $this->getOption(xPDO::OPT_CACHE_KEY, $options, 'default');
