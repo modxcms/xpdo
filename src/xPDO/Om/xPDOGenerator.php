@@ -220,6 +220,7 @@ abstract class xPDOGenerator {
         }
         $regenerate = array_key_exists('regenerate', $options) ? (integer) $options['regenerate'] : 0;
         $update = array_key_exists('update', $options) ? (integer) $options['update'] : 2;
+        $withNamespace = array_key_exists('withNamespace', $options) ? (integer) $options['withNamespace'] : 1;
 
         $this->schemaFile= $schemaFile;
         $this->classTemplate= $this->getClassTemplate();
@@ -482,8 +483,8 @@ abstract class xPDOGenerator {
         }
 
         $path= !empty($outputDir) ? $outputDir : 'model/';
-        $this->outputMeta($path);
-        $this->outputClasses($path, $update, $regenerate);
+        $this->outputMeta($path, $withNamespace);
+        $this->outputClasses($path, $update, $regenerate, $withNamespace);
         if ($compile) {
             $this->compile($path, $this->model, $this->classes, $this->map);
         }
@@ -500,7 +501,7 @@ abstract class xPDOGenerator {
      * @param int $regenerate Indicates if existing class files should be regenerated;
      * 0=no, 1=regenerate platform classes, 2=regenerate all classes.
      */
-    public function outputClasses($path, $update = 1, $regenerate = 0) {
+    public function outputClasses($path, $update = 1, $regenerate = 0, $withNamespace = 1) {
         if (isset($this->model['phpdoc-package'])) {
             $this->model['phpdoc-package']= '@package ' . $this->model['phpdoc-package'];
             if (isset($this->model['phpdoc-subpackage']) && !empty($this->model['phpdoc-subpackage'])) {
@@ -514,14 +515,20 @@ abstract class xPDOGenerator {
             $classExploded = explode('\\', $className);
             $classDef['class']= $className;
             $classDef['class-shortname']= $classShortName = array_pop($classExploded);
+            $partialClass = '';
             if (count($classExploded) > 0) {
-                $namespace .= implode('\\', $classExploded);
+                $partialClass = '\\' . implode('\\', $classExploded) . '\\';
             }
-            $classDef['namespace']= $namespace;
+            $classDef['namespace']= $namespace . rtrim($partialClass, '\\');
             $classDef['class-fullname']= $classFullName = "{$namespace}\\{$className}";
-            $classDef['class-platform']= $platformClass = "{$namespace}\\{$this->model['platform']}\\{$classShortName}";
+            $classDef['class-platform']= $platformClass = "{$namespace}\\" . ltrim($partialClass, '\\') . "{$this->model['platform']}\\{$classShortName}";
+            $platformClassWithoutNamespace = ltrim($partialClass, '\\') . "{$this->model['platform']}\\{$classShortName}";
             $classDef= array_merge($this->model, $classDef);
-            $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $classFullName) . '.php';
+            if ($withNamespace == 1) {
+                $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $classFullName) . '.php';
+            } else {
+                $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
+            }
             $newClass= !file_exists($fileName);
             if (!in_array($classFullName, self::$updated)) {
                 if ($newClass || $regenerate === 2) {
@@ -543,7 +550,11 @@ abstract class xPDOGenerator {
                 $this->manager->xpdo->log(xPDO::LOG_LEVEL_WARN, "Domain class {$classFullName} was already constructed to file {$fileName} in this session", '', __METHOD__, __FILE__, __LINE__);
             }
 
-            $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $platformClass) . '.php';
+            if ($withNamespace == 1) {
+                $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $platformClass) . '.php';
+            } else {
+                $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $platformClassWithoutNamespace) . '.php';
+            }
             $newPlatformClass= !file_exists($fileName);
             if (!in_array($platformClass, self::$updated)) {
                 if (isset($this->map[$className])) $classDef['map'] = static::varExport($this->map[$className]);
@@ -574,8 +585,10 @@ abstract class xPDOGenerator {
      * @param string $path An absolute path to write the generated maps to.
      * @return bool
      */
-    public function outputMeta($path) {
-        $path .= str_replace('\\', DIRECTORY_SEPARATOR, $this->model['namespace']) . DIRECTORY_SEPARATOR;
+    public function outputMeta($path, $withNamespace = 1) {
+        if ($withNamespace == 1) {
+            $path .= str_replace('\\', DIRECTORY_SEPARATOR, $this->model['namespace']) . DIRECTORY_SEPARATOR;
+        }
         if (!is_dir($path)) {
             if ($this->manager->xpdo->getCacheManager()) {
                 if (!$this->manager->xpdo->cacheManager->writeTree($path)) {
