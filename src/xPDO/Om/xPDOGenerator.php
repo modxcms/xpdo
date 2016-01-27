@@ -827,33 +827,37 @@ EOD;
             ' *'
         );
         
-        foreach ($meta['fieldMeta'] as $field => $def) {
-            $type = $def['phptype'];
-            switch ($type) {
-                case 'timestamp':
-                case 'datetime':
-                case 'date':
-                    $type = 'string';
-                    break;
-                case 'json':
-                    $type = 'array';
-                    break;
-            }
-            
-            $properties[] = ' * @property ' . $type . ' $' . $field;
-        }
-        
-        if (isset($meta['composites'])) {
-            $properties[] = ' *';
-            foreach ($meta['composites'] as $field => $def) {
-                $properties[] = ' * @property ' . '\\' . ltrim($def['class'], '\\') . (($def['cardinality'] == 'many') ? '[]' : '') . ' $' . $field;
+        if ($this->manager->xpdo->getOption(xPDO::OPT_HYDRATE_FIELDS)) {
+            foreach ($meta['fieldMeta'] as $field => $def) {
+                $type = $def['phptype'];
+                switch ($type) {
+                    case 'timestamp':
+                    case 'datetime':
+                    case 'date':
+                        $type = 'string';
+                        break;
+                    case 'json':
+                        $type = 'array';
+                        break;
+                }
+                
+                $properties[] = ' * @property ' . $type . ' $' . $field;
             }
         }
+
+        if ($this->manager->xpdo->getOption(xPDO::OPT_HYDRATE_RELATED_OBJECTS)) {
+            if (isset($meta['composites'])) {
+                $properties[] = ' *';
+                foreach ($meta['composites'] as $field => $def) {
+                    $properties[] = ' * @property ' . '\\' . ltrim($def['class'], '\\') . (($def['cardinality'] == 'many') ? '[]' : '') . ' $' . $field;
+                }
+            }
         
-        if (isset($meta['aggregations'])) {
-            $properties[] = ' *';
-            foreach ($meta['aggregations'] as $field => $def) {
-                $properties[] = ' * @property ' . '\\' . ltrim($def['class'], '\\') . (($def['cardinality'] == 'many') ? '[]' : '') . ' $' . $field;
+            if (isset($meta['aggregations'])) {
+                $properties[] = ' *';
+                foreach ($meta['aggregations'] as $field => $def) {
+                    $properties[] = ' * @property ' . '\\' . ltrim($def['class'], '\\') . (($def['cardinality'] == 'many') ? '[]' : '') . ' $' . $field;
+                }
             }
         }
         
