@@ -517,7 +517,6 @@ abstract class xPDOGenerator {
             if (count($classExploded) > 0) {
                 $namespace .= implode('\\', $classExploded);
             }
-            $classDef['phpdoc-properties'] = $this->constructPhpDocProperties($this->map[$className]);
             $classDef['namespace']= $namespace;
             $classDef['class-fullname']= $classFullName = "{$namespace}\\{$className}";
             $classDef['class-platform']= $platformClass = "{$namespace}\\{$this->model['platform']}\\{$classShortName}";
@@ -799,6 +798,7 @@ EOD;
         $meta['class-close-declaration'] = "}\n";
         $meta['class-footer'] = $this->_constructClassFooter($class, $meta);
         $meta['phpdoc-start'] = $this->_constructPhpDocStart($class, $meta);
+        $meta['phpdoc-properties'] = $this->_constructPhpDocProperties($this->map[$meta['class']]);
         $meta['phpdoc-end'] = $this->_constructPhpDpcEnd($class, $meta);
     }
     
@@ -822,7 +822,7 @@ EOD;
         return implode(PHP_EOL, $output);
     }
     
-    protected function constructPhpDocProperties($meta) {
+    protected function _constructPhpDocProperties($meta) {
         $properties = array(
             ' *'
         );
