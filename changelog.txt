@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Add phpdoc @property to classes for each field
 - Add option to respect PSR-4 namespaces
 - Refactor for 5.3+ in the \xPDO namespace
 

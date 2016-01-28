@@ -660,6 +660,9 @@ abstract class xPDOGenerator {
         if ($this->classTemplate) return $this->classTemplate;
         $template= <<<'EOD'
 [+class-header+]
+[+phpdoc-start+]
+[+phpdoc-properties+]
+[+phpdoc-end+]
 [+class-declaration+]
 [+class-traits+][+class-constants+][+class-properties+][+class-methods+][+class-close-declaration+][+class-footer+]
 EOD;
@@ -807,6 +810,71 @@ EOD;
         $meta['class-methods'] = implode("\n", $this->_constructClassMethods($class, $meta));
         $meta['class-close-declaration'] = "}\n";
         $meta['class-footer'] = $this->_constructClassFooter($class, $meta);
+        $meta['phpdoc-start'] = $this->_constructPhpDocStart($class, $meta);
+        $meta['phpdoc-properties'] = $this->_constructPhpDocProperties($this->map[$meta['class']]);
+        $meta['phpdoc-end'] = $this->_constructPhpDpcEnd($class, $meta);
+    }
+    
+    protected function _constructPhpDocStart($class, $meta) {
+        $output = array(
+            '/**'
+        );
+        $output[] = ' * Class ' . $meta['class-shortname'];
+        
+        return implode(PHP_EOL, $output);
+    }
+    
+    protected function _constructPhpDpcEnd($class, $meta) {
+        $output = array(
+            ' *'
+        );
+        
+        $output[] = ' * @package ' . $meta['namespace'];
+        $output[] = ' */';
+
+        return implode(PHP_EOL, $output);
+    }
+    
+    protected function _constructPhpDocProperties($meta) {
+        $properties = array(
+            ' *'
+        );
+        
+        if ($this->manager->xpdo->getOption(xPDO::OPT_HYDRATE_FIELDS)) {
+            foreach ($meta['fieldMeta'] as $field => $def) {
+                $type = $def['phptype'];
+                switch ($type) {
+                    case 'timestamp':
+                    case 'datetime':
+                    case 'date':
+                        $type = 'string';
+                        break;
+                    case 'json':
+                        $type = 'array';
+                        break;
+                }
+                
+                $properties[] = ' * @property ' . $type . ' $' . $field;
+            }
+        }
+
+        if ($this->manager->xpdo->getOption(xPDO::OPT_HYDRATE_RELATED_OBJECTS)) {
+            if (isset($meta['composites'])) {
+                $properties[] = ' *';
+                foreach ($meta['composites'] as $field => $def) {
+                    $properties[] = ' * @property ' . '\\' . ltrim($def['class'], '\\') . (($def['cardinality'] == 'many') ? '[]' : '') . ' $' . $field;
+                }
+            }
+        
+            if (isset($meta['aggregations'])) {
+                $properties[] = ' *';
+                foreach ($meta['aggregations'] as $field => $def) {
+                    $properties[] = ' * @property ' . '\\' . ltrim($def['class'], '\\') . (($def['cardinality'] == 'many') ? '[]' : '') . ' $' . $field;
+                }
+            }
+        }
+        
+        return implode(PHP_EOL, $properties);
     }
 
     protected function _constructClass($fileName, $meta, $template) {
