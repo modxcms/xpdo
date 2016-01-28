@@ -91,10 +91,11 @@ switch ($command) {
             exit(128);
         }
         $path = $arg(3);
-
+        
         $compile = $opt('compile') || $opt('c');
         $update = $opt('update');
         $regen = $opt('regen');
+        $withNamespace = (intval($opt('psr4')) == 1) ? 0 : 1;
 
         $update = $update === false ? 0 : (int)$update;
         $regen = $regen === false ? 0 : (int)$regen;
@@ -111,6 +112,7 @@ switch ($command) {
                 'compile' => $compile,
                 'update' => $update,
                 'regenerate' => $regen,
+                'withNamespace' => $withNamespace,
             )
         );
         exit(0);
@@ -128,7 +130,7 @@ switch ($command) {
 
 echo <<<'EOF'
 Example usage:
-  xpdo parse-schema [[--config|-C]=CONFIG/FILE] [[--compile|-c]|--update=[0-2]|--regen=[0-2]] PLATFORM SCHEMA_FILE PATH
+  xpdo parse-schema [[--config|-C]=CONFIG/FILE] [[--compile|-c]|--update=[0-2]|--regen=[0-2]] [--psr4] PLATFORM SCHEMA_FILE PATH
   xpdo write-schema [[--config|-C]=CONFIG/FILE] [?] PLATFORM SCHEMA_FILE PATH
 
 EOF;
