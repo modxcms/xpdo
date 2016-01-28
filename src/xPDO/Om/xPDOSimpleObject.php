@@ -14,6 +14,9 @@ namespace xPDO\Om;
  * Extend to define a class with a native integer primary key field named id.
  *
  * @see xpdo/om/mysql/xpdosimpleobject.map.inc.php
+ * 
+ * @property integer $id
+ * 
  * @package xPDO\Om
  */
 class xPDOSimpleObject extends xPDOObject {}
