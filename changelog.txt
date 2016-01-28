@@ -4,7 +4,7 @@ xPDO 3.0.0 (TBD)
 ====================================
 - Refactor for 5.3+ in the \xPDO namespace
 
-
+- Allow definition of primary key fields without legacy index="pk"
 - Optimize xPDO::getOption() for significant performance increase
 
 xPDO 2.4.0-pl (June 26, 2015)

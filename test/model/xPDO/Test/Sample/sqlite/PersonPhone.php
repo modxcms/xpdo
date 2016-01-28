@@ -25,7 +25,6 @@ class PersonPhone extends \xPDO\Test\Sample\PersonPhone
                 'precision' => '11',
                 'phptype' => 'integer',
                 'null' => false,
-                'index' => 'pk',
             ),
             'phone' => 
             array (
@@ -33,7 +32,6 @@ class PersonPhone extends \xPDO\Test\Sample\PersonPhone
                 'precision' => '11',
                 'phptype' => 'integer',
                 'null' => false,
-                'index' => 'pk',
             ),
             'is_primary' => 
             array (

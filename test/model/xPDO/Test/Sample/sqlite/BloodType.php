@@ -24,7 +24,6 @@ class BloodType extends \xPDO\Test\Sample\BloodType
                 'precision' => '100',
                 'phptype' => 'string',
                 'null' => false,
-                'index' => 'pk',
             ),
             'description' => 
             array (
