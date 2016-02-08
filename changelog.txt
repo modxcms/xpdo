@@ -6,8 +6,10 @@ xPDO 3.0.0 (TBD)
 - Add option to respect PSR-4 namespaces
 - Refactor for 5.3+ in the \xPDO namespace
 
-xPDO 2.5.0-pl (TBD)
+xPDO 2.5.0-pl (February 3, 2016)
 ====================================
+- Optimize and improve logging
+- Fix undefined index notice for model indexes
 - Allow definition of primary key fields without legacy index="pk"
 - Add ARRAY_EXTENDED logTarget that stores an array of data for each log entry
 

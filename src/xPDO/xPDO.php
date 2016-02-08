@@ -1986,6 +1986,9 @@ class xPDO {
      * within the indicated file.
      */
     protected function _log($level, $msg, $target= '', $def= '', $file= '', $line= '') {
+        if ($level !== xPDO::LOG_LEVEL_FATAL && $level > $this->logLevel && $this->_debug !== true) {
+            return;
+        }
         if (empty ($target)) {
             $target = $this->logTarget;
         }
@@ -1993,6 +1996,19 @@ class xPDO {
         if (is_array($target)) {
             if (isset($target['options'])) $targetOptions =& $target['options'];
             $target = isset($target['target']) ? $target['target'] : 'ECHO';
+        }
+        if (empty($file)) {
+            if (version_compare(phpversion(), '5.4.0', '>=')) {
+                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+            } elseif (version_compare(phpversion(), '5.3.6', '>=')) {
+                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+            } else {
+                $backtrace = debug_backtrace();
+            }
+            if ($backtrace && isset($backtrace[2])) {
+                $file = $backtrace[2]['file'];
+                $line = $backtrace[2]['line'];
+            }
         }
         if (empty($file) && isset($_SERVER['SCRIPT_NAME'])) {
             $file = $_SERVER['SCRIPT_NAME'];
