@@ -12,27 +12,22 @@ final class WriteSchema extends Command
     {
         $this
             ->setName('write-schema')
-            ->setDescription('Writes schema')
+            ->setDescription("Generate an XML schema from existing database tables.")
             ->addArgument(
                 'platform',
                 InputArgument::REQUIRED,
-                'Platform'
+                'The PDO platform being targeted, e.g. mysql, sqlite, etc.'
             )
             ->addArgument(
                 'schema_file',
                 InputArgument::REQUIRED,
-                'Path to schema'
-            )
-            ->addArgument(
-                'path',
-                InputArgument::OPTIONAL,
-                'Target Path'
+                'The path and filename to generate the XML schema to'
             )
             ->addOption(
                 'config',
                 'C',
                 InputOption::VALUE_REQUIRED,
-                'Path to config file'
+                'A path to a config file'
             )
         ;
     }

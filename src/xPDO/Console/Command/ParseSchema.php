@@ -13,69 +13,69 @@ final class ParseSchema extends Command
     {
         $this
             ->setName('parse-schema')
-            ->setDescription('Parses schema')
+            ->setDescription('Parse an XML schema and generate xPDO model classes from it')
             ->addArgument(
                 'platform',
                 InputArgument::REQUIRED,
-                'Platform'
+                'The PDO platform being targeted, e.g. mysql, sqlite, etc.'
             )
             ->addArgument(
                 'schema_file',
                 InputArgument::REQUIRED,
-                'Path to schema'
+                'A path to a file containing the XML schema'
             )
             ->addArgument(
                 'path',
                 InputArgument::OPTIONAL,
-                'Target Path'
+                'The target path to generate the model classes'
             )
             ->addOption(
                 'config',
                 'C',
                 InputOption::VALUE_REQUIRED,
-                'Path to config file'
+                'A path to a config file'
             )
             ->addOption(
                 'compile',
                 'c',
                 InputOption::VALUE_NONE,
-                'Compile'
+                'Compile all classes into one file'
             )
             ->addOption(
                 'update',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Update'
+                'Update generated model classes'
             )
             ->addOption(
                 'regen',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Regen'
+                'Regenerate model classes'
             )
             ->addOption(
                 'psr4',
                 null,
                 InputOption::VALUE_NONE,
-                'PSR4'
+                'Enable PSR-4 autoloading support, default is PSR-0'
             )
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $properties = $this->loadConfig($output, $input->getOption('config'));
-        if ($properties === false) {
-            $output->writeln('fatal: no valid configuration file could be loaded');
-            return;
-        }
-        
         $platform = strtolower($input->getArgument('platform'));
         if (!in_array($platform, self::$platforms)) {
             $output->writeln("fatal: no valid platform specified");
             return;
         }
 
+        $properties = $this->loadConfig($output, $input->getOption('config'));
+        if ($properties === false) {
+            $output->writeln('fatal: no valid configuration file could be loaded');
+            return;
+        }
+        
         $schema = $input->getArgument('schema_file');
         if (!is_readable($schema)) {
             $output->writeln("fatal: no valid schema provided");
