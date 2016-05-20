@@ -42,7 +42,7 @@ class xPDORethinkDBCache extends xPDOCache {
 
         $this->conn = r\connect($host, $port, $database);
 
-        $this->table = r\table($table);
+        $this->table = r\table($table, array('read_mode' => 'outdated'));
 
         $this->initialized = true;
     }
