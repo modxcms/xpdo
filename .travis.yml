@@ -1,5 +1,10 @@
 language: php
 script: "phpunit -c ./test/complete.phpunit.xml"
+env:
+  matrix:
+    - TEST_DRIVER=mysql
+    - TEST_DRIVER=sqlite
+
 services: mysql
 
 # Set php versions
