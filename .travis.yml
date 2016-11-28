@@ -21,7 +21,7 @@ matrix:
     - php: hhvm
 
 before_script:
-  - composer install
+  - composer install --no-dev --prefer-dist --no-interaction
   - cp test/properties.travis.inc.php test/properties.inc.php
   - mysql -e 'create database xpdotest;'
 
