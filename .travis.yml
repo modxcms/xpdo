@@ -1,0 +1,25 @@
+language: php
+script: "phpunit -c ./test/complete.phpunit.xml"
+services: mysql
+
+# Set php versions
+php:
+  - 5.3
+  - 5.4
+  - 5.5
+  - 5.6
+  - 7.0
+  - hhvm
+
+matrix:
+  allow_failures:
+    - php: hhvm
+
+before_script:
+  - composer install
+  - cp test/properties.travis.inc.php test/properties.inc.php
+  - mysql -e 'create database xpdotest;'
+
+before_install:
+  -  if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.5" ]]; then curl -s -o $HOME/.phpenv/versions/5.5/bin/phpunit https://phar.phpunit.de/phpunit-4.8.9.phar; chmod +x $HOME/.phpenv/versions/5.5/bin/phpunit; fi
+
