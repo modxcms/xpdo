@@ -552,6 +552,8 @@ class xPDOObject {
         return $objCollection;
     }
 
+
+    
     /**
      * Get a set of column names from an xPDOObject for use in SQL queries.
      *

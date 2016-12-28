@@ -832,6 +832,98 @@ class xPDO {
         return $instance;
     }
 
+
+    /**
+     * Retrieves a single object instance by the specified criteria and all its related instance
+     * in aggregates or composites.
+     *
+     * Algorithm performs a depth first search in the graph. It can be pretty slow and huge if you end up parsing all your DB.
+     * It prevents going too deep and overflow by:
+     * - not parsing the same object twice
+     * - not parsing instance of an already visited class if $cycleSafe is set to true.
+     * - not backtracking to other instances of a parent class
+     *   For example say
+     *        sfStore -> sfStoreOwner -> sfOwner -> sfStoreOwner
+     *   We want the owner of the store, but not all the stores owned by this owner, we cut the relation
+     *        sfOwner -> sfStoreOwner
+     *
+     * @uses xPDOObject::load()
+     * @param string $className Name of the class to get an instance of.
+     * @param mixed $criteria Primary key of the record or a xPDOCriteria object.
+     * @param integer $maxDepth the maximum depth of parsing.
+     * @param boolean $cycleSafe If set to true, prevent the algorithm to retrieve object whose class has already been seen in the parsing.
+     * @param mixed $cacheFlag If an integer value is provided, this specifies
+     * the time to live in the object cache; if cacheFlag === false, caching is
+     * ignored for the object and if cacheFlag === true, the object will live in
+     * cache indefinitely.
+     * @return array|null An array with all the values of all objects, or null if it could not be
+     * instantiated.
+    */
+    public function getObjectAndRelations($className, $criteria= null, $maxDepth = 0, $cycleSafe = false, $cacheFlag= true) {
+        $instance= null;
+        if ($criteria !== null) {
+            $instance = $this->call($className, 'load', array(& $this, $className, $criteria, $cacheFlag));
+        }
+        if($instance){
+            return $this->_expandRelated($instance, array(), array(), 0, $maxDepth, $cycleSafe);
+        }else{
+            return $instance;
+        }
+    }
+
+    private function _expandRelated($instance, $parent = array(), $visited = array('classes' => array(), 'nodes' => array()), $depth = 0, $maxDepth = 0, $cycleSafe=true){
+        $res = $instance->toArray();
+
+        // Mark this node as visited. A node is a class and its primary key(s)
+        $visited['nodes'][] = array(get_parent_class($instance), $instance->get($instance->getPK()));
+
+        // If we already visited a node from this class, let's not go further to avoid combinatorics explosion
+        // We'll output what we have and go.
+        if(($cycleSafe && in_array(get_parent_class($instance), $visited['classes'])) || $maxDepth && $depth >= $maxDepth){
+            return $res;
+        }
+
+        $visited['classes'][] = get_parent_class($instance);
+
+        $related = array_merge($this->getAggregates(get_class($instance))
+                              ,$this->getComposites(get_class($instance)));
+
+        foreach($related as $alias => $rel){
+            if(empty($parent) ||
+               $parent['parentclass'] != $rel['class'] ||
+               $parent['local'] != $rel['foreign'] ||
+               $parent['foreign'] != $rel['local']
+            ){
+                $rel['parentclass'] = get_parent_class($instance);
+                $res[$alias] = array();
+
+                // Retrieve related objects where foreign key == local key
+                $query = $this->newQuery($rel['class']);
+                $query->where(array(
+                                  $rel['foreign'] => $instance->get($rel['local'])
+                              ));
+                if($rel['cardinality'] == 'many'){
+                    $relobj = $this->getCollection($rel['class'],$query);
+                    foreach($relobj as $obj){ // If it's a collection, append all objects to the array
+                        if(!in_array(array(get_parent_class($obj),$obj->get($obj->getPK())),$visited['nodes'])){
+                            $res[$alias][] = $this->_expandRelated($obj,$rel,$visited, $depth+1, $maxDepth, $cycleSafe);
+                        }
+                    }
+                }
+                else { // If it's a single object, add it directly with the proper alias
+                    $obj = $this->getObject($rel['class'],$query);
+                    if($obj && !in_array(array(get_parent_class($obj),$obj->get($obj->getPK())),$visited['nodes'])){
+                        $res[$alias] = $this->_expandRelated($obj,$rel,$visited, $depth+1, $maxDepth, $cycleSafe);
+                    }
+                }
+            }
+        }
+        return $res;
+    }
+
+
+
+
     /**
      * Retrieves a collection of xPDOObjects by the specified xPDOCriteria.
      *
@@ -1054,6 +1146,9 @@ class xPDO {
         }
         return $object;
     }
+
+
+
 
     /**
      * Retrieves a collection of xPDOObject instances with related objects.
