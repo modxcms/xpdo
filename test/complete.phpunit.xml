@@ -11,6 +11,9 @@
          syntaxCheck="false"
          bootstrap="./bootstrap.php"
         >
+    <php>
+        <env name="TEST_DRIVER" value="mysql"/>
+    </php>
     <testsuites>
         <testsuite name="Complete">
             <file>./xPDO/Test/SetUpTest.php</file>
