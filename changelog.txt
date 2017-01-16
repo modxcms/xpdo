@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Add xPDO\Cache\xPDORedisCache implementation
 - Adopt symfony\console 2.x for CLI scripts
 - Add phpdoc @property to classes for each field
 - Add option to respect PSR-4 namespaces
