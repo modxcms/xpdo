@@ -20,6 +20,9 @@
     "require-dev": {
         "phpunit/phpunit": "~3.7.0"
     },
+    "suggest": {
+        "ext-redis": "Allows caching using Redis"
+    },
     "autoload": {
         "psr-0": {
             "xPDO": ["src/", "test/"]
