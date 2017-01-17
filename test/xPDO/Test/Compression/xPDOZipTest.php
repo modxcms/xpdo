@@ -23,6 +23,7 @@ class xPDOZipTest extends TestCase
 {
     public static function setUpBeforeClass()
     {
+        parent::setUpBeforeClass();
         $xpdo = self::getInstance();
 
         $zipPath = self::$properties['xpdo_test_path'] . "fs/zip/";
@@ -31,10 +32,14 @@ class xPDOZipTest extends TestCase
         $xpdo->getCacheManager()->writeTree("{$zipPath}1/a/");
         $xpdo->getCacheManager()->writeTree("{$zipPath}1/b/");
         $xpdo->getCacheManager()->writeTree("{$zipPath}1/c/");
+        $xpdo->getCacheManager()->writeTree("{$zipPath}1/d/");
+        $xpdo->getCacheManager()->writeTree("{$zipPath}1/e/");
         $xpdo->getCacheManager()->writeTree("{$zipPath}2/");
         $xpdo->getCacheManager()->writeFile("{$zipPath}2/a", "### placeholder file ###");
         $xpdo->getCacheManager()->writeFile("{$zipPath}2/b", "### placeholder file ###");
         $xpdo->getCacheManager()->writeFile("{$zipPath}2/c", "### placeholder file ###");
+        $xpdo->getCacheManager()->writeFile("{$zipPath}2/d", "### placeholder file ###");
+        $xpdo->getCacheManager()->writeFile("{$zipPath}2/e", "### placeholder file ###");
         $xpdo->getCacheManager()->writeTree("{$zipPath}3/");
 
         $unzipPath = self::$properties['xpdo_test_path'] . "fs/unzip";
@@ -100,7 +105,7 @@ class xPDOZipTest extends TestCase
                 '1/',
                 'test-1.zip',
                 array('create' => true, 'overwrite' => true),
-                array('zip_target' => '1/'),
+                array('zip_target' => '1/', 'exclude' => '1\/d, 1\/e'),
                 array(
                     '1/' => 'Successfully added directory 1/ from 1/',
                     '1/a/' => 'Successfully added directory 1/a/ from 1/a/',
@@ -112,7 +117,7 @@ class xPDOZipTest extends TestCase
                 '2/',
                 'test-2.zip',
                 array('create' => true, 'overwrite' => true),
-                array('zip_target' => '2/'),
+                array('zip_target' => '2/', 'exclude' => '2\/d, 2\/e'),
                 array(
                     '2/' => 'Successfully added directory 2/ from 2/',
                     '2/a' => 'Successfully packed 2/a from 2/a',
