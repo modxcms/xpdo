@@ -88,6 +88,7 @@ class xPDOQuerySortByTest extends TestCase {
     public function providerSortBy() {
         return array(
             array('name','ASC','item-01'),
+            array('name','','item-01'),
             array('name','DESC','item-39'),
             array('color,name','ASC','item-03'),
         );
@@ -128,6 +129,7 @@ class xPDOQuerySortByTest extends TestCase {
     public function providerSortByWithGroupBy() {
         return array(
             array('name','ASC','item-01'),
+            array('name','','item-01'),
             array('name','DESC','item-39'),
         );
     }
@@ -165,6 +167,7 @@ class xPDOQuerySortByTest extends TestCase {
     public function providerSortByWithLimit() {
         return array(
             array('name','ASC',4,0,'item-01'),
+            array('name','',4,0,'item-01'),
             array('name','DESC',4,0,'item-39'),
         );
     }

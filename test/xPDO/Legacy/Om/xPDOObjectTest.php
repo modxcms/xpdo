@@ -298,6 +298,63 @@ class xPDOObjectTest extends TestCase
     }
 
     /**
+     * Test that an object can only be retrieved by primary key if type matches.
+     *
+     * @param string $class
+     * @param mixed  $pkValue
+     *
+     * @depends testSaveObject
+     * @dataProvider providerGetObjectByPKFailsOnTypeMismatch
+     */
+    public function testGetObjectByPKFailsOnTypeMismatch($class, $pkValue) {
+        $result = null;
+        try {
+            $result = $this->xpdo->getObject($class, $pkValue);
+        } catch (\Exception $e) {
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
+        }
+        $this->assertNull($result, "Object retrieved with invalid primary key type");
+    }
+    public function providerGetObjectByPKFailsOnTypeMismatch() {
+        return array(
+            array('Person', "stupid"),
+            array('Phone', "crazy"),
+            array('PersonPhone', "farfetched"),
+            array('PersonPhone', 1),
+            array('PersonPhone', "don't do it"),
+            array('BloodType', 1),
+        );
+    }
+
+    /**
+     * Test that an object can only be retrieved by primary key if SQL injection detected.
+     *
+     * @param string $class
+     * @param mixed  $pkValue
+     *
+     * @depends testSaveObject
+     * @dataProvider providerGetObjectByPKFailsOnSQLInjection
+     */
+    public function testGetObjectByPKFailsOnSQLInjection($class, $pkValue) {
+        $result = null;
+        try {
+            $result = $this->xpdo->getObject($class, $pkValue);
+        } catch (\Exception $e) {
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
+        }
+        $this->assertNull($result, "Object retrieved with SQL injection detected");
+    }
+    public function providerGetObjectByPKFailsOnSQLInjection() {
+        return array(
+            array('Person', "1;DROP TABLE `person`"),
+            array('Phone', "1 UNION SELECT * FROM `phone` WHERE id = 2"),
+            array('PersonPhone', array("1=1;DROP TABLE `person`")),
+            array('BloodType', "AB+ UNION SELECT * FROM `blood_type` WHERE `type` = 'A'"),
+            array('BloodType', "AB+/**/UNION SELECT * FROM `blood_type` WHERE `type` = 'A'"),
+        );
+    }
+
+    /**
      * Test using getObject by PK on multiple objects, including multiple PKs
      */
     public function testGetObjectsByPK()
@@ -309,12 +366,14 @@ class xPDOObjectTest extends TestCase
                 2,
                 2,
             ));
+            $expectedNull = $this->xpdo->getObject('Person', 0);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue($person instanceof \Person, "Error retrieving Person object by primary key");
         $this->assertTrue($phone instanceof \Phone, "Error retrieving Phone object by primary key");
         $this->assertTrue($personPhone instanceof \PersonPhone, "Error retrieving PersonPhone object by primary key");
+        $this->assertNull($expectedNull, "Got unexpected instance of Person object by invalid primary key");
     }
 
     /**

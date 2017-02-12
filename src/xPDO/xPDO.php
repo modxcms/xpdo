@@ -19,6 +19,7 @@
 namespace xPDO;
 
 use xPDO\Om\xPDOCriteria;
+use xPDO\Om\xPDOQuery;
 
 if (!defined('XPDO_CORE_PATH')) {
     $xpdo_core_path= strtr(realpath(dirname(__FILE__)), '\\', '/') . '/';
@@ -804,6 +805,7 @@ class xPDO {
     */
     public function getObject($className, $criteria= null, $cacheFlag= true) {
         $instance= null;
+        $this->sanitizePKCriteria($className, $criteria);
         if ($criteria !== null) {
             $instance = $this->call($className, 'load', array(& $this, $className, $criteria, $cacheFlag));
         }
@@ -2688,5 +2690,36 @@ class xPDO {
             else $type= \PDO::PARAM_STR;
         }
         return $type;
+    }
+
+    /**
+     * Sanitize criteria expected to represent primary key values.
+     *
+     * @param string $className The name of the class.
+     * @param mixed  &$criteria A reference to the criteria being used.
+     */
+    protected function sanitizePKCriteria($className, &$criteria) {
+        if (is_scalar($criteria)) {
+            $pkType = $this->getPKType($className);
+            if (is_string($pkType)) {
+                if (is_string($criteria) && !xPDOQuery::isValidClause($criteria)) {
+                    $criteria = null;
+                } else {
+                    switch ($pkType) {
+                        case 'int':
+                        case 'integer':
+                            $criteria = (int)$criteria;
+                            break;
+                        case 'string':
+                            if (is_int($criteria)) {
+                                $criteria = (string)$criteria;
+                            }
+                            break;
+                    }
+                }
+            } elseif (is_array($pkType)) {
+                $criteria = null;
+            }
+        }
     }
 }
