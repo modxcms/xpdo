@@ -18,6 +18,7 @@
  */
 namespace xPDO;
 
+use Interop\Container\ContainerInterface;
 use xPDO\Om\xPDOCriteria;
 use xPDO\Om\xPDOQuery;
 
@@ -147,9 +148,10 @@ class xPDO {
      */
     private $cachePath= null;
     /**
-     * @var array An array of supplemental service classes for this xPDO instance.
+     * @var ContainerInterface|array A container or array (deprecated) of supplemental service
+     * classes for this xPDO instance.
      */
-    public $services= array ();
+    public $services= null;
     /**
      * @var float Start time of the request, initialized when the constructor is
      * called.
@@ -209,9 +211,11 @@ class xPDO {
      *
      * @param string|int|null $id An optional identifier for the instance. If not set
      * a uniqid will be generated and used as the key for the instance.
-     * @param array|null $config An optional array of config data for the instance.
+     * @param array|ContainerInterface|null $config An optional container or array of config data
+     * for the instance.
      * @param bool $forceNew If true a new instance will be created even if an instance
      * with the provided $id already exists in xPDO::$instances.
+     *
      * @throws xPDOException If a valid instance is not retrieved.
      * @return xPDO An instance of xPDO.
      */
@@ -258,18 +262,20 @@ class xPDO {
      * @param mixed $dsn A valid DSN connection string.
      * @param string $username The database username with proper permissions.
      * @param string $password The password for the database user.
-     * @param array|string $options An array of xPDO options. For compatibility with previous
-     * releases, this can also be a single string representing a prefix to be applied to all
-     * database container (i. e. table) names, to isolate multiple installations or conflicting
-     * table names that might need to coexist in a single database container. It is preferrable to
-     * include the table_prefix option in the array for future compatibility.
+     * @param array|ContainerInterface $options A dependency container or array of xPDO options.
+     * You should configure the xPDO options array within a container and pass a container for
+     * future compatibility.
      * @param array|null $driverOptions Driver-specific PDO options.
+     *
      * @throws xPDOException If an error occurs creating the instance.
      * @return xPDO A unique xPDO instance.
      */
     public function __construct($dsn, $username= '', $password= '', $options= array(), $driverOptions= null) {
         try {
             $this->config = $this->initConfig($options);
+            if ($this->services === null) {
+                $this->services = new xPDOContainer();
+            }
             $this->setLogLevel($this->getOption('log_level', null, xPDO::LOG_LEVEL_FATAL, true));
             $this->setLogTarget($this->getOption('log_target', null, php_sapi_name() === 'cli' ? 'ECHO' : 'HTML', true));
             if (!empty($dsn)) {
@@ -331,16 +337,23 @@ class xPDO {
     /**
      * Initialize an xPDO config array.
      *
-     * @param string|array $data The config input source. Currently accepts a PHP array,
-     * or a PHP string representing xPDO::OPT_TABLE_PREFIX (deprecated).
+     * @param ContainerInterface|array $data The config input source. Currently accepts a dependency
+     * container that has a 'config' entry containing the xPDO configuration array, or an array
+     * containing the configuration directly (deprecated).
+     *
      * @return array An array of xPDO config data.
      */
     protected function initConfig($data) {
-        if (is_string($data)) {
-            $data= array(xPDO::OPT_TABLE_PREFIX => $data);
-        } elseif (!is_array($data)) {
-            $data= array(xPDO::OPT_TABLE_PREFIX => '');
+        if ($data instanceof ContainerInterface) {
+            $this->services = $data;
+            if ($this->services->has('config')) {
+                $data = $this->services->get('config');
+            }
         }
+        if (!is_array($data)) {
+            $data = array(xPDO::OPT_TABLE_PREFIX => '');
+        }
+
         return $data;
     }
 
@@ -1183,6 +1196,8 @@ class xPDO {
     /**
      * Load and return a named service class instance.
      *
+     * @deprecated Use the service/DI container to access services. Will be removed in 3.1.
+     *
      * @param string $name The variable name of the instance.
      * @param string $class The service class name.
      * @param string $path An optional root path to search for the class.
@@ -1193,7 +1208,7 @@ class xPDO {
      */
     public function getService($name, $class= '', $path= '', $params= array ()) {
         $service= null;
-        if (!isset ($this->services[$name]) || !is_object($this->services[$name])) {
+        if (!$this->services->has($name) || !is_object($this->services->get($name))) {
             if (empty ($class) && isset ($this->config[$name . '.class'])) {
                 $class= $this->config[$name . '.class'];
             } elseif (empty ($class)) {
@@ -1201,15 +1216,15 @@ class xPDO {
             }
             $className= $this->loadClass($class, $path, false, true);
             if (!empty($className)) {
-                $service = new $className ($this, $params);
+                $service = new $className($this, $params);
                 if ($service) {
-                    $this->services[$name]=& $service;
-                    $this->$name= & $this->services[$name];
+                    $this->services->add($name, $service);
+                    $this->$name= $this->services->get($name);
                 }
             }
         }
-        if (array_key_exists($name, $this->services)) {
-            $service= & $this->services[$name];
+        if ($this->services->has($name)) {
+            $service = $this->services->get($name);
         } else {
             if ($this->getDebug() === true) {
                 $this->log(xPDO::LOG_LEVEL_DEBUG, "Problem getting service {$name}, instance of class {$class}, from path {$path}, with params " . print_r($params, true));
