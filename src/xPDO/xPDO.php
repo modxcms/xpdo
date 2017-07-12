@@ -347,7 +347,7 @@ class xPDO {
         if ($data instanceof ContainerInterface) {
             $this->services = $data;
             if ($this->services->has('config')) {
-                $data = $this->services->get('config');
+                $data = $this->services->get('config')->all();
             }
         }
         if (!is_array($data)) {
