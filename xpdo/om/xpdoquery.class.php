@@ -509,33 +509,31 @@ abstract class xPDOQuery extends xPDOCriteria {
             $foreign= $fkMeta['foreign'];
             $this->select($this->xpdo->getSelectColumns($class, $classAlias, $classAlias . '_'));
             $expression= $this->xpdo->escape($parentAlias) . '.' . $this->xpdo->escape($local) . ' = ' .  $this->xpdo->escape($classAlias) . '.' . $this->xpdo->escape($foreign);
-            if (isset($fkMeta['criteria']['local'])) {
-                $localCriteria = array();
-                if (is_array($fkMeta['criteria']['local'])) {
-                    foreach ($fkMeta['criteria']['local'] as $critKey => $critVal) {
-                        if (is_numeric($critKey)) {
-                            $localCriteria[] = $critVal;
-                        } else {
-                            $localCriteria["{$classAlias}.{$critKey}"] = $critVal;
-                        }
+            $localCriteria = array();
+            if (isset($fkMeta['criteria']['local']) && is_array($fkMeta['criteria']['local'])) {
+                foreach ($fkMeta['criteria']['local'] as $critKey => $critVal) {
+                    if (is_numeric($critKey)) {
+                        $localCriteria[] = $critVal;
+                    } else {
+                        $localCriteria["{$parentAlias}.{$critKey}"] = $critVal;
                     }
                 }
-                if (!empty($localCriteria)) {
-                    $expression = array($localCriteria, $expression);
-                }
-                $foreignCriteria = array();
-                if (is_array($fkMeta['criteria']['foreign'])) {
-                    foreach ($fkMeta['criteria']['foreign'] as $critKey => $critVal) {
-                        if (is_numeric($critKey)) {
-                            $foreignCriteria[] = $critVal;
-                        } else {
-                            $foreignCriteria["{$parentAlias}.{$critKey}"] = $critVal;
-                        }
+            }
+            if (!empty($localCriteria)) {
+                $expression = array($localCriteria, $expression);
+            }
+            $foreignCriteria = array();
+            if (isset($fkMeta['criteria']['foreign']) && is_array($fkMeta['criteria']['foreign'])) {
+                foreach ($fkMeta['criteria']['foreign'] as $critKey => $critVal) {
+                    if (is_numeric($critKey)) {
+                        $foreignCriteria[] = $critVal;
+                    } else {
+                        $foreignCriteria["{$classAlias}.{$critKey}"] = $critVal;
                     }
                 }
-                if (!empty($foreignCriteria)) {
-                    $expression = array($foreignCriteria, $expression);
-                }
+            }
+            if (!empty($foreignCriteria)) {
+                $expression = array($foreignCriteria, $expression);
             }
             $this->leftJoin($class, $classAlias, $expression);
             if (!empty ($relations)) {
@@ -609,23 +607,24 @@ abstract class xPDOQuery extends xPDOCriteria {
     public function hydrateGraphNode(& $row, & $instance, $alias, $relations) {
         $relObj= null;
         if ($relationMeta= $instance->getFKDefinition($alias)) {
+            $cardinality = strtolower($relationMeta['cardinality']);
             if ($row[$alias.'_'.$relationMeta['foreign']] != null) {
-                $relObj = $this->xpdo->call($relationMeta['class'], '_loadInstance', array(& $this->xpdo, $relationMeta['class'], $alias, $row));
-                if ($relObj) {
-                    if (strtolower($relationMeta['cardinality']) == 'many') {
-                        $instance->addMany($relObj, $alias);
-                    } else {
-                        $instance->addOne($relObj, $alias);
-                    }
+                if ($cardinality === 'many' || empty($instance->_relatedObjects[$alias])) {
+                    $relObj = $this->xpdo->call($relationMeta['class'], '_loadInstance', array(& $this->xpdo, $relationMeta['class'], $alias, $row));
+                } else {
+                    $relObj = $instance->_relatedObjects[$alias];
+                }
+                if ($cardinality === 'many') {
+                    $instance->addMany($relObj, $alias, true);
+                } else {
+                    $instance->addOne($relObj, $alias);
                 }
             }
         }
         if (!empty ($relations) && is_object($relObj)) {
             while (list($relationAlias, $subRelations)= each($relations)) {
                 if (is_array($subRelations) && !empty($subRelations)) {
-                    foreach ($subRelations as $subRelation) {
-                        $this->hydrateGraphNode($row, $relObj, $relationAlias, $subRelation);
-                    }
+                    $this->hydrateGraphNode($row, $relObj, $relationAlias, $subRelations);
                 } else {
                     $this->hydrateGraphNode($row, $relObj, $relationAlias, null);
                 }
