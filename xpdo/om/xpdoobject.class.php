@@ -1275,9 +1275,12 @@ class xPDOObject {
      * to this instance via the intersection class.
      * @param string $alias An optional alias, required only for instances where
      * you have more than one relation defined to the same class.
+     * @param boolean $graph For object graph use only. If true, the existing object
+     * with the same value of the primary key will not be overwritten and
+     * will be used to overwrite the given instance.
      * @return boolean Indicates if the addMany was successful.
      */
-    public function addMany(& $obj, $alias= '') {
+    public function addMany(& $obj, $alias= '', $graph= false) {
         $added= false;
         if (!is_array($obj)) {
             if (is_object($obj)) {
@@ -1301,9 +1304,20 @@ class xPDOObject {
                                 $objpk= implode('-', $objpk);
                             }
                         }
-                        $this->_relatedObjects[$alias][$objpk]= $obj;
-                        if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, 'Added related object with alias: ' . $alias . ' and pk: ' . $objpk . "\n" . print_r($obj->toArray('', true), true));
-                        $added= true;
+                        if ($graph) {
+                            if (isset($this->_relatedObjects[$alias][$objpk])) {
+                                if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, 'Skipped already existing graph node object with alias: ' . $alias . ' and pk: ' . $objpk . "\n" . print_r($obj->toArray('', true), true));
+                                $obj= $this->_relatedObjects[$alias][$objpk];
+                            } else {
+                                if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, 'Binded graph node object with alias: ' . $alias . ' and pk: ' . $objpk . "\n" . print_r($obj->toArray('', true), true));
+                                $this->_relatedObjects[$alias][$objpk] = $obj;
+                                $added= true;
+                            }
+                        } else {
+                            $this->_relatedObjects[$alias][$objpk]= $obj;
+                            if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, 'Added related object with alias: ' . $alias . ' and pk: ' . $objpk . "\n" . print_r($obj->toArray('', true), true));
+                            $added= true;
+                        }
                     }
                 }
             }
