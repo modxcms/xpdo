@@ -650,7 +650,7 @@ class xPDO {
         if (empty($path)) $path= XPDO_CORE_PATH;
         if (!$included) {
             /* turn to filesystem path and enforce all lower-case paths and filenames */
-            $fqcn= str_replace('.', '/', $fqn) . '.class.php';
+            $fqcn= str_replace(['.','\\'], '/', $fqn) . '.class.php';
             /* include class */
             if (!file_exists($path . $fqcn)) return false;
             if (!$rt= include_once ($path . $fqcn)) {
