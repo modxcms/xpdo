@@ -60,9 +60,14 @@ class xPDOCacheManagerTest extends TestCase
     {
         $source = self::$properties['xpdo_test_path'] . "fs/{$source}";
         $target = self::$properties['xpdo_test_path'] . "fs/{$target}";
-        while (list($idx, $path) = each($expected)) $expected[$idx] = self::$properties['xpdo_test_path'] . 'fs/' . $path;
+        $modifiedExpected = [];
+        foreach ($expected as $idx => $path) {
+            $modifiedExpected[$idx] = self::$properties['xpdo_test_path'] . 'fs/' . $path;
+        }
+        sort($modifiedExpected);
         $result = $this->xpdo->getCacheManager()->copyTree($source, $target, $options);
-        $this->assertEquals($expected, $result, 'Error copying directory tree on filesystem');
+        sort($result);
+        $this->assertEquals($modifiedExpected, $result, 'Error copying directory tree on filesystem');
     }
 
     public function providerCopyTree()
@@ -93,9 +98,14 @@ class xPDOCacheManagerTest extends TestCase
     public function testDeleteTree($path, $options, $expected)
     {
         $path = self::$properties['xpdo_test_path'] . "fs/{$path}";
-        while (list($idx, $dir) = each($expected)) $expected[$idx] = self::$properties['xpdo_test_path'] . 'fs/' . $dir;
+        $modifiedExpected = [];
+        foreach ($expected as $idx => $dir) {
+            $modifiedExpected[$idx] = self::$properties['xpdo_test_path'] . 'fs/' . $dir;
+        }
+        sort($modifiedExpected);
         $result = $this->xpdo->getCacheManager()->deleteTree($path, $options);
-        $this->assertEquals($expected, $result, 'Error deleting directory tree from filesystem');
+        sort($result);
+        $this->assertEquals($modifiedExpected, $result, 'Error deleting directory tree from filesystem');
     }
 
     public function providerDeleteTree()
