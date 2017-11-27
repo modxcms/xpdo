@@ -761,7 +761,7 @@ class xPDO {
         }
         if (!empty($callback) && is_callable($callback)) {
             try {
-                $return = call_user_func_array($callback, $args);
+                $return = $className::$method(...$args);
             } catch (\Exception $e) {
                 $this->log(xPDO::LOG_LEVEL_ERROR, "An exception occurred calling {$className}::{$method}() - " . $e->getMessage());
             }
