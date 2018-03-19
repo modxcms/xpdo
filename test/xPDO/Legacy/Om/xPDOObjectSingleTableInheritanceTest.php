@@ -311,7 +311,7 @@ class xPDOObjectSingleTableInheritanceTest extends TestCase
         try {
             $object = $this->xpdo->getObject("sti.baseClass", $criteria);
             if ($object) {
-                while (list($key, $value) = each($update)) {
+                foreach ($update as $key => $value) {
                     $object->set($key, $value);
                 }
                 $result = $object->save();
