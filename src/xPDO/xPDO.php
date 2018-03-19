@@ -2641,9 +2641,8 @@ class xPDO {
      */
     public function parseBindings($sql, $bindings) {
         if (!empty($sql) && !empty($bindings)) {
-            reset($bindings);
             $bound = array();
-            while (list ($k, $param)= each($bindings)) {
+            foreach ($bindings as $k => $param) {
                 if (!is_array($param)) {
                     $v= $param;
                     $type= $this->getPDOType($param);

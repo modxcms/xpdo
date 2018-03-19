@@ -96,7 +96,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
                 $fieldMeta = $this->xpdo->getFieldMeta($className, true);
                 $nativeGen = false;
                 $columns = array();
-                while (list($key, $meta)= each($fieldMeta)) {
+                foreach ($fieldMeta as $key => $meta) {
                     $columns[] = $this->getColumnDef($className, $key, $meta);
                     if (array_key_exists('generated', $meta) && $meta['generated'] == 'native') $nativeGen = true;
                 }
