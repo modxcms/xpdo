@@ -74,9 +74,8 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
         }
         if ($command == 'UPDATE') {
             if (!empty($this->query['set'])) {
-                reset($this->query['set']);
                 $clauses = array();
-                while (list($setKey, $setVal) = each($this->query['set'])) {
+                foreach ($this->query['set'] as $setKey => $setVal) {
                     $value = $setVal['value'];
                     $type = $setVal['type'];
                     if ($value !== null && in_array($type, array(\PDO::PARAM_INT, \PDO::PARAM_STR))) {

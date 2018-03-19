@@ -164,7 +164,7 @@ abstract class xPDOGenerator {
     public function getClassName($string) {
         if (is_string($string) && $strArray= explode('_', $string)) {
             $return= '';
-            while (list($k, $v)= each($strArray)) {
+            foreach ($strArray as $k => $v) {
                 $return.= strtoupper(substr($v, 0, 1)) . substr($v, 1) . '';
             }
             $string= $return;
@@ -814,32 +814,32 @@ EOD;
         $meta['phpdoc-properties'] = $this->_constructPhpDocProperties($this->map[$meta['class']]);
         $meta['phpdoc-end'] = $this->_constructPhpDpcEnd($class, $meta);
     }
-    
+
     protected function _constructPhpDocStart($class, $meta) {
         $output = array(
             '/**'
         );
         $output[] = ' * Class ' . $meta['class-shortname'];
-        
+
         return implode(PHP_EOL, $output);
     }
-    
+
     protected function _constructPhpDpcEnd($class, $meta) {
         $output = array(
             ' *'
         );
-        
+
         $output[] = ' * @package ' . $meta['namespace'];
         $output[] = ' */';
 
         return implode(PHP_EOL, $output);
     }
-    
+
     protected function _constructPhpDocProperties($meta) {
         $properties = array(
             ' *'
         );
-        
+
         if ($this->manager->xpdo->getOption(xPDO::OPT_HYDRATE_FIELDS)) {
             foreach ($meta['fieldMeta'] as $field => $def) {
                 $type = $def['phptype'];
@@ -853,7 +853,7 @@ EOD;
                         $type = 'array';
                         break;
                 }
-                
+
                 $properties[] = ' * @property ' . $type . ' $' . $field;
             }
         }
@@ -865,7 +865,7 @@ EOD;
                     $properties[] = ' * @property ' . '\\' . ltrim($def['class'], '\\') . (($def['cardinality'] == 'many') ? '[]' : '') . ' $' . $field;
                 }
             }
-        
+
             if (isset($meta['aggregations'])) {
                 $properties[] = ' *';
                 foreach ($meta['aggregations'] as $field => $def) {
@@ -873,7 +873,7 @@ EOD;
                 }
             }
         }
-        
+
         return implode(PHP_EOL, $properties);
     }
 

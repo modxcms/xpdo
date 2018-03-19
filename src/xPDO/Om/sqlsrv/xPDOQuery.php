@@ -10,6 +10,9 @@
 
 namespace xPDO\Om\sqlsrv;
 
+use xPDO\Om\xPDOQueryCondition;
+use xPDO\xPDO;
+
 /**
  * An implementation of xPDOQuery for the sqlsrv database driver.
  *
@@ -41,7 +44,7 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
                     $field['sql']= $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($k) . " = ?";
                     $field['binding']= array (
                         'value' => $conditions[$iteration],
-                        'type' => $isString ? PDO::PARAM_STR : PDO::PARAM_INT,
+                        'type' => $isString ? \PDO::PARAM_STR : \PDO::PARAM_INT,
                         'length' => 0
                     );
                     $field['conjunction']= $conjunction;
@@ -49,8 +52,7 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
                     $iteration++;
                 }
             } else {
-                reset($conditions);
-                while (list ($key, $val)= each($conditions)) {
+                foreach ($conditions as $key => $val) {
                     if (is_int($key)) {
                         if (is_array($val)) {
                             $result[]= $this->parseConditions($val, $conjunction);
@@ -82,25 +84,25 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
                             $key= $key_parts[1];
                         }
                         if ($val === null) {
-                            $type= PDO::PARAM_NULL;
+                            $type= \PDO::PARAM_NULL;
                             if (!in_array($operator, array('IS', 'IS NOT'))) {
                                 $operator= $operator === '!=' ? 'IS NOT' : 'IS';
                             }
                         }
                         elseif (isset($fieldMeta[$key]) && !in_array($fieldMeta[$key]['phptype'], $this->_quotable)) {
-                            $type= PDO::PARAM_INT;
+                            $type= \PDO::PARAM_INT;
                         }
                         else {
-                            $type= PDO::PARAM_STR;
+                            $type= \PDO::PARAM_STR;
                         }
                         if (in_array(strtoupper($operator), array('IN', 'NOT IN')) && is_array($val)) {
                             $vals = array();
                             foreach ($val as $v) {
                                 switch ($type) {
-                                    case PDO::PARAM_INT:
+                                    case \PDO::PARAM_INT:
                                         $vals[] = (integer) $v;
                                         break;
-                                    case PDO::PARAM_STR:
+                                    case \PDO::PARAM_STR:
                                         $vals[] = $this->xpdo->quote($v);
                                         break;
                                     default:
@@ -119,7 +121,7 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
                             }
                         }
                         $field= array ();
-                        if ($type === PDO::PARAM_NULL) {
+                        if ($type === \PDO::PARAM_NULL) {
                             $field['sql']= $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($key) . ' ' . $operator . ' NULL';
                             $field['binding']= null;
                             $field['conjunction']= $conj;
@@ -146,9 +148,9 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
         }
         elseif (($pktype == 'integer' && is_numeric($conditions)) || ($pktype == 'string' && is_string($conditions))) {
             if ($pktype == 'integer') {
-                $param_type= PDO::PARAM_INT;
+                $param_type= \PDO::PARAM_INT;
             } else {
-                $param_type= PDO::PARAM_STR;
+                $param_type= \PDO::PARAM_STR;
             }
             $field['sql']= $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($pk) . ' = ?';
             $field['binding']= array ('value' => $conditions, 'type' => $param_type, 'length' => 0);
@@ -243,12 +245,11 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
         }
         if ($command == 'UPDATE') {
             if (!empty($this->query['set'])) {
-                reset($this->query['set']);
                 $clauses = array();
-                while (list($setKey, $setVal) = each($this->query['set'])) {
+                foreach ($this->query['set'] as $setKey => $setVal) {
                     $value = $setVal['value'];
                     $type = $setVal['type'];
-                    if ($value !== null && in_array($type, array(PDO::PARAM_INT, PDO::PARAM_STR))) {
+                    if ($value !== null && in_array($type, array(\PDO::PARAM_INT, \PDO::PARAM_STR))) {
                         $value = $this->xpdo->quote($value, $type);
                     } elseif ($value === null) {
                         $value = 'NULL';
