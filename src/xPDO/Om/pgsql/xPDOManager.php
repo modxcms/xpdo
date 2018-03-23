@@ -25,10 +25,10 @@
  * @subpackage om.pgsql
  */
 
-/**
- * Include the parent {@link xPDOManager} class.
- */
-require_once (dirname(dirname(__FILE__)) . '/xpdomanager.class.php');
+namespace xPDO\Om\pgsql;
+
+use xPDO\xPDO;
+use PDO;
 
 /**
  * Provides oci data source management for an xPDO instance.
@@ -41,7 +41,7 @@ require_once (dirname(dirname(__FILE__)) . '/xpdomanager.class.php');
  * @package xpdo
  * @subpackage om.pgsql
  */
-class xPDOManager_pgsql extends xPDOManager {
+class xPDOManager extends \xPDO\Om\xPDOManager {
     public function createSourceContainer($dsnArray = null, $username= null, $password= null, $containerOptions= array ()) {
         $created = false;
         if ($this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
@@ -58,6 +58,10 @@ class xPDOManager_pgsql extends xPDOManager {
                     $sql.= ' LC_COLLATE = \'' .$containerOptions['collation'].'\'';
                 }
                 try {
+//                    print_r($username);
+//                    print_r($password);
+                    $password = $username;
+                    
                     $pdo = new PDO("pgsql:host={$dsnArray['host']}", $username, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
                     $result = $pdo->exec($sql);
                     if ($result !== false) {

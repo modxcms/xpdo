@@ -18,6 +18,9 @@
  * Suite 330, Boston, MA 02111-1307 USA
  */
 
+namespace xPDO\Om\pgsql;
+
+
 /**
  * Contains a derivative of the xPDOObject class for pgsql.
  *
@@ -29,11 +32,6 @@
  * @subpackage om.pgsql
  */
 
-if (!class_exists('xPDOObject')) {
-    /** Include the parent {@link xPDOObject} class. */
-    include_once (dirname(dirname(__FILE__)) . '/xpdoobject.class.php');
-}
-
 /**
  * Implements extensions to the base xPDOObject class for pgsql.
  *
@@ -42,7 +40,7 @@ if (!class_exists('xPDOObject')) {
  * @package xpdo
  * @subpackage om.pgsql
  */
-class xPDOObject_pgsql extends xPDOObject {
+class xPDOObject extends \xPDO\Om\xPDOObject {
     public static function _save(xPDOObject &$obj, $cacheFlag= null) {
         if ($obj->isLazy()) {
             $obj->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Attempt to save lazy object: ' . print_r($obj->toArray('', true), 1));
@@ -208,10 +206,3 @@ class xPDOObject_pgsql extends xPDOObject {
     }
 }
 
-/**
- * Extend this abstract class to define a class having an integer primary key.
- *
- * @package xpdo
- * @subpackage om.pgsql
- */
-class xPDOSimpleObject_pgsql extends xPDOSimpleObject {}

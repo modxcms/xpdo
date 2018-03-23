@@ -29,7 +29,7 @@
  * @subpackage om.pgsql
  */
 $xpdo_meta_map = array (
-    'xPDOSimpleObject' => array (
+    'xPDO\\Om\\xPDOSimpleObject' => array (
         'table' => null,
         'fields' => array (
             'id' => null,

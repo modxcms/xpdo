@@ -18,6 +18,11 @@
  * Suite 330, Boston, MA 02111-1307 USA
  */
 
+namespace xPDO\Om\pgsql;
+
+use PDO;
+use xPDO\Om\xPDOQueryCondition;
+
 /**
  * The oci implementation of xPDOQuery.
  *
@@ -25,16 +30,13 @@
  * @subpackage om.pgsql
  */
 
-/** Include the base {@see xPDOQuery} class */
-include_once (dirname(dirname(__FILE__)) . '/xpdoquery.class.php');
-
 /**
  * An implementation of xPDOQuery for the pgsql database driver.
  *
  * @package xpdo
  * @subpackage om.oci
  */
-class xPDOQuery_pgsql extends xPDOQuery {
+class xPDOQuery extends \xPDO\Om\xPDOQuery {
     
     public function parseConditions($conditions, $conjunction = xPDOQuery::SQL_AND) {
         $result= array ();

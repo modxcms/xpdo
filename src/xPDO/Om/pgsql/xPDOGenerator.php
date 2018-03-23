@@ -25,10 +25,10 @@
  * @subpackage om.pgsql
  */
 
-/**
- * Include the parent {@link xPDOGenerator} class.
- */
-include_once (dirname(dirname(__FILE__)) . '/xpdogenerator.class.php');
+namespace xPDO\Om\pgsql;
+
+use xPDO\xPDO;
+use PDO;
 
 /**
  * An extension for generating {@link xPDOObject} class and map files for pgsql.
@@ -37,10 +37,9 @@ include_once (dirname(dirname(__FILE__)) . '/xpdogenerator.class.php');
  * generate class stub and meta-data map files from a provided XML schema of a
  * database structure.
  *
- * @package xpdo
- * @subpackage om.pgsql
+ * @package xPDO\Om\mysql
  */
-class xPDOGenerator_pgsql extends xPDOGenerator {
+class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
     public function compile($path = '') {
         return false;
     }

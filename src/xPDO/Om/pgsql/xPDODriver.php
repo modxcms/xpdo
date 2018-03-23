@@ -18,17 +18,9 @@
  * Suite 330, Boston, MA 02111-1307 USA
  */
 
-/**
- * The pgsql implementation of the xPDODriver class.
- *
- * @package xpdo
- * @subpackage om.pgsql
- */
+namespace xPDO\Om\pgsql;
 
-/**
- * Include the parent {@link xPDODriver} class.
- */
-require_once (dirname(dirname(__FILE__)) . '/xpdodriver.class.php');
+use xPDO\xPDO;
 
 /**
  * Provides PostgreSQL driver abstraction for an xPDO instance.
@@ -40,7 +32,7 @@ require_once (dirname(dirname(__FILE__)) . '/xpdodriver.class.php');
  * @package xpdo
  * @subpackage om.pgsql
  */
-class xPDODriver_pgsql extends xPDODriver {
+class xPDODriver extends \xPDO\Om\xPDODriver {
     public $quoteChar = "'";
     public $escapeOpenChar = '"';
     public $escapeCloseChar = '"';

@@ -25,4 +25,4 @@
  * @package xpdo
  * @subpackage om.oci
  */
-$xpdo_meta_map['xPDOObject']['table']= null;
+$xpdo_meta_map['xPDO\\Om\\xPDOObject']['table']= null;
