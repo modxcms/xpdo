@@ -1324,6 +1324,12 @@ class xPDOObject {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Attempt to save lazy object: ' . print_r($this->toArray('', true), 1));
             return false;
         }
+        //Pgsql and Oci have their own save methods
+        if (in_array($this->xpdo->config['dbtype'], array('pgsql', 'oci'))) {
+            $saved = $this->xpdo->call('xPDOObject', '_save', array(&$this, $cacheFlag));
+            if ($saved)
+                return $saved;
+        }
         $result= true;
         $sql= '';
         $pk= $this->getPrimaryKey();
