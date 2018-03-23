@@ -4,8 +4,11 @@ env:
   matrix:
     - TEST_DRIVER=mysql
     - TEST_DRIVER=sqlite
+    - TEST_DRIVER=pgsql
 
-services: mysql
+services:
+  - mysql
+  - postgresql
 
 # Set php versions
 php:
