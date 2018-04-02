@@ -24,17 +24,9 @@ use PDO;
 use xPDO\Om\xPDOQueryCondition;
 
 /**
- * The oci implementation of xPDOQuery.
+ * An implementation of xPDOQuery for the PostgresSQL database driver.
  *
- * @package xpdo
- * @subpackage om.pgsql
- */
-
-/**
- * An implementation of xPDOQuery for the pgsql database driver.
- *
- * @package xpdo
- * @subpackage om.oci
+ * @package xPDO\Om\pgsql
  */
 class xPDOQuery extends \xPDO\Om\xPDOQuery {
     

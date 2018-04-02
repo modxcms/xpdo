@@ -18,28 +18,20 @@
  * Suite 330, Boston, MA 02111-1307 USA
  */
 
-/**
- * The pgsql implementation of the xPDOManager class.
- *
- * @package xpdo
- * @subpackage om.pgsql
- */
-
 namespace xPDO\Om\pgsql;
 
 use xPDO\xPDO;
 use PDO;
 
 /**
- * Provides oci data source management for an xPDO instance.
+ * Provides PostgreSQL data source management for an xPDO instance.
  *
  * These are utility functions that only need to be loaded under special
  * circumstances, such as creating tables, adding indexes, altering table
  * structures, etc.  xPDOManager class implementations are specific to a
- * database driver and this instance is implemented for pgsql.
+ * database driver and this instance is implemented for PostgreSQL.
  *
- * @package xpdo
- * @subpackage om.pgsql
+ * @package xPDO\Om\pgsql
  */
 class xPDOManager extends \xPDO\Om\xPDOManager {
     public function createSourceContainer($dsnArray = null, $username= null, $password= null, $containerOptions= array ()) {

@@ -23,6 +23,6 @@
  *
  * @see xPDOObject
  * @package xpdo
- * @subpackage om.oci
+ * @subpackage om.pgsql
  */
 $xpdo_meta_map['xPDO\\Om\\xPDOObject']['table']= null;

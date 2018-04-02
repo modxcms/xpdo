@@ -20,25 +20,12 @@
 
 namespace xPDO\Om\pgsql;
 
-
 /**
- * Contains a derivative of the xPDOObject class for pgsql.
- *
- * This file contains the base persistent object classes for pgsql, which your
- * user-defined classes will extend when implementing an xPDO object model
- * targeted at the PostgreSQL platform.
- *
- * @package xpdo
- * @subpackage om.pgsql
- */
-
-/**
- * Implements extensions to the base xPDOObject class for pgsql.
+ * Implements extensions to the base xPDOObject class for PostgreSQL.
  *
  * {@inheritdoc}
  *
- * @package xpdo
- * @subpackage om.pgsql
+ * @package xPDO\Om\pgsql
  */
 class xPDOObject extends \xPDO\Om\xPDOObject {
     public static function _save(xPDOObject &$obj, $cacheFlag= null) {

@@ -25,14 +25,14 @@ use xPDO\xPDO;
 /**
  * Provides PostgreSQL driver abstraction for an xPDO instance.
  *
- * This is baseline metadata and methods used throughout the framework.  xPDODriver 
+ * This is baseline metadata and methods used throughout the framework. xPDODriver
  * class implementations are specific to a PDO driver and this instance is 
- * implemented for postgresql.
+ * implemented for PostgreSQL.
  *
- * @package xpdo
- * @subpackage om.pgsql
+ * @package xPDO\Om\pgsql
  */
-class xPDODriver extends \xPDO\Om\xPDODriver {
+class xPDODriver extends \xPDO\Om\xPDODriver
+{
     public $quoteChar = "'";
     public $escapeOpenChar = '"';
     public $escapeCloseChar = '"';
@@ -57,7 +57,8 @@ class xPDODriver extends \xPDO\Om\xPDODriver {
      *
      * @param xPDO &$xpdo A reference to a specific xPDO instance.
      */
-    function __construct(xPDO &$xpdo) {
+    function __construct(xPDO &$xpdo)
+    {
         parent :: __construct($xpdo);
         $this->dbtypes['integer']= array('/INT/i', '/SERIAL$/i');
         $this->dbtypes['boolean']= array('/^BOOLEAN$/i');
@@ -70,8 +71,14 @@ class xPDODriver extends \xPDO\Om\xPDODriver {
         $this->dbtypes['bit']= array('/^BIT/i');
         $this->dbtypes['json'] = array('/^JSON$/i');
     }
-    
-    public function lastInsertId($className = null, $column = null) {
+
+    /**
+     * @param null $className
+     * @param null $column
+     * @return bool|int|string
+     */
+    public function lastInsertId($className = null, $column = null)
+    {
         $return = false;
         $max = 0;
         if ($className) {
@@ -85,6 +92,7 @@ class xPDODriver extends \xPDO\Om\xPDODriver {
                 $return = intval($sequence);
             }
         }
+
         return $return;
     }
 }

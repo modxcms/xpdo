@@ -18,26 +18,19 @@
  * Suite 330, Boston, MA 02111-1307 USA
  */
 
-/**
- * pgsql classes for generating xPDOObject classes and maps from an xPDO schema.
- *
- * @package xpdo
- * @subpackage om.pgsql
- */
-
 namespace xPDO\Om\pgsql;
 
 use xPDO\xPDO;
 use PDO;
 
 /**
- * An extension for generating {@link xPDOObject} class and map files for pgsql.
+ * An extension for generating {@link xPDOObject} class and map files for PostgreSQL.
  *
  * A pgsql-specific extension to an {@link xPDOManager} instance that can
  * generate class stub and meta-data map files from a provided XML schema of a
  * database structure.
  *
- * @package xPDO\Om\mysql
+ * @package xPDO\Om\pgsql
  */
 class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
     public function compile($path = '') {
@@ -66,7 +59,7 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
      * specified tablePrefix; if tablePrefix is empty, this is ignored.
      * @return boolean True on success, false on failure.
      */
-     public function getDefault($value) {
+    public function getDefault($value) {
         $return= '';
         $value = trim($value, "' ");
         if ($value !== null) {
