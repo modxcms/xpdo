@@ -48,4 +48,9 @@ class xPDODriver extends \xPDO\Om\xPDODriver {
         $this->dbtypes['datetime']= array('/TIMESTAMP/i','/DATE/i');
         $this->dbtypes['binary']= array('/BLOB/i');
     }
+
+    public function lastInsertId($className = null, $column = null) {
+        return $this->xpdo->pdo->lastInsertId();
+    }
+
 }

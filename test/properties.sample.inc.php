@@ -64,7 +64,7 @@ $properties['sqlite_array_options']= array(
 );
 
 /* sqlsrv */
-$properties['sqlsrv_string_dsn_test']= 'sqlsrv:server=(local);database=xpdo_test';
+$properties['sqlsrv_string_dsn_test']= 'sqlsrv:server=(local);database=xpdotest';
 $properties['sqlsrv_string_dsn_nodb']= 'sqlsrv:server=(local)';
 $properties['sqlsrv_string_dsn_error']= 'sqlsrv:server=xyz;123';
 $properties['sqlsrv_string_username']= '';
@@ -88,8 +88,34 @@ $properties['sqlsrv_array_options']= array(
     ),
 );
 
+/* pgsql */
+$properties['pgsql_string_dsn_test']= 'pgsql:host=localhost;port=5432;dbname=xpdotest';
+$properties['pgsql_string_dsn_nodb']= 'pgsql:host=localhost';
+$properties['pgsql_string_dsn_error']= 'pgsql:host=localhos;123';
+$properties['pgsql_string_username']= '';
+$properties['pgsql_string_password']= '';
+$properties['pgsql_array_driverOptions']= array();
+$properties['pgsql_array_options']= array(
+    xPDO::OPT_CACHE_PATH => $properties['xpdo_test_path'] . 'cache/',
+    xPDO::OPT_HYDRATE_FIELDS => true,
+    xPDO::OPT_HYDRATE_RELATED_OBJECTS => true,
+    xPDO::OPT_HYDRATE_ADHOC_FIELDS => true,
+    xPDO::OPT_CONNECTIONS => array(
+        array(
+            'dsn' => $properties['pgsql_string_dsn_test'],
+            'username' => $properties['pgsql_string_username'],
+            'password' => $properties['pgsql_string_password'],
+            'options' => array(
+                xPDO::OPT_CONN_MUTABLE => true,
+            ),
+            'driverOptions' => $properties['pgsql_array_driverOptions'],
+        ),
+    ),
+);
+
+
 /* PHPUnit test config */
-$properties['xpdo_driver']= 'mysql';
+$properties['xpdo_driver']= getenv('TEST_DRIVER');
 $properties['logLevel']= xPDO::LOG_LEVEL_INFO;
 $properties['logTarget']= php_sapi_name() === 'cli' ? 'ECHO' : 'HTML';
 //$properties['debug']= -1;

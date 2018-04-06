@@ -634,13 +634,13 @@ class xPDOObjectTest extends TestCase
     public function testRemoveDependentObject()
     {
         $result = false;
-        $phone = $this->xpdo->newObject('\\xPDO\\Test\\Sample\\Phone');
+        $phone = $this->xpdo->newObject('xPDO\\Test\\Sample\\Phone');
         $phone->set('type', 'work');
         $phone->set('number', '555-789-4563');
         $phone->set('is_primary', false);
         $phone->save();
         try {
-            if ($phone = $this->xpdo->getObject('\\xPDO\\Test\\Sample\\Phone', $phone->get('id'))) {
+            if ($phone = $this->xpdo->getObject('xPDO\\Test\\Sample\\Phone', $phone->get('id'))) {
                 $result = $phone->remove();
             }
         } catch (\Exception $e) {
@@ -663,7 +663,7 @@ class xPDOObjectTest extends TestCase
                     if ($personPhone = $this->xpdo->getObject('xPDO\\Test\\Sample\\PersonPhone', array(2, 2))) {
                         $this->assertTrue(false, "Parent object was not removed.");
                     }
-                    if ($phone = $this->xpdo->getObject('\\xPDO\\Test\\Sample\\Phone', 2)) {
+                    if ($phone = $this->xpdo->getObject('xPDO\\Test\\Sample\\Phone', 2)) {
                         $this->assertTrue(false, "Child object was not removed.");
                     }
                 }

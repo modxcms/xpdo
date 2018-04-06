@@ -10,7 +10,12 @@ $xpdo_meta_map = array (
   ),
   'xPDO\\Om\\xPDOObject' =>
   array (
-    0 => 'PersonPhone',
-    1 => 'BloodType',
+    0 => 'xPDOSimpleObject',
+    1 => 'PersonPhone',
+    2 => 'BloodType',
+    3 => 'Person',
+    4 => 'Phone',
+    5 => 'xPDOSample',
+    6 => 'Item',
   ),
 );
