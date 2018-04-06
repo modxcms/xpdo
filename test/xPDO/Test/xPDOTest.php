@@ -62,6 +62,7 @@ class xPDOTest extends TestCase
             $this->xpdo->getManager();
             $oldType = $this->xpdo->getOption(xPDO::OPT_OVERRIDE_TABLE_TYPE);
 
+            // @todo: use innodb only for mysql
             $this->xpdo->setOption(xPDO::OPT_OVERRIDE_TABLE_TYPE, 'INNODB');
 
             $result[] = $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Person');
@@ -345,7 +346,7 @@ class xPDOTest extends TestCase
      */
     public function providerGetPackage()
     {
-        return array(array('xPDO\\Test\\Sample\\Person', 'xPDO\\Test\\Sample'),);
+        return array(array('xPDO\\Test\\Sample\\Person', 'xPDO\\Test\\Sample'));
     }
 
     /**
