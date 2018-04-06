@@ -115,8 +115,8 @@ $properties['pgsql_array_options']= array(
 
 /* PHPUnit test config */
 $properties['xpdo_driver']= getenv('TEST_DRIVER');
-$properties['logLevel']= xPDO::LOG_LEVEL_INFO;
+$properties['logLevel']= xPDO::LOG_LEVEL_ERROR;
 $properties['logTarget']= php_sapi_name() === 'cli' ? 'ECHO' : 'HTML';
-//$properties['debug']= -1;
+$properties['debug']= -1;
 
 return $properties;
