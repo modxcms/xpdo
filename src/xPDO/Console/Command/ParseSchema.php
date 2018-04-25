@@ -56,8 +56,8 @@ final class ParseSchema extends Command
             ->addOption(
                 'psr4',
                 null,
-                InputOption::VALUE_NONE,
-                'Enable PSR-4 autoloading support, default is PSR-0'
+                InputOption::VALUE_REQUIRED,
+                'Enable PSR-4 autoloading support with provided namespace prefix; default is PSR-0'
             )
         ;
     }
@@ -75,14 +75,15 @@ final class ParseSchema extends Command
             $output->writeln('fatal: no valid configuration file could be loaded');
             return;
         }
-        
+
         $schema = $input->getArgument('schema_file');
         if (!is_readable($schema)) {
             $output->writeln("fatal: no valid schema provided");
             return;
         }
 
-        $withNamespace = (intval($input->getOption('psr4')) == 1) ? 0 : 1;
+        $namespacePrefix = $input->getArgument('psr4');
+        $namespacePrefix = empty($namespacePrefix) ? '' : $namespacePrefix;
 
         $update = $input->getOption('update');
         $update = $update === null ? 0 : (int)$update;
@@ -91,8 +92,6 @@ final class ParseSchema extends Command
         $regen = $regen === null ? 0 : (int)$regen;
 
         $xpdo = xPDO::getInstance('generator', $properties["{$platform}_array_options"]);
-        $xpdo->setLogLevel(xPDO::LOG_LEVEL_INFO);
-        $xpdo->setLogTarget(PHP_SAPI === 'cli' ? 'ECHO' : 'HTML');
 
         $generator = $xpdo->getManager()->getGenerator();
         $generator->parseSchema(
@@ -102,7 +101,7 @@ final class ParseSchema extends Command
                 'compile' => $input->getOption('compile'),
                 'update' => $update,
                 'regenerate' => $regen,
-                'withNamespace' => $withNamespace,
+                'namespacePrefix' => $namespacePrefix,
             )
         );
     }

@@ -205,11 +205,13 @@ abstract class xPDOGenerator {
      * Requires SimpleXML for parsing an XML schema.
      *
      * @param string $schemaFile The name of the XML file representing the
-     * schema.
-     * @param string $outputDir The directory in which to generate the class and
-     * map files into.
-     * @param array $options Various options for the process.
+     *                           schema.
+     * @param string $outputDir  The directory in which to generate the class and
+     *                           map files into.
+     * @param array  $options    Various options for the process.
+     *
      * @return boolean True on success, false on failure.
+     * @throws \xPDO\xPDOException if invalid JSON expressions are encountered
      */
     public function parseSchema($schemaFile, $outputDir= '', $options = array()) {
         $this->_reset();
@@ -220,7 +222,7 @@ abstract class xPDOGenerator {
         }
         $regenerate = array_key_exists('regenerate', $options) ? (integer) $options['regenerate'] : 0;
         $update = array_key_exists('update', $options) ? (integer) $options['update'] : 2;
-        $withNamespace = array_key_exists('withNamespace', $options) ? (integer) $options['withNamespace'] : 1;
+        $namespacePrefix = array_key_exists('namespacePrefix', $options) ? trim($options['namespacePrefix'], '\\') : '';
 
         $this->schemaFile= $schemaFile;
         $this->classTemplate= $this->getClassTemplate();
@@ -235,7 +237,7 @@ abstract class xPDOGenerator {
                 /** @var \SimpleXMLElement $attribute */
                 $this->model[$attributeKey] = (string) $attribute;
             }
-            $this->model['namespace'] = ltrim($this->model['package'], '\\');
+            $this->model['namespace'] = trim($this->model['package'], '\\');
             if (isset($this->schema->object)) {
                 foreach ($this->schema->object as $object) {
                     /** @var \SimpleXMLElement $object */
@@ -483,8 +485,8 @@ abstract class xPDOGenerator {
         }
 
         $path= !empty($outputDir) ? $outputDir : 'model/';
-        $this->outputMeta($path, $withNamespace);
-        $this->outputClasses($path, $update, $regenerate, $withNamespace);
+        $this->outputMeta($path, $namespacePrefix);
+        $this->outputClasses($path, $update, $regenerate, $namespacePrefix);
         if ($compile) {
             $this->compile($path, $this->model, $this->classes, $this->map);
         }
@@ -495,13 +497,14 @@ abstract class xPDOGenerator {
     /**
      * Create or update the generated class files to the specified path.
      *
-     * @param string $path An absolute path to write the generated class files to.
-     * @param int $update Indicates if existing class files should be updated; 0=no,
-     * 1=update platform classes, 2=update all classes.
-     * @param int $regenerate Indicates if existing class files should be regenerated;
-     * 0=no, 1=regenerate platform classes, 2=regenerate all classes.
+     * @param string $path       An absolute path to write the generated class files to.
+     * @param int    $update     Indicates if existing class files should be updated; 0=no,
+     *                           1=update platform classes, 2=update all classes.
+     * @param int    $regenerate Indicates if existing class files should be regenerated;
+     *                           0=no, 1=regenerate platform classes, 2=regenerate all classes.
+     * @param string $namespacePrefix An optional namespace prefix for PSR-4 compatibility.
      */
-    public function outputClasses($path, $update = 1, $regenerate = 0, $withNamespace = 1) {
+    public function outputClasses($path, $update = 1, $regenerate = 0, $namespacePrefix = '') {
         if (isset($this->model['phpdoc-package'])) {
             $this->model['phpdoc-package']= '@package ' . $this->model['phpdoc-package'];
             if (isset($this->model['phpdoc-subpackage']) && !empty($this->model['phpdoc-subpackage'])) {
@@ -510,8 +513,12 @@ abstract class xPDOGenerator {
         } else {
             $this->model['phpdoc-package']= '@package ' . $this->model['namespace'];
         }
+        $namespace = $this->model['namespace'];
+        $namespaceWithoutPrefix = $namespace;
+        if (!empty($namespacePrefix) && strpos($namespace, $namespacePrefix) === 0) {
+            $namespaceWithoutPrefix = substr($namespace, strlen($namespacePrefix));
+        }
         foreach ($this->classes as $className => $classDef) {
-            $namespace = $this->model['namespace'];
             $classExploded = explode('\\', $className);
             $classDef['class']= $className;
             $classDef['class-shortname']= $classShortName = array_pop($classExploded);
@@ -524,8 +531,10 @@ abstract class xPDOGenerator {
             $classDef['class-platform']= $platformClass = "{$namespace}\\" . ltrim($partialClass, '\\') . "{$this->model['platform']}\\{$classShortName}";
             $platformClassWithoutNamespace = ltrim($partialClass, '\\') . "{$this->model['platform']}\\{$classShortName}";
             $classDef= array_merge($this->model, $classDef);
-            if ($withNamespace == 1) {
+            if (empty($namespacePrefix)) {
                 $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $classFullName) . '.php';
+            } elseif (!empty($namespaceWithoutPrefix)) {
+                $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, "{$namespaceWithoutPrefix}\\{$className}") . '.php';
             } else {
                 $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
             }
@@ -550,8 +559,10 @@ abstract class xPDOGenerator {
                 $this->manager->xpdo->log(xPDO::LOG_LEVEL_WARN, "Domain class {$classFullName} was already constructed to file {$fileName} in this session", '', __METHOD__, __FILE__, __LINE__);
             }
 
-            if ($withNamespace == 1) {
+            if (empty($namespacePrefix)) {
                 $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $platformClass) . '.php';
+            } elseif (!empty($namespaceWithoutPrefix)) {
+                $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, "{$namespaceWithoutPrefix}\\{$platformClassWithoutNamespace}") . '.php';
             } else {
                 $fileName= $path . str_replace('\\', DIRECTORY_SEPARATOR, $platformClassWithoutNamespace) . '.php';
             }
@@ -561,13 +572,13 @@ abstract class xPDOGenerator {
                 if ($newPlatformClass || $regenerate > 0) {
                     $this->_loadClass($platformClass, $classDef);
                     self::$updated[] = $platformClass;
-                    if (!$this->_constructClass($fileName, $classDef, $this->getClassPlatformTemplate($this->model['platform']))) {
+                    if (!$this->_constructClass($fileName, $classDef, $this->getClassPlatformTemplate())) {
                         $this->manager->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not construct platform class {$platformClass} to file {$fileName}", '', __METHOD__, __FILE__, __LINE__);
                     }
                 } elseif (!$newClass && $update > 0) {
                     $this->_loadExistingClass($platformClass, $classDef);
                     self::$updated[] = $platformClass;
-                    if (!$this->_constructClass($fileName, $classDef, $this->getClassPlatformTemplate($this->model['platform']))) {
+                    if (!$this->_constructClass($fileName, $classDef, $this->getClassPlatformTemplate())) {
                         $this->manager->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not reconstruct platform class {$platformClass} to file {$fileName}", '', __METHOD__, __FILE__, __LINE__);
                     }
                 } else {
@@ -583,11 +594,18 @@ abstract class xPDOGenerator {
      * Write the generated meta map to the specified path.
      *
      * @param string $path An absolute path to write the generated maps to.
+     * @param string $namespacePrefix An optional namespacePrefix for PSR-4 support.
+     *
      * @return bool
      */
-    public function outputMeta($path, $withNamespace = 1) {
-        if ($withNamespace == 1) {
-            $path .= str_replace('\\', DIRECTORY_SEPARATOR, $this->model['namespace']) . DIRECTORY_SEPARATOR;
+    public function outputMeta($path, $namespacePrefix = '') {
+        $namespace = $this->model['namespace'];
+        $namespaceWithoutPrefix = $namespace;
+        if (!empty($namespacePrefix) && strpos($namespace, $namespacePrefix) === 0) {
+            $namespaceWithoutPrefix = substr($namespace, strlen($namespacePrefix));
+        }
+        if (!empty($namespaceWithoutPrefix)) {
+            $path .= str_replace('\\', DIRECTORY_SEPARATOR, $namespaceWithoutPrefix) . DIRECTORY_SEPARATOR;
         }
         if (!is_dir($path)) {
             if ($this->manager->xpdo->getCacheManager()) {
@@ -624,6 +642,7 @@ abstract class xPDOGenerator {
             $metaData = array(
                 'version' => $this->model['version'],
                 'namespace' => $this->model['namespace'],
+                'namespacePrefix' => $namespacePrefix,
                 'class_map' => $classMap
             );
         } else {

@@ -18,6 +18,7 @@
  */
 namespace xPDO;
 
+use Composer\Autoload\ClassLoader;
 use Interop\Container\ContainerInterface;
 use xPDO\Om\xPDOCriteria;
 use xPDO\Om\xPDOQuery;
@@ -242,7 +243,7 @@ class xPDO {
     /**
      * Get the Composer autoloader being used by this library.
      *
-     * @return object The autoloader instance being used by all instances of xPDO.
+     * @return ClassLoader The autoloader instance being used by all instances of xPDO.
      */
     public static function getLoader()
     {
@@ -499,7 +500,10 @@ class xPDO {
                 if (!empty($xpdo_meta_map)) {
                     if (isset($xpdo_meta_map['version'])) {
                         if (version_compare($xpdo_meta_map['version'], '3.0', '>=')) {
-                            self::getLoader()->add($xpdo_meta_map['namespace'], $path);
+                            $namespacePrefix = isset($xpdo_meta_map['namespacePrefix'])
+                                ? $xpdo_meta_map['namespacePrefix'] . '\\'
+                                : '';
+                            self::getLoader()->addPsr4($namespacePrefix, $path);
                             $xpdo_meta_map = $xpdo_meta_map['class_map'];
                         }
                     }
