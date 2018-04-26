@@ -16,7 +16,7 @@ use xPDO\xPDO;
 
 $properties = include __DIR__ . '/../../properties.inc.php';
 
-$dbtypes = array('mysql'/*, 'sqlite', 'sqlsrv'*/);
+$dbtypes = array('mysql', 'sqlite'/*, 'sqlsrv'*/);
 
 foreach ($dbtypes as $dbtype) {
     $xpdo= new xPDO($properties["{$dbtype}_string_dsn_test"], $properties["{$dbtype}_string_username"], $properties["{$dbtype}_string_password"], $properties["{$dbtype}_array_options"], $properties["{$dbtype}_array_driverOptions"]);
