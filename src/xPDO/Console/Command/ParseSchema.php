@@ -82,7 +82,7 @@ final class ParseSchema extends Command
             return;
         }
 
-        $namespacePrefix = $input->getArgument('psr4');
+        $namespacePrefix = $input->getOption('psr4');
         $namespacePrefix = empty($namespacePrefix) ? '' : $namespacePrefix;
 
         $update = $input->getOption('update');
