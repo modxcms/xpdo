@@ -30,8 +30,7 @@
         }
     },
     "bin": [
-        "bin/xpdo",
-        "bin/xpdo.php"
+        "bin/xpdo"
     ],
     "extra": {
         "branch-alias": {
