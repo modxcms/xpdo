@@ -753,7 +753,7 @@ EOD;
         try {
             $reflector = new xPDOReflectionClass($class);
 
-            $classHeader = $reflector->getSource(null, 0, $reflector->getStartLine() - 1, false);
+            $classHeader = rtrim($reflector->getSource(null, 0, $reflector->getStartLine() - 1, false), "\n");
             $classFooter = trim($reflector->getSource(null, $reflector->getEndLine(), null, false), " \n\r\t");
             if (!empty($classFooter)) $classFooter = rtrim($classFooter, "\n");
 
@@ -802,7 +802,7 @@ EOD;
                 $methodArray[] = $reflector->getSource($method);
             }
 
-            $meta['class-header'] = $classHeader;
+            $meta['class-header'] = "{$classHeader}\n";
             $meta['class-declaration'] = "class {$reflector->getShortName()} extends \\{$reflector->getParentClass()->getName()}{$interfaces}\n{";
             $meta['class-constants'] = implode("\n", $constantsArray);
             if (version_compare(PHP_VERSION, '5.4', '>=')) {
