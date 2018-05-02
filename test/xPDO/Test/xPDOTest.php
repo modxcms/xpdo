@@ -245,7 +245,14 @@ class xPDOTest extends TestCase
         return array(
             array(
                 'xPDO\\Om\\xPDOSimpleObject',
-                array(0 => 'xPDO\\Test\\Sample\\Person', 1 => 'xPDO\\Test\\Sample\\Phone', 2 => 'xPDO\\Test\\Sample\\xPDOSample', 3 => 'xPDO\\Test\\Sample\\Item',)
+                array(
+                    0 => 'xPDO\\Test\\Sample\\Person',
+                    1 => 'xPDO\\Test\\Sample\\Phone',
+                    2 => 'xPDO\\Test\\Sample\\xPDOSample',
+                    3 => 'xPDO\\Test\\Sample\\Item',
+                    4 => 'xPDO\\Test\\Sample\\SecureObject',
+                    5 => 'xPDO\\Test\\Sample\\SecureItem'
+                )
             ),
             array(
                 'xPDO\\Om\\xPDOObject',
@@ -257,6 +264,8 @@ class xPDOTest extends TestCase
                     4 => 'xPDO\\Test\\Sample\\Phone',
                     5 => 'xPDO\\Test\\Sample\\xPDOSample',
                     6 => 'xPDO\\Test\\Sample\\Item',
+                    7 => 'xPDO\\Test\\Sample\\SecureObject',
+                    8 => 'xPDO\\Test\\Sample\\SecureItem'
                 )
             ),
         );
