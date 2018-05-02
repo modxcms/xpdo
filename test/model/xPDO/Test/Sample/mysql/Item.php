@@ -53,5 +53,36 @@ class Item extends \xPDO\Test\Sample\Item
                 'attributes' => 'ON UPDATE CURRENT_TIMESTAMP',
             ),
         ),
+        'indexes' => 
+        array (
+            'name' => 
+            array (
+                'primary' => false,
+                'unique' => true,
+                'columns' => 
+                array (
+                    'name' => 
+                    array (
+                        'length' => '',
+                        'collation' => 'A',
+                        'null' => false,
+                    ),
+                ),
+            ),
+            'color' => 
+            array (
+                'primary' => false,
+                'unique' => false,
+                'columns' => 
+                array (
+                    'color' => 
+                    array (
+                        'length' => '',
+                        'collation' => 'A',
+                        'null' => false,
+                    ),
+                ),
+            ),
+        ),
     );
 }

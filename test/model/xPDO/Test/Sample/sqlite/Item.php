@@ -52,5 +52,38 @@ class Item extends \xPDO\Test\Sample\Item
                 'default' => 'CURRENT_TIMESTAMP',
             ),
         ),
+        'indexes' => 
+        array (
+            'name' => 
+            array (
+                'alias' => 'name',
+                'primary' => false,
+                'unique' => true,
+                'columns' => 
+                array (
+                    'name' => 
+                    array (
+                        'length' => '',
+                        'collation' => 'A',
+                        'null' => false,
+                    ),
+                ),
+            ),
+            'color' => 
+            array (
+                'alias' => 'color',
+                'primary' => false,
+                'unique' => false,
+                'columns' => 
+                array (
+                    'color' => 
+                    array (
+                        'length' => '',
+                        'collation' => 'A',
+                        'null' => false,
+                    ),
+                ),
+            ),
+        ),
     );
 }
