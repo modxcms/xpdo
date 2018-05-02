@@ -19,7 +19,7 @@
 namespace xPDO;
 
 use Composer\Autoload\ClassLoader;
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use xPDO\Om\xPDOCriteria;
 use xPDO\Om\xPDOQuery;
 
@@ -260,16 +260,15 @@ class xPDO {
      * This method is used to create a new xPDO object with a connection to a
      * specific database container.
      *
-     * @param mixed $dsn A valid DSN connection string.
-     * @param string $username The database username with proper permissions.
-     * @param string $password The password for the database user.
-     * @param array|ContainerInterface $options A dependency container or array of xPDO options.
-     * You should configure the xPDO options array within a container and pass a container for
-     * future compatibility.
-     * @param array|null $driverOptions Driver-specific PDO options.
+     * @param mixed                    $dsn           A valid DSN connection string.
+     * @param string                   $username      The database username with proper permissions.
+     * @param string                   $password      The password for the database user.
+     * @param array|ContainerInterface $options       A dependency container or array of xPDO options.
+     *                                                You should configure the xPDO options array within a container and pass a container for
+     *                                                future compatibility.
+     * @param array|null               $driverOptions Driver-specific PDO options.
      *
      * @throws xPDOException If an error occurs creating the instance.
-     * @return xPDO A unique xPDO instance.
      */
     public function __construct($dsn, $username= '', $password= '', $options= array(), $driverOptions= null) {
         try {

@@ -11,7 +11,9 @@
 namespace xPDO\Exception\Container;
 
 
-class ContainerException extends \Exception implements \Interop\Container\Exception\ContainerException
+use Psr\Container\ContainerExceptionInterface;
+
+class ContainerException extends \Exception implements ContainerExceptionInterface
 {
 
 }

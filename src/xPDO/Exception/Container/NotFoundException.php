@@ -11,6 +11,7 @@
 namespace xPDO\Exception\Container;
 
 
+use Psr\Container\NotFoundExceptionInterface;
 use xPDO\xPDOException;
 
-class NotFoundException extends xPDOException implements \Interop\Container\Exception\NotFoundException {}
+class NotFoundException extends xPDOException implements NotFoundExceptionInterface {}
