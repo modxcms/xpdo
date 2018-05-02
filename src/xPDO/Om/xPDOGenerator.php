@@ -753,7 +753,7 @@ EOD;
         try {
             $reflector = new xPDOReflectionClass($class);
 
-            $classHeader = rtrim($reflector->getSource(null, 0, $reflector->getStartLine() - 1, false), "\n");
+            $classHeader = $reflector->getSource(null, 0, $reflector->getStartLine() - 1, false);
             $classFooter = trim($reflector->getSource(null, $reflector->getEndLine(), null, false), " \n\r\t");
             if (!empty($classFooter)) $classFooter = rtrim($classFooter, "\n");
 
