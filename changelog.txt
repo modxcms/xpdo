@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Introduce PSR-11 support to replace deprecated container-interop support
 - Make json and array phptypes quotable in xPDOQuery
 - Replace usages of each with foreach to avoid PHP 7.2 deprecated warnings
 - Fix "reference expected" warnings in PHP 7.1
