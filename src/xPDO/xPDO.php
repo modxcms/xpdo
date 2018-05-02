@@ -499,7 +499,7 @@ class xPDO {
                 if (!empty($xpdo_meta_map)) {
                     if (isset($xpdo_meta_map['version'])) {
                         if (version_compare($xpdo_meta_map['version'], '3.0', '>=')) {
-                            $namespacePrefix = isset($xpdo_meta_map['namespacePrefix'])
+                            $namespacePrefix = isset($xpdo_meta_map['namespacePrefix']) && !empty($xpdo_meta_map['namespacePrefix'])
                                 ? $xpdo_meta_map['namespacePrefix'] . '\\'
                                 : '';
                             self::getLoader()->addPsr4($namespacePrefix, $path);
