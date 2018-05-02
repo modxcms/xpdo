@@ -2,6 +2,7 @@
 $xpdo_meta_map = array (
     'version' => '3.0',
     'namespace' => 'xPDO\\Test\\Sample',
+    'namespacePrefix' => '',
     'class_map' => 
     array (
         'xPDO\\Om\\xPDOSimpleObject' => 
@@ -15,6 +16,10 @@ $xpdo_meta_map = array (
         array (
             0 => 'xPDO\\Test\\Sample\\PersonPhone',
             1 => 'xPDO\\Test\\Sample\\BloodType',
+        ),
+        'xPDO\\Test\\Sample\\SecureObject' => 
+        array (
+            0 => 'xPDO\\Test\\Sample\\SecureItem',
         ),
     ),
 );

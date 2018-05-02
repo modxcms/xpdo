@@ -88,4 +88,8 @@
             <column key="color" length="" collation="A" null="false" />
         </index>
     </object>
+    <object class="SecureItem" table="secure_items" extends="xPDO\Test\Sample\SecureObject">
+        <field key="name" dbtype="varchar" precision="255" phptype="string" null="false" />
+        <field key="public" dbtype="tinyint" precision="1" attributes="unsigned" phptype="boolean" null="false" default="1" />
+    </object>
 </model>

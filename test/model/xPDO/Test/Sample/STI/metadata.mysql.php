@@ -2,6 +2,7 @@
 $xpdo_meta_map = array (
     'version' => '3.0',
     'namespace' => 'xPDO\\Test\\Sample\\STI',
+    'namespacePrefix' => '',
     'class_map' => 
     array (
         'xPDO\\Om\\xPDOSimpleObject' => 
