@@ -99,11 +99,11 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
         if ($command == 'SELECT' && !empty ($this->query['groupby'])) {
             $groupby= reset($this->query['groupby']);
             $sql.= 'GROUP BY ';
-            $sql.= $groupby['column'];
+            $sql.= $this->xpdo->escape($groupby['column']);
             if ($groupby['direction']) $sql.= ' ' . $groupby['direction'];
             while ($groupby= next($this->query['groupby'])) {
                 $sql.= ', ';
-                $sql.= $groupby['column'];
+                $sql.= $this->xpdo->escape($groupby['column']);
                 if ($groupby['direction']) $sql.= ' ' . $groupby['direction'];
             }
             $sql.= ' ';
@@ -116,11 +116,11 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
         if ($command == 'SELECT' && !empty ($this->query['sortby'])) {
             $sortby= reset($this->query['sortby']);
             $sql.= 'ORDER BY ';
-            $sql.= $sortby['column'];
+            $sql.= $this->xpdo->escape($sortby['column']);
             if ($sortby['direction']) $sql.= ' ' . $sortby['direction'];
             while ($sortby= next($this->query['sortby'])) {
                 $sql.= ', ';
-                $sql.= $sortby['column'];
+                $sql.= $this->xpdo->escape($sortby['column']);
                 if ($sortby['direction']) $sql.= ' ' . $sortby['direction'];
             }
             $sql.= ' ';
