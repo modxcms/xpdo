@@ -829,13 +829,8 @@ abstract class xPDOQuery extends xPDOCriteria {
      *
      * @param string $string The string to evaluate.
      *
-<<<<<<< HEAD:src/xPDO/Om/xPDOQuery.php
      * @throws \xPDO\xPDOException
      * @return boolean True if the string is a complete conditional SQL clause.
-=======
-     * @return bool True if the string is a complete conditional SQL clause.
-     * @throws xPDOException If a SQL injection attempt is detected.
->>>>>>> origin/2.x:xpdo/om/xpdoquery.class.php
      */
     public function isConditionalClause($string) {
         $matched= false;
