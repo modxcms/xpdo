@@ -146,15 +146,21 @@ class xPDOObjectTest extends TestCase
      *
      * @param $class
      * @param $data
+     * @param $rules
      * @param $options
      * @param $expected
      */
-    public function testValidate($class, $data, $options, $expected)
+    public function testValidate($class, $data, $rules, $options, $expected)
     {
         try {
             /** @var xPDOObject $object */
             $object = $this->xpdo->newObject($class);
             $object->fromArray($data);
+            if (!empty($rules)) {
+                foreach ($rules as $rule) {
+                    $object->addValidationRule($rule['field'], $rule['name'], $rule['type'], $rule['rule'], $rule['parameters']);
+                }
+            }
             $validated = $object->validate($options);
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
@@ -173,6 +179,7 @@ class xPDOObjectTest extends TestCase
                     'last_name' => 'Is',
                 ),
                 array(),
+                array(),
                 false
             ),
             array(
@@ -185,7 +192,44 @@ class xPDOObjectTest extends TestCase
                     'password' => 'foodisbeer'
                 ),
                 array(),
+                array(),
                 true
+            ),
+            array(
+                'xPDO\\Test\\Sample\\Person',
+                array(
+                    'first_name' => 'My',
+                    'middle_name' => 'Name',
+                    'last_name' => 'Is',
+                    'dob' => '2012-01-01',
+                    'password' => 'food'
+                ),
+                array(),
+                array(),
+                false
+            ),
+            array(
+                'xPDO\\Test\\Sample\\Person',
+                array(
+                    'first_name' => 'My',
+                    'middle_name' => 'Name',
+                    'last_name' => 'Is',
+                    'dob' => '2012-01-01',
+                    'password' => 'abcdefghijklmnopqrstuvwxyz1234567890-*!'
+                ),
+                array(
+                    array(
+                        'field' => 'password',
+                        'name' => 'max_password_length',
+                        'type' => 'xPDOValidationRule',
+                        'rule' => 'xPDOMaxLengthValidationRule',
+                        'parameters' => array(
+                            'value' => 36
+                        )
+                    )
+                ),
+                array(),
+                false
             ),
         );
     }
