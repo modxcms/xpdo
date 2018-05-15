@@ -141,9 +141,8 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
             //INDEXES
             $indicesStmt= $this->manager->xpdo->query("
 			  SELECT
-			    i.*,ic.*
+			    i.*
   			  FROM sys.indexes i
-			  LEFT JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
 			  WHERE i.object_id = '{$tableId}'
 			");
 
@@ -158,9 +157,10 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
                 //INDEX COLUMNS
                 $columnsStmt = $this->manager->xpdo->query("
 			      SELECT
-	   		      col.*
-  			      FROM sys.columns col
-			      WHERE col.object_id = '{$index['object_id']}' AND col.column_id = '{$index['column_id']}'
+				  ic.*,col.*
+				  FROM sys.index_columns ic
+				  LEFT JOIN sys.columns col ON ic.column_id = col.column_id
+			      WHERE ic.object_id = '{$tableId}' AND col.object_id = '{$tableId}' AND ic.index_id = '{$index['index_id']}'
 			    ");
                 $columns = $columnsStmt->fetchAll(PDO::FETCH_ASSOC);
                 if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Columns of index {$index['name']}: " . print_r($columns, true));
