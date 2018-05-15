@@ -123,7 +123,8 @@ abstract class xPDOQuery extends xPDOCriteria {
             $this->_tableClass = $this->xpdo->getTableClass($this->_class);
             $this->query['from']['tables'][0]= array (
                 'table' => $this->xpdo->getTableName($this->_class),
-                'alias' => & $this->_alias
+                'alias' => & $this->_alias,
+                'table_prefix' => $this->xpdo->getOption('table_prefix')
             );
             if ($criteria !== null) {
                 if (is_object($criteria)) {
@@ -296,6 +297,7 @@ abstract class xPDOQuery extends xPDOCriteria {
             $targetIdx= count($target);
             $target[$targetIdx]= array (
                 'table' => $this->xpdo->getTableName($class),
+                'table_prefix' => $this->xpdo->getOption('table_prefix'),
                 'class' => $class,
                 'alias' => $alias,
                 'type' => $type,

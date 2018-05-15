@@ -56,41 +56,66 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
             $baseClass= 'xPDO\Om\xPDOObject';
         if (empty ($tablePrefix))
             $tablePrefix= $this->manager->xpdo->config[xPDO::OPT_TABLE_PREFIX];
+
+        $schemaVersion = xPDO::SCHEMA_VERSION;
         $xmlContent = array();
         $xmlContent[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-        $xmlContent[] = "<model package=\"{$package}\" baseClass=\"{$baseClass}\" platform=\"sqlsrv\">";
+        $xmlContent[] = "<model package=\"{$package}\" baseClass=\"{$baseClass}\" platform=\"sqlsrv\" version=\"{$schemaVersion}\">";
         //read list of tables
         $tableLike= ($tablePrefix && $restrictPrefix);
         if ($tableLike) {
-            $tablesStmt= $this->manager->xpdo->query("SELECT * FROM sys.Tables WHERE name LIKE '{$tablePrefix}%' ORDER BY name");
+            $tablesStmt= $this->manager->xpdo->query("
+			  SELECT SCHEMA_NAME(schema_id)
+			  As schema_name, *
+			  from sys.tables
+			  WHERE SCHEMA_NAME(schema_id) = '{$tablePrefix}'
+			  ORDER BY name
+			");
         } else {
             $tablesStmt= $this->manager->xpdo->query("SELECT * FROM sys.Tables ORDER BY name");
         }
-        $tables= $tablesStmt->fetchAll(PDO::FETCH_NUM);
+        $tables= $tablesStmt->fetchAll(PDO::FETCH_ASSOC);
         if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, print_r($tables, true));
         foreach ($tables as $table) {
             $xmlObject= array();
             $xmlFields= array();
             $xmlIndices= array();
-            if (!$tableName= $this->getTableName($table[0], $tablePrefix, $restrictPrefix)) {
-                continue;
-            }
+            $tableName= $table['name'];
+            $tableId= $table['object_id'];
             $class= $this->getClassName($tableName);
             $extends= $baseClass;
-            $fieldsStmt= $this->manager->xpdo->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{$tableName}'");
+            //COLUMNS
+            $fieldsStmt= $this->manager->xpdo->query("
+			  SELECT
+			    col.*,
+				ic.*,
+				object_definition(col.default_object_id) AS dflt_value,
+				TYPE_NAME(col.user_type_id) AS type,
+				i.is_primary_key AS pk,
+				i.is_unique AS is_unique
+  			  FROM sys.columns col
+			  LEFT JOIN sys.index_columns ic ON col.object_id = ic.object_id AND col.column_id = ic.column_id
+			  LEFT JOIN sys.indexes i ON col.object_id = i.object_id AND ic.index_id = i.index_id
+			  WHERE col.object_id = '{$tableId}'
+			");
+
             $fields= $fieldsStmt->fetchAll(PDO::FETCH_ASSOC);
-            if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Fields for table {$table[0]}: " . print_r($fields, true));
+            if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Fields for table {$tableName}: " . print_r($fields, true));
             $cid = 0;
             foreach ($fields as $field) {
                 $name = '';
                 $type = '';
-                $notnull = 0;
+                $max_length = '';
+                $is_nullable = 0;
                 $dflt_value = null;
+                $Key = '';
                 $pk = 0;
+                $is_unique = 0;
+                $index_id = '';
                 extract($field, EXTR_OVERWRITE);
                 $Field= $name;
-                $PhpType= $this->manager->getPhpType($type);
-                $Null= ' null="' . ($notnull ? 'false' : 'true') . '"';
+                $PhpType= $this->manager->xpdo->driver->getPhpType($type);
+                $Null= ' null="' . ($is_nullable == 1 ? 'true' : 'false') . '"';
                 $Default= $this->getDefault($dflt_value);
                 $Extra= '';
                 if (!empty($pk)) {
@@ -104,23 +129,44 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
                     }
                     $Key = ' index="pk"';
                 } else {
-                    $Key = $this->getIndex($field);
+                    if ($is_unique == 1) {
+                        $Key = ' index="unique"';
+                    } elseif (!empty($index_id)) {
+                        $Key = ' index="index"';
+                    }
                 }
-                $xmlFields[]= "\t\t<field key=\"{$Field}\" dbtype=\"{$type}\" phptype=\"{$PhpType}\"{$Null}{$Default}{$Key}{$Extra} />";
+                $xmlFields[]= "\t\t<field key=\"{$Field}\" dbtype=\"{$type}\" precision=\"{$max_length}\" phptype=\"{$PhpType}\"{$Null}{$Default}{$Key}{$Extra} />";
                 $cid++;
             }
-            $indicesStmt= $this->manager->xpdo->query("PRAGMA index_list({$table[0]})");
+            //INDEXES
+            $indicesStmt= $this->manager->xpdo->query("
+			  SELECT
+			    i.*,ic.*
+  			  FROM sys.indexes i
+			  LEFT JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+			  WHERE i.object_id = '{$tableId}'
+			");
+
             $indices= $indicesStmt->fetchAll(PDO::FETCH_ASSOC);
-            if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Indices for table {$table[0]}: " . print_r($indices, true));
+
+            if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Indices for table {$tableName}: " . print_r($indices, true));
             foreach ($indices as $index) {
-                $primary = preg_match('/^sqlite_autoindex/', $index['name']) ? 'true' : 'false';
-                $unique = !empty($index['unique']) ? 'true' : 'false';
+                $primary = ($index['is_primary_key'] == 1) ? 'true' : 'false';
+                $unique = ($index['is_unique'] == 1) ? 'true' : 'false';
                 $xmlIndices[]= "\t\t<index alias=\"{$index['name']}\" name=\"{$index['name']}\" primary=\"{$primary}\" unique=\"{$unique}\">";
-                $columnsStmt = $this->manager->xpdo->query("PRAGMA index_info({$index['name']})");
+
+                //INDEX COLUMNS
+                $columnsStmt = $this->manager->xpdo->query("
+			      SELECT
+	   		      col.*
+  			      FROM sys.columns col
+			      WHERE col.object_id = '{$index['object_id']}' AND col.column_id = '{$index['column_id']}'
+			    ");
                 $columns = $columnsStmt->fetchAll(PDO::FETCH_ASSOC);
                 if ($this->manager->xpdo->getDebug() === true) $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Columns of index {$index['name']}: " . print_r($columns, true));
                 foreach ($columns as $column) {
-                    $xmlIndices[]= "\t\t\t<column key=\"{$column['name']}\" />";
+                    $Null= ' null="' . ($column['is_nullable'] == 1 ? 'true' : 'false') . '"';
+                    $xmlIndices[]= "\t\t\t<column key=\"{$column['name']}\"{$Null} />";
                 }
                 $xmlIndices[]= "\t\t</index>";
             }
@@ -135,7 +181,7 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
         }
         $xmlContent[] = "</model>";
         if ($this->manager->xpdo->getDebug() === true) {
-           $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, implode("\n", $xmlContent));
+            $this->manager->xpdo->log(xPDO::LOG_LEVEL_DEBUG, implode("\n", $xmlContent));
         }
         $file= fopen($schemaFile, 'wb');
         $written= fwrite($file, implode("\n", $xmlContent));
