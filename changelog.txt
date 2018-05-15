@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Add missing return statement to xPDOMaxLengthValidationRule
 - Fix xPDOIterator failure when fetch returns null due to object hydration
 - Improve PSR-4 support by introducing namespace prefixes to model metadata
 - Introduce PSR-11 support to replace deprecated container-interop support
