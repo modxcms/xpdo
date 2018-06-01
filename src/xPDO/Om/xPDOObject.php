@@ -2118,7 +2118,7 @@ class xPDOObject {
     /**
      * Get the xPDOValidator class configured for this instance.
      *
-     * @return string|boolean The xPDOValidator instance or false if it could
+     * @return xPDOValidator|null The xPDOValidator instance or null if it could
      * not be loaded.
      */
     public function getValidator() {
