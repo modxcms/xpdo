@@ -1670,7 +1670,7 @@ class xPDOObject {
             }
             $delete= $this->xpdo->newQuery($this->_class);
             $delete->command('DELETE');
-            $delete->where($pk);
+            $delete->where(array_combine((array)$this->getPK(), (array)$pk));
             // $delete->limit(1);
             $stmt= $delete->prepare();
             if (is_object($stmt)) {
