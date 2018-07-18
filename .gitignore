@@ -3,3 +3,4 @@
 
 # ignore composer.lock
 composer.lock
+/src/xPDO/Migrations/log/version.log

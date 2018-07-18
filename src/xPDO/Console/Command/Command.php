@@ -6,13 +6,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Command extends \Symfony\Component\Console\Command\Command
 {
+    /** @var string $namespace ~ for the command */
+    protected $namespace = '';
+
     protected static $platforms = [
         'mysql', 
         'sqlite', 
         'sqlsrv'
     ];
-    
-    protected function loadConfig(OutputInterface $output, $config = null)
+
+    /**
+     * @param OutputInterface $output
+     * @param null $config
+     * @return bool|mixed
+     */
+    protected static function loadConfig(OutputInterface $output, $config = null)
     {
         if (empty($config) || !is_readable($config)) {
             $config = false;
@@ -47,4 +55,32 @@ class Command extends \Symfony\Component\Console\Command\Command
 
         return false;
     }
+
+    /**
+     * @param $namespace
+     * @return $this
+     */
+    public function setNamespace($namespace)
+    {
+        $this->namespace = $namespace;
+        if (!empty($this->getName())) {
+            $this->setFullName($this->getName());
+        }
+        return $this;
+    }
+
+    /**
+     * @param $name
+     * @return $this
+     */
+    public function setFullName($name)
+    {
+        if (!empty($this->namespace)) {
+            $name = $this->namespace . ':'.$name;
+        }
+        $this->setName($name);
+        return $this;
+    }
+
+
 }

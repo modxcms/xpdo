@@ -11,7 +11,7 @@ final class WriteSchema extends Command
     protected function configure()
     {
         $this
-            ->setName('write-schema')
+            ->setFullName('write-schema')
             ->setDescription("Generate an XML schema from existing database tables.")
             ->addArgument(
                 'platform',

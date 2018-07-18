@@ -12,7 +12,7 @@ final class ParseSchema extends Command
     protected function configure()
     {
         $this
-            ->setName('parse-schema')
+            ->setFullName('parse-schema')
             ->setDescription('Parse an XML schema and generate xPDO model classes from it')
             ->addArgument(
                 'platform',
