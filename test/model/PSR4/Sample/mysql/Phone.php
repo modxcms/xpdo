@@ -2,6 +2,7 @@
 namespace xPDO\Test\Sample\mysql;
 
 use xPDO\xPDO;
+
 class Phone extends \xPDO\Test\Sample\Phone
 {
 

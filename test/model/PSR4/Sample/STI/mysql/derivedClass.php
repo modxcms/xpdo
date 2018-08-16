@@ -2,6 +2,7 @@
 namespace xPDO\Test\Sample\STI\mysql;
 
 use xPDO\xPDO;
+
 class derivedClass extends \xPDO\Test\Sample\STI\derivedClass
 {
 

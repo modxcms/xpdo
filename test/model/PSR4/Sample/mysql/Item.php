@@ -2,6 +2,7 @@
 namespace xPDO\Test\Sample\mysql;
 
 use xPDO\xPDO;
+
 class Item extends \xPDO\Test\Sample\Item
 {
 
@@ -50,6 +51,37 @@ class Item extends \xPDO\Test\Sample\Item
                 'null' => false,
                 'default' => 'CURRENT_TIMESTAMP',
                 'attributes' => 'ON UPDATE CURRENT_TIMESTAMP',
+            ),
+        ),
+        'indexes' => 
+        array (
+            'name' => 
+            array (
+                'primary' => false,
+                'unique' => true,
+                'columns' => 
+                array (
+                    'name' => 
+                    array (
+                        'length' => '',
+                        'collation' => 'A',
+                        'null' => false,
+                    ),
+                ),
+            ),
+            'color' => 
+            array (
+                'primary' => false,
+                'unique' => false,
+                'columns' => 
+                array (
+                    'color' => 
+                    array (
+                        'length' => '',
+                        'collation' => 'A',
+                        'null' => false,
+                    ),
+                ),
             ),
         ),
     );
