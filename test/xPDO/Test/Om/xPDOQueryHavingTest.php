@@ -69,7 +69,15 @@ class xPDOQueryHavingTest extends TestCase
             'color_count' => "COUNT({$this->xpdo->escape('id')})"
         ));
         $criteria->groupby('color');
-        $actual = $this->xpdo->getCount('xPDO\\Test\\Sample\\Item', $criteria);
+
+        if (getenv('TEST_DRIVER') === 'pgsql') {
+            $stmt = $criteria->prepare();
+            $stmt->execute();
+            $actual = $stmt->rowCount();
+        } else {
+            $actual = $this->xpdo->getCount('xPDO\\Test\\Sample\\Item', $criteria);
+        }
+
         $this->assertEquals(4, $actual);
     }
 
@@ -127,6 +135,7 @@ class xPDOQueryHavingTest extends TestCase
     {
         try {
             $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+            $criteria->groupby('id');
             $criteria->groupby('name');
             $criteria->having($having);
             $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Item', $criteria);

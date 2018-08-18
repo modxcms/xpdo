@@ -11,11 +11,16 @@ $xpdo_meta_map = array (
             1 => 'xPDO\\Test\\Sample\\Phone',
             2 => 'xPDO\\Test\\Sample\\xPDOSample',
             3 => 'xPDO\\Test\\Sample\\Item',
+            4 => 'xPDO\\Test\\Sample\\SecureObject',
         ),
         'xPDO\\Om\\xPDOObject' => 
         array (
             0 => 'xPDO\\Test\\Sample\\PersonPhone',
             1 => 'xPDO\\Test\\Sample\\BloodType',
+        ),
+        'xPDO\\Test\\Sample\\SecureObject' => 
+        array (
+            0 => 'xPDO\\Test\\Sample\\SecureItem',
         ),
     ),
 );

@@ -16,12 +16,12 @@ use xPDO\xPDO;
 
 $properties = include __DIR__ . '/../../properties.inc.php';
 
-$dbtypes = array('mysql', 'sqlite'/*, 'sqlsrv'*/);
+$dbtypes = array('mysql','pgsql', 'sqlite'/*, 'sqlsrv'*/);
 
 foreach ($dbtypes as $dbtype) {
     $xpdo= new xPDO($properties["{$dbtype}_string_dsn_test"], $properties["{$dbtype}_string_username"], $properties["{$dbtype}_string_password"], $properties["{$dbtype}_array_options"], $properties["{$dbtype}_array_driverOptions"]);
-//    $xpdo->setPackage('Sample', $properties['xpdo_test_path'] . 'model/PSR4/');
-    $xpdo->setPackage('xPDO\Test\Sample', $properties['xpdo_test_path'] . 'model/');
+    $xpdo->setPackage('Sample', $properties['xpdo_test_path'] . 'model/PSR4/');
+//    $xpdo->setPackage('xPDO\Test\Sample', $properties['xpdo_test_path'] . 'model/');
 //    $xpdo->setPackage('sample', $properties['xpdo_test_path'] . 'model/');
     $xpdo->setLogTarget($properties['logTarget']);
     $xpdo->setLogLevel($properties['logLevel']);
@@ -35,12 +35,12 @@ foreach ($dbtypes as $dbtype) {
 
     //Use this to generate classes and maps from a schema
     // NOTE: by default, only maps are overwritten; delete class files if you want to regenerate classes
-//    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/xPDO.Test.Sample.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/PSR4/', ['namespacePrefix' => 'xPDO\\Test\\', 'update' => 1]);
-    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/xPDO.Test.Sample.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/', ['update' => 1]);
+    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/xPDO.Test.Sample.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/PSR4/', ['namespacePrefix' => 'xPDO\\Test\\', 'update' => 1]);
+//    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/xPDO.Test.Sample.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/', ['update' => 1]);
 //    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/sample.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/');
 
-//    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/xPDO.Test.Sample.STI.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/PSR4/', ['namespacePrefix' => 'xPDO\\Test\\', 'update' => 1]);
-    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/xPDO.Test.Sample.STI.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/', ['update' => 1]);
+    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/xPDO.Test.Sample.STI.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/PSR4/', ['namespacePrefix' => 'xPDO\\Test\\', 'update' => 1]);
+//    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/xPDO.Test.Sample.STI.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/', ['update' => 1]);
 //    $xpdo->manager->generator->parseSchema($properties['xpdo_test_path'] . 'model/schema/sample.sti.' . $dbtype . '.schema.xml', $properties['xpdo_test_path'] . 'model/');
 
     unset($xpdo);

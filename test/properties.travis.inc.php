@@ -37,6 +37,32 @@ $properties['mysql_array_options']= array(
     ),
 );
 
+/* pgsql */
+$properties['pgsql_string_dsn_test']= 'pgsql:host=localhost;dbname=xpdotest';
+$properties['pgsql_string_dsn_nodb']= 'pgsql:host=localhost';
+$properties['pgsql_string_dsn_error']= 'pgsql:host= nonesuchhost;dbname=nonesuchdb';
+$properties['pgsql_string_username']= 'postgres';
+$properties['pgsql_string_password']= '';
+$properties['pgsql_array_driverOptions']= array();
+$properties['pgsql_array_options']= array(
+    xPDO::OPT_CACHE_PATH => $properties['xpdo_test_path'] .'cache/',
+    xPDO::OPT_HYDRATE_FIELDS => true,
+    xPDO::OPT_HYDRATE_RELATED_OBJECTS => true,
+    xPDO::OPT_HYDRATE_ADHOC_FIELDS => true,
+    xPDO::OPT_CONN_INIT => array(xPDO::OPT_CONN_MUTABLE => true),
+    xPDO::OPT_CONNECTIONS => array(
+        array(
+            'dsn' => $properties['pgsql_string_dsn_test'],
+            'username' => $properties['pgsql_string_username'],
+            'password' => $properties['pgsql_string_password'],
+            'options' => array(
+                xPDO::OPT_CONN_MUTABLE => true,
+            ),
+            'driverOptions' => $properties['pgsql_array_driverOptions'],
+        ),
+    ),
+);
+
 /* sqlite */
 $properties['sqlite_string_dsn_test']= 'sqlite:' . $properties['xpdo_test_path'] . 'db/xpdotest';
 $properties['sqlite_string_dsn_nodb']= 'sqlite::memory:';

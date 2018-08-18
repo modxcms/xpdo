@@ -2,6 +2,7 @@
 namespace xPDO\Test\Sample\mysql;
 
 use xPDO\xPDO;
+
 class BloodType extends \xPDO\Test\Sample\BloodType
 {
 

@@ -1,29 +1,93 @@
 language: php
-script: "phpunit -c ./test/complete.phpunit.xml"
-env:
-  matrix:
-    - TEST_DRIVER=mysql
-    - TEST_DRIVER=sqlite
 
-services: mysql
+cache:
+  directories:
+    - vendor
+    - $HOME/.composer/cache
 
-# Set php versions
 php:
   - 5.6
   - 7.0
   - 7.1
   - 7.2
-  - hhvm
 
-matrix:
-  allow_failures:
-    - php: hhvm
+env:
+  - TEST_DRIVER=mysql
+  - TEST_DRIVER=sqlite
+  - TEST_DRIVER=pgsql
+
+install:
+  - travis_retry composer install --prefer-dist --no-interaction
+
+script: "phpunit -c ./test/$TEST_DRIVER.phpunit.xml"
 
 before_script:
-  - composer install --prefer-dist --no-interaction
   - cp test/properties.travis.inc.php test/properties.inc.php
-  - mysql -e 'create database xpdotest;'
+  #- if [ $TEST_DRIVER == 'mysql' ]; then mysql -e 'create database xpdotest;' fi;
 
-cache:
-  directories:
-    - vendor/
+jobs:
+  exclude:
+    - php: 5.6
+      env: TEST_DRIVER=mysql
+
+    - php: 7.0
+      env: TEST_DRIVER=mysql
+
+    - php: 7.1
+      env: TEST_DRIVER=mysql
+
+    - php: 7.2
+      env: TEST_DRIVER=mysql
+
+    - php: 5.6
+      env: TEST_DRIVER=pgsql
+
+    - php: 7.0
+      env: TEST_DRIVER=pgsql
+
+    - php: 7.1
+      env: TEST_DRIVER=pgsql
+
+    - php: 7.2
+      env: TEST_DRIVER=pgsql
+
+  include:
+    - php: 5.6
+      env: TEST_DRIVER=mysql
+      services: mysql
+
+    - php: 7.0
+      env: TEST_DRIVER=mysql
+      services: mysql
+
+    - php: 7.1
+      env: TEST_DRIVER=mysql
+      services: mysql
+
+    - php: 7.2
+      env: TEST_DRIVER=mysql
+      services: mysql
+
+    - php: 5.6
+      env: TEST_DRIVER=pgsql
+      services: postgresql
+      addons:
+        postgresql: "9.6"
+
+    - php: 7.0
+      env: TEST_DRIVER=pgsql
+      services: postgresql
+      addons:
+        postgresql: "9.6"
+
+    - php: 7.1
+      env: TEST_DRIVER=pgsql
+      services: postgresql
+      addons:
+        postgresql: "9.6"
+
+    - php: 7.2
+      env: TEST_DRIVER=pgsql
+      services: postgresql
+      addons:
+        postgresql: "9.6"

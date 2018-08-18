@@ -113,6 +113,7 @@ class xPDOQueryLimitTest extends TestCase
     {
         try {
             $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+            $criteria->groupby('id');
             $criteria->groupby('color');
             $criteria->limit($limit, $start);
             $result = $this->xpdo->getCollection('xPDO\\Test\\Sample\\Item', $criteria);

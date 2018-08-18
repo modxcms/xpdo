@@ -2,6 +2,7 @@
 namespace xPDO\Test\Sample\mysql;
 
 use xPDO\xPDO;
+
 class xPDOSample extends \xPDO\Test\Sample\xPDOSample
 {
 

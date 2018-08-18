@@ -2,6 +2,7 @@
 namespace xPDO\Test\Sample\mysql;
 
 use xPDO\xPDO;
+
 class Person extends \xPDO\Test\Sample\Person
 {
 

@@ -1466,7 +1466,7 @@ class xPDOObject {
                 if ($result) {
                     if ($pkn && !$pk) {
                         if ($pkGenerated) {
-                            $this->_fields[$this->getPK()]= $this->xpdo->lastInsertId();
+                            $this->_fields[$this->getPK()]= $this->getGeneratedKey();
                         }
                         $pk= $this->getPrimaryKey();
                     }
@@ -1497,6 +1497,16 @@ class xPDOObject {
             $this->_validated= array ();
         }
         return $result;
+    }
+
+    /**
+     * Get a native generated key from the storage engine.
+     *
+     * @return bool|string|int
+     */
+    protected function getGeneratedKey()
+    {
+        return $this->xpdo->lastInsertId();
     }
 
     /**
