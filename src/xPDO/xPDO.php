@@ -78,6 +78,9 @@ class xPDO {
     const OPT_CACHE_PREFIX = 'cache_prefix';
     const OPT_CACHE_ATTEMPTS = 'cache_attempts';
     const OPT_CACHE_ATTEMPT_DELAY = 'cache_attempt_delay';
+    const OPT_CACHE_RAW_VALUES = 'cache_raw_values';
+    const OPT_CACHE_EXCLUDE_LAZY = 'cache_exclude_lazy';
+    const OPT_CACHE_INCLUDE_RELATED = 'cache_include_related';
     const OPT_CALLBACK_ON_REMOVE = 'callback_on_remove';
     const OPT_CALLBACK_ON_SAVE = 'callback_on_save';
     const OPT_CONNECTIONS = 'connections';
@@ -2357,7 +2360,10 @@ class xPDO {
                             xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, $options, $this->getOption(xPDO::OPT_CACHE_HANDLER, $options, 'xPDO\\Cache\\xPDOFileCache')),
                             xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', $options, $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, Cache\xPDOCacheManager::CACHE_PHP)),
                             xPDO::OPT_CACHE_EXPIRES => (integer) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
-                            xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', $options, Cache\xPDOCacheManager::CACHE_DIR)
+                            xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', $options, Cache\xPDOCacheManager::CACHE_DIR),
+                            xPDO::OPT_CACHE_RAW_VALUES => $this->getOption(xPDO::OPT_CACHE_RAW_VALUES, $options, Cache\xPDOCacheManager::CACHE_RAW_VALUES),
+                            xPDO::OPT_CACHE_EXCLUDE_LAZY => $this->getOption(xPDO::OPT_CACHE_EXCLUDE_LAZY, $options, Cache\xPDOCacheManager::CACHE_EXCLUDE_LAZY),
+                            xPDO::OPT_CACHE_INCLUDE_RELATED => $this->getOption(xPDO::OPT_CACHE_INCLUDE_RELATED, $options, Cache\xPDOCacheManager::CACHE_INCLUDE_RELATED),
                         ));
                         $result= $this->cacheManager->set($sig, $object, $lifetime, $cacheOptions);
                         if ($result && $object instanceof Om\xPDOObject) {

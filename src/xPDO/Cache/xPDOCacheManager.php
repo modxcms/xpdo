@@ -22,6 +22,9 @@ class xPDOCacheManager {
     const CACHE_JSON = 1;
     const CACHE_SERIALIZE = 2;
     const CACHE_DIR = 'objects/';
+    const CACHE_RAW_VALUES = true;
+    const CACHE_EXCLUDE_LAZY = false;
+    const CACHE_INCLUDE_RELATED = false;
     const LOG_DIR = 'logs/';
 
     /** @var xPDO */
@@ -593,7 +596,8 @@ class xPDOCacheManager {
         if (is_object($obj) && $obj instanceof \xPDO\Om\xPDOObject) {
             $className= $obj->_class;
             $source= "\${$objName}= \${$objRef}->newObject('{$className}');\n";
-            $source .= "\${$objName}->fromArray(" . var_export($obj->toArray('', true), true) . ", '', true, true);\n";
+            $source .= "\${$objName}->fromArray(" . var_export($obj->toArray('', $this->getOption(xPDO::OPT_CACHE_RAW_VALUES, $options, xPDOCacheManager::CACHE_RAW_VALUES), $this->getOption(xPDO::OPT_CACHE_EXCLUDE_LAZY, $options, xPDOCacheManager::CACHE_EXCLUDE_LAZY), $this->getOption(xPDO::OPT_CACHE_INCLUDE_RELATED, $options, xPDOCacheManager::CACHE_INCLUDE_RELATED)
+                ), true) . ", '', true, true);\n";
             if ($generateObjVars && $objectVars= get_object_vars($obj)) {
                 foreach ($objectVars as $vk => $vv) {
                     if ($vk === 'modx') {
@@ -630,7 +634,8 @@ class xPDOCacheManager {
         if ($cache = $this->getCacheProvider($this->getOption(xPDO::OPT_CACHE_KEY, $options))) {
             $value= null;
             if (is_object($var) && $var instanceof \xPDO\Om\xPDOObject) {
-                $value= $var->toArray('', true);
+                $value= $var->toArray('', $this->getOption(xPDO::OPT_CACHE_RAW_VALUES, $options, xPDOCacheManager::CACHE_RAW_VALUES), $this->getOption(xPDO::OPT_CACHE_EXCLUDE_LAZY, $options, xPDOCacheManager::CACHE_EXCLUDE_LAZY), $this->getOption(xPDO::OPT_CACHE_INCLUDE_RELATED, $options, xPDOCacheManager::CACHE_INCLUDE_RELATED)
+                );
             } else {
                 $value= $var;
             }
@@ -654,7 +659,8 @@ class xPDOCacheManager {
         if ($cache = $this->getCacheProvider($this->getOption(xPDO::OPT_CACHE_KEY, $options), $options)) {
             $value= null;
             if (is_object($var) && $var instanceof \xPDO\Om\xPDOObject) {
-                $value= $var->toArray('', true);
+                $value= $var->toArray('', $this->getOption(xPDO::OPT_CACHE_RAW_VALUES, $options, xPDOCacheManager::CACHE_RAW_VALUES), $this->getOption(xPDO::OPT_CACHE_EXCLUDE_LAZY, $options, xPDOCacheManager::CACHE_EXCLUDE_LAZY), $this->getOption(xPDO::OPT_CACHE_INCLUDE_RELATED, $options, xPDOCacheManager::CACHE_INCLUDE_RELATED)
+                );
             } else {
                 $value= $var;
             }
@@ -678,7 +684,8 @@ class xPDOCacheManager {
         if ($cache = $this->getCacheProvider($this->getOption(xPDO::OPT_CACHE_KEY, $options), $options)) {
             $value= null;
             if (is_object($var) && $var instanceof \xPDO\Om\xPDOObject) {
-                $value= $var->toArray('', true);
+                $value= $var->toArray('', $this->getOption(xPDO::OPT_CACHE_RAW_VALUES, $options, xPDOCacheManager::CACHE_RAW_VALUES), $this->getOption(xPDO::OPT_CACHE_EXCLUDE_LAZY, $options, xPDOCacheManager::CACHE_EXCLUDE_LAZY), $this->getOption(xPDO::OPT_CACHE_INCLUDE_RELATED, $options, xPDOCacheManager::CACHE_INCLUDE_RELATED)
+                );
             } else {
                 $value= $var;
             }
