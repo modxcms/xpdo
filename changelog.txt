@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Add JSON extension as composer dependency
 - Add PostgreSQL support via the pgsql PDO driver
 - Refactor xPDOObject->remove() to use key=>value for primary key criteria
 - Add missing return statement to xPDOMaxLengthValidationRule
