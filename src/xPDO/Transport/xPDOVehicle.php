@@ -208,7 +208,7 @@ abstract class xPDOVehicle {
 
                     case 'php' :
                         if (isset ($options[xPDOTransport::RESOLVE_PHP]) && !$options[xPDOTransport::RESOLVE_PHP]) {
-                            continue;
+                            continue 2;
                         }
                         $fileMeta = $transport->xpdo->fromJSON($body, true);
                         $fileName = $fileMeta['name'];
