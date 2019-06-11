@@ -32,9 +32,13 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
             if ($password === null) $password = $this->xpdo->getOption('password', null, '');
             if (is_array($dsnArray) && is_string($username) && is_string($password)) {
                 $sql= 'CREATE DATABASE `' . $dsnArray['dbname'] . '`';
-                if (isset ($containerOptions['collation']) && isset ($containerOptions['charset'])) {
-                    $sql.= ' CHARACTER SET ' . $containerOptions['charset'];
-                    $sql.= ' COLLATE ' . $containerOptions['collation'];
+                $charset = $this->xpdo->getOption('charset', $containerOptions);
+                $collation = $this->xpdo->getOption('collation', $containerOptions);
+                if (!empty($charset)) {
+                    $sql .= ' CHARACTER SET ' . $charset;
+                }
+                if (!empty($collation)) {
+                    $sql.= ' COLLATE ' . $collation;
                 }
                 try {
                     $pdo = new \PDO("mysql:host={$dsnArray['host']}", $username, $password, array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION));
