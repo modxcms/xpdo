@@ -18,6 +18,7 @@
         "php": ">=5.6",
         "ext-PDO": "*",
         "ext-json": "*",
+        "ext-simplexml": "*",
         "symfony/console": "~2.8|~3.4",
         "psr/container": "^1.0"
     },
