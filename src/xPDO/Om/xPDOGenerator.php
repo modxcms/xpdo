@@ -10,6 +10,7 @@
 
 namespace xPDO\Om;
 
+use SimpleXMLElement;
 use xPDO\Reflect\xPDOReflectionClass;
 use xPDO\xPDO;
 
@@ -84,7 +85,7 @@ abstract class xPDOGenerator {
      */
     public $map= array ();
     /**
-     * @var \SimpleXMLElement
+     * @var SimpleXMLElement
      */
     public $schema= null;
 
@@ -231,16 +232,16 @@ abstract class xPDOGenerator {
             return false;
         }
 
-        $this->schema = new \SimpleXMLElement($schemaFile, 0, true);
+        $this->schema = new SimpleXMLElement($schemaFile, 0, true);
         if (isset($this->schema)) {
             foreach ($this->schema->attributes() as $attributeKey => $attribute) {
-                /** @var \SimpleXMLElement $attribute */
+                /** @var SimpleXMLElement $attribute */
                 $this->model[$attributeKey] = (string) $attribute;
             }
             $this->model['namespace'] = trim($this->model['package'], '\\');
             if (isset($this->schema->object)) {
                 foreach ($this->schema->object as $object) {
-                    /** @var \SimpleXMLElement $object */
+                    /** @var SimpleXMLElement $object */
                     $class = (string) $object['class'];
                     $extends = isset($object['extends']) ? (string) $object['extends'] : $this->model['baseClass'];
                     $this->classes[$class] = array('extends' => $extends);
@@ -388,7 +389,7 @@ abstract class xPDOGenerator {
                             }
                             if (!empty($compositeNode)) {
                                 if (isset($composite->criteria)) {
-                                    /** @var \SimpleXMLElement $criteria */
+                                    /** @var SimpleXMLElement $criteria */
                                     foreach ($composite->criteria as $criteria) {
                                         $criteriaTarget = (string) $criteria['target'];
                                         $expression = (string) $criteria;
@@ -425,7 +426,7 @@ abstract class xPDOGenerator {
                             }
                             if (!empty($aggregateNode)) {
                                 if (isset($aggregate->criteria)) {
-                                    /** @var \SimpleXMLElement $criteria */
+                                    /** @var SimpleXMLElement $criteria */
                                     foreach ($aggregate->criteria as $criteria) {
                                         $criteriaTarget = (string) $criteria['target'];
                                         $expression = (string) $criteria;
@@ -488,7 +489,7 @@ abstract class xPDOGenerator {
         $this->outputMeta($path, $namespacePrefix);
         $this->outputClasses($path, $update, $regenerate, $namespacePrefix);
         if ($compile) {
-            $this->compile($path, $this->model, $this->classes, $this->map);
+            $this->compile($path);
         }
         $this->_reset();
         return true;
@@ -757,7 +758,7 @@ EOD;
             $classFooter = trim($reflector->getSource(null, $reflector->getEndLine(), null, false), " \n\r\t");
             if (!empty($classFooter)) $classFooter = rtrim($classFooter, "\n");
 
-            $interfaces = $reflector->getInterfaceNames();
+            $interfaces = $reflector->getLocalInterfaceNames();
             if (!empty($interfaces)) {
                 $interfaces = " implements " . implode(', ', $interfaces);
             } else {
@@ -777,11 +778,10 @@ EOD;
 
             $traitArray = array();
             if (version_compare(PHP_VERSION, '5.4', '>=')) {
-                $traits = $reflector->getTraits();
+                $traits = $reflector->getTraitNames();
 
-                /* @var \ReflectionClass $trait */
                 foreach ($traits as $trait) {
-                    $traitArray[] = "    use \\{$trait->getName()};";
+                    $traitArray[] = "    use \\{$trait};";
                 }
             }
 

@@ -9,6 +9,10 @@ use xPDO\xPDO;
  *
  * @package xPDO\Test\Sample
  */
-class SecureObject extends \xPDO\Om\xPDOSimpleObject
+class SecureObject extends \xPDO\Om\xPDOSimpleObject implements Secure
 {
+    public function isSecure()
+    {
+        return true;
+    }
 }
