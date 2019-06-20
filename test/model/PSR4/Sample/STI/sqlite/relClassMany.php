@@ -79,4 +79,5 @@ class relClassMany extends \xPDO\Test\Sample\STI\relClassMany
             ),
         ),
     );
+
 }

@@ -88,4 +88,5 @@ class PersonPhone extends \xPDO\Test\Sample\PersonPhone
             ),
         ),
     );
+
 }

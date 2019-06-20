@@ -102,4 +102,5 @@ class baseClass extends \xPDO\Test\Sample\STI\baseClass
             ),
         ),
     );
+
 }

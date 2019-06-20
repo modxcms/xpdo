@@ -71,4 +71,5 @@ class Phone extends \xPDO\Test\Sample\Phone
             ),
         ),
     );
+
 }

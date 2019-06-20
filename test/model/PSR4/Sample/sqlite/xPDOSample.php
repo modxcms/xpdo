@@ -144,4 +144,5 @@ class xPDOSample extends \xPDO\Test\Sample\xPDOSample
             ),
         ),
     );
+
 }

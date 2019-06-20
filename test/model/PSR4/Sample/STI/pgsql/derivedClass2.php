@@ -35,4 +35,5 @@ class derivedClass2 extends \xPDO\Test\Sample\STI\derivedClass2
             ),
         ),
     );
+
 }

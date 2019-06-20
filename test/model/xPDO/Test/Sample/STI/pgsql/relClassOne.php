@@ -44,4 +44,5 @@ class relClassOne extends \xPDO\Test\Sample\STI\relClassOne
             ),
         ),
     );
+
 }

@@ -61,4 +61,5 @@ class BloodType extends \xPDO\Test\Sample\BloodType
             ),
         ),
     );
+
 }

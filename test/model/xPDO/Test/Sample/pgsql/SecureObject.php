@@ -17,4 +17,5 @@ class SecureObject extends \xPDO\Test\Sample\SecureObject
         array (
         ),
     );
+
 }

@@ -142,4 +142,9 @@ class xPDOSample extends \xPDO\Test\Sample\xPDOSample
             ),
         ),
     );
+
+    public static function hello()
+    {
+        return false;
+    }
 }

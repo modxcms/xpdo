@@ -86,4 +86,5 @@ class Item extends \xPDO\Test\Sample\Item
             ),
         ),
     );
+
 }

@@ -36,4 +36,5 @@ class SecureItem extends \xPDO\Test\Sample\SecureItem
             ),
         ),
     );
+
 }

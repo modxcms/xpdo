@@ -699,9 +699,10 @@ EOD;
         $template= <<<'EOD'
 [+class-header+]
 [+class-declaration+]
-[+class-traits+][+class-constants+][+class-properties+]
+[+class-traits+][+class-constants+]
     public static $metaMap = [+map+];
-[+class-methods+][+class-close-declaration+][+class-footer+]
+
+[+class-properties+][+class-methods+][+class-close-declaration+][+class-footer+]
 EOD;
         return $template;
     }
@@ -769,11 +770,11 @@ EOD;
 
             $properties = array_filter($reflector->getProperties(), function($property) use ($class) {
                 /* @var \ReflectionProperty $property */
-                return $property->getDeclaringClass() === ltrim($class, '\\');
+                return $property->getName() !== 'metaMap' && $property->getDeclaringClass()->getName() === ltrim($class, '\\');
             });
             $methods = array_filter($reflector->getMethods(), function($method) use ($class) {
                 /* @var \ReflectionMethod $method */
-                return $method->getDeclaringClass() === ltrim($class, '\\');
+                return $method->getDeclaringClass()->getName() === ltrim($class, '\\');
             });
 
             $traitArray = array();
@@ -804,11 +805,20 @@ EOD;
 
             $meta['class-header'] = "{$classHeader}\n";
             $meta['class-declaration'] = "class {$reflector->getShortName()} extends \\{$reflector->getParentClass()->getName()}{$interfaces}\n{";
-            $meta['class-constants'] = implode("\n", $constantsArray);
             if (version_compare(PHP_VERSION, '5.4', '>=')) {
                 $meta['class-traits'] = implode("\n", $traitArray);
+                if (!empty($meta['class-traits'])) {
+                    $meta['class-traits'] .= "\n";
+                }
+            }
+            $meta['class-constants'] = implode("\n", $constantsArray);
+            if (!empty($meta['class-constants'])) {
+                $meta['class-constants'] .= "\n";
             }
             $meta['class-properties'] = implode("\n", $propertyArray);
+            if (!empty($meta['class-properties'])) {
+                $meta['class-properties'] .= "\n";
+            }
             $meta['class-methods'] = implode("\n", $methodArray);
             $meta['class-close-declaration'] = "}\n";
             $meta['class-footer'] = $classFooter;
@@ -823,9 +833,18 @@ EOD;
         $meta['class-traits'] = '';
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
             $meta['class-traits'] = implode("\n", $this->_constructClassTraits($class, $meta));
+            if (!empty($meta['class-traits'])) {
+                $meta['class-traits'] .= "\n";
+            }
         }
         $meta['class-constants'] = implode("\n", $this->_constructClassConstants($class, $meta));
+        if (!empty($meta['class-constants'])) {
+            $meta['class-constants'] .= "\n";
+        }
         $meta['class-properties'] = implode("\n", $this->_constructClassProperties($class, $meta));
+        if (!empty($meta['class-properties'])) {
+            $meta['class-properties'] .= "\n";
+        }
         $meta['class-methods'] = implode("\n", $this->_constructClassMethods($class, $meta));
         $meta['class-close-declaration'] = "}\n";
         $meta['class-footer'] = $this->_constructClassFooter($class, $meta);
