@@ -428,7 +428,7 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
             if (($defaultVal === null || strtoupper($defaultVal) === 'NULL') || (in_array($this->xpdo->driver->getPhpType($dbtype), $datetimeStrings) && $defaultVal === 'CURRENT_TIMESTAMP')) {
                 $default= ' DEFAULT ' . $defaultVal;
             } else {
-                $default= ' DEFAULT \'' . $defaultVal . '\'';
+                $default= ' DEFAULT ' . $this->xpdo->quote($defaultVal, \PDO::PARAM_STR);
             }
         }
         $attributes= (isset ($meta['attributes'])) ? ' ' . $meta['attributes'] : '';
