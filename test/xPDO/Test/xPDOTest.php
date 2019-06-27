@@ -14,6 +14,10 @@ use xPDO\Cache\xPDOCacheManager;
 use xPDO\Om\xPDODriver;
 use xPDO\Om\xPDOManager;
 use xPDO\Om\xPDOQuery;
+use xPDO\Test\Sample\BloodType;
+use xPDO\Test\Sample\Item;
+use xPDO\Test\Sample\Person;
+use xPDO\Test\Sample\xPDOSample;
 use xPDO\TestCase;
 use xPDO\xPDO;
 
@@ -718,5 +722,28 @@ class xPDOTest extends TestCase
         }
         $result = !array_search(false, $result, true);
         $this->assertTrue($result, 'Error dropping tables.');
+    }
+
+    /**
+     * Test xPDO->getAlias()
+     *
+     * @param string $class
+     * @param string $expectedAlias
+     *
+     * @dataProvider providerGetAlias
+     */
+    public function testGetAlias($class, $expectedAlias)
+    {
+        $this->assertEquals($expectedAlias, $this->xpdo->getAlias($class));
+    }
+
+    public function providerGetAlias()
+    {
+        return [
+            [Item::class, 'Item'],
+            [Person::class, 'Person'],
+            [BloodType::class, 'BloodType'],
+            [xPDOSample::class, 'xPDOSample'],
+        ];
     }
 }

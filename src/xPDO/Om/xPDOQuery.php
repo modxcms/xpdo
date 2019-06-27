@@ -115,11 +115,7 @@ abstract class xPDOQuery extends xPDOCriteria {
         parent :: __construct($xpdo);
         if ($class= $this->xpdo->loadClass($class)) {
             $this->_class= $class;
-            $this->_alias= $class;
-            if (strpos($class, '\\') !== false) {
-                $explodedClass = explode('\\', $class);
-                $this->_alias= array_pop($explodedClass);
-            }
+            $this->_alias= $this->xpdo->getAlias($this->_class);
             $this->_tableClass = $this->xpdo->getTableClass($this->_class);
             $this->query['from']['tables'][0]= array (
                 'table' => $this->xpdo->getTableName($this->_class),

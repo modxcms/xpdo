@@ -1197,6 +1197,23 @@ class xPDO {
     }
 
     /**
+     * Get an alias for the specified model class to be used in SQL queries.
+     *
+     * @param string $className The fully-qualified class name to get an alias for.
+     *
+     * @return string The alias for the specified class.
+     */
+    public function getAlias($className) {
+        $alias = $className;
+        if (strpos($alias, '\\') !== false) {
+            $namespace = explode('\\', $alias);
+            $alias = array_pop($namespace);
+        }
+
+        return $alias;
+    }
+
+    /**
      * Load and return a named service class instance.
      *
      * @deprecated Use the service/DI container to access services. Will be removed in 3.1.

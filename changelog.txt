@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Add xPDO->getAlias() method to get a class name without the namespace
 - Quote default column values for MySQL
 - Add JSON extension as composer dependency
 - Add PostgreSQL support via the pgsql PDO driver

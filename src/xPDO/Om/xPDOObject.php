@@ -625,7 +625,7 @@ class xPDOObject {
             $this->_class = implode('\\', $exploded) . '\\' . $class;
         }
         $this->_package= $xpdo->getPackage($this->_class);
-        $this->_alias= $this->_class;
+        $this->_alias= $xpdo->getAlias($this->_class);
         $this->_table= $xpdo->getTableName($this->_class);
         $this->_tableMeta= $xpdo->getTableMeta($this->_class);
         $this->_fields= $xpdo->getFields($this->_class);
