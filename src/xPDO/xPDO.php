@@ -580,12 +580,18 @@ class xPDO {
      *
      *    XPDO_CORE_PATH/om/dir_a/dir_b/dir_c/dbtype/classname.class.php
      *
+     * As of xPDO 3.0, the use of loadClass is only necessary to support BC
+     * with older xPDO models. Auto-loading in models built with xPDO 3.0 or
+     * later makes the use of this method obsolete.
+     *
      * @param string $fqn The fully-qualified name of the class to load.
      * @param string $path An optional path to start the search from.
      * @param bool $ignorePkg True if currently loaded packages should be ignored.
      * @param bool $transient True if the class is not a persistent table class.
+     *
      * @return string|boolean The actual classname if successful, or false if
      * not.
+     * @deprecated since 3.0
      */
     public function loadClass($fqn, $path= '', $ignorePkg= false, $transient= false) {
         if (empty($fqn)) {
