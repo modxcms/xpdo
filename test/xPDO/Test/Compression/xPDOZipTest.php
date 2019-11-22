@@ -46,7 +46,7 @@ class xPDOZipTest extends TestCase
         $xpdo = self::getInstance();
         $paths = array(
             self::$properties['xpdo_test_path'] . "fs/zip/",
-            /*self::$properties['xpdo_test_path'] . "fs/unzip/"*/
+            self::$properties['xpdo_test_path'] . "fs/unzip/"
         );
         foreach ($paths as $path) {
             $xpdo->getCacheManager()->deleteTree($path, array(
