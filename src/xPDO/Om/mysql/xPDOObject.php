@@ -22,7 +22,7 @@ class xPDOObject extends \xPDO\Om\xPDOObject
     public static $metaMap = array(
         'table' => null,
         'tableMeta' => array(
-            'engine' => 'MyISAM'
+            'engine' => 'InnoDB'
         )
     );
 }

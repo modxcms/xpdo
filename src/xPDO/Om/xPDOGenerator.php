@@ -257,7 +257,7 @@ abstract class xPDOGenerator {
                         }
                     }
 
-                    $engine = (string) $object['engine'];
+                    $engine = isset($object['engine']) ? (string) $object['engine'] : $this->model['defaultEngine'];
                     if (!empty($engine)) {
                         $this->map[$class]['tableMeta'] = array('engine' => $engine);
                     }

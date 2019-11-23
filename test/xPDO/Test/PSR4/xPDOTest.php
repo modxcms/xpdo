@@ -381,7 +381,7 @@ class xPDOTest extends TestCase
      */
     public function providerGetTableMeta()
     {
-        return array(array('xPDO\\Test\\Sample\\Person', array('engine' => 'MyISAM')),);
+        return array(array('xPDO\\Test\\Sample\\Person', array('engine' => 'InnoDB')),);
     }
 
     /**
