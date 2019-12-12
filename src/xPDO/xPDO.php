@@ -1043,7 +1043,7 @@ class xPDO {
      * @param mixed $criteria A valid xPDOCriteria instance or expression.
      * @param boolean|integer $cacheFlag Indicates if the result set should be
      * cached, and optionally for how many seconds.
-     * @return object The object instance with related objects from the graph
+     * @return Om\xPDOObject|null The object instance with related objects from the graph
      * hydrated, or null if no instance can be located by the criteria.
      */
     public function getObjectGraph($className, $graph, $criteria= null, $cacheFlag= true) {
