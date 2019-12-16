@@ -16,6 +16,6 @@ class TestCase extends \xPDO\TestCase
     protected function setUp()
     {
         $this->xpdo = self::getInstance(true);
-        $this->xpdo->setPackage('Sample', self::$properties['xpdo_test_path'] . 'model/PSR4/');
+        $this->xpdo->setPackage('xPDO\Test\Sample', self::$properties['xpdo_test_path'] . 'model/PSR4/', null, 'xPDO\\Test\\');
     }
 }

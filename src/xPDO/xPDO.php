@@ -439,12 +439,12 @@ class xPDO {
      * @param string|null $prefix Provide a string to define a package-specific table_prefix.
      * @return bool
      */
-    public function setPackage($pkg= '', $path= '', $prefix= null) {
+    public function setPackage($pkg= '', $path= '', $prefix= null, $namespacePrefix= null) {
         if (empty($path) && isset($this->packages[$pkg])) {
             $path= $this->packages[$pkg]['path'];
             $prefix= !is_string($prefix) && array_key_exists('prefix', $this->packages[$pkg]) ? $this->packages[$pkg]['prefix'] : $prefix;
         }
-        $set= $this->addPackage($pkg, $path, $prefix);
+        $set= $this->addPackage($pkg, $path, $prefix, $namespacePrefix);
         $this->package= $set == true ? $pkg : $this->package;
         if ($set && is_string($prefix)) $this->config[xPDO::OPT_TABLE_PREFIX]= $prefix;
         return $set;
@@ -458,7 +458,7 @@ class xPDO {
      * @param string|null $prefix Provide a string to define a package-specific table_prefix.
      * @return bool
      */
-    public function addPackage($pkg= '', $path= '', $prefix= null) {
+    public function addPackage($pkg= '', $path= '', $prefix= null, $namespacePrefix= null) {
         $added= false;
         if (is_string($pkg) && !empty($pkg)) {
             if (!is_string($path) || empty($path)) {
@@ -471,7 +471,7 @@ class xPDO {
                 $prefix= !is_string($prefix) ? $this->config[xPDO::OPT_TABLE_PREFIX] : $prefix;
                 if (!array_key_exists($pkg, $this->packages) || $this->packages[$pkg]['path'] !== $path || $this->packages[$pkg]['prefix'] !== $prefix) {
                     $this->packages[$pkg]= array('path' => $path, 'prefix' => $prefix);
-                    $this->setPackageMeta($pkg, $path);
+                    $this->setPackageMeta($pkg, $path, $namespacePrefix);
                 }
                 $added= true;
             }
@@ -488,10 +488,14 @@ class xPDO {
      * @param string $path The root path for looking up classes in this package.
      * @return bool
      */
-    public function setPackageMeta($pkg, $path = '') {
+    public function setPackageMeta($pkg, $path = '', $namespacePrefix= null) {
         $set = false;
         if (is_string($pkg) && !empty($pkg)) {
             $pkgPath = str_replace(array('.', '\\'), array('/', '/'), $pkg);
+            $namespacePrefixPath = !empty($namespacePrefix) ? str_replace('\\', '/', $namespacePrefix) : '';
+            if (!empty($namespacePrefixPath) && strpos($pkgPath, $namespacePrefixPath) === 0) {
+                $pkgPath = substr($pkgPath, strlen($namespacePrefixPath));
+            }
             $mapFile = $path . $pkgPath . '/metadata.' . $this->config['dbtype'] . '.php';
             if (file_exists($mapFile)) {
                 $xpdo_meta_map = array();
