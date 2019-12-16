@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Improve PSR-4 support by allowing namespace prefixes to be removed from package name
 - Fix PHP 7.4 deprecation warnings for array and string offset access with curly braces
 - Add xPDO->getAlias() method to get a class name without the namespace
 - Quote default column values for MySQL
