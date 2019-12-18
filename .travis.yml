@@ -10,6 +10,8 @@ php:
   - 7.0
   - 7.1
   - 7.2
+  - 7.3
+  - 7.4
 
 env:
   - TEST_DRIVER=mysql
@@ -19,11 +21,11 @@ env:
 install:
   - travis_retry composer install --prefer-dist --no-interaction
 
-script: "phpunit -c ./test/$TEST_DRIVER.phpunit.xml"
+script: "vendor/bin/phpunit -c ./test/$TEST_DRIVER.phpunit.xml"
 
 before_script:
   - cp test/properties.travis.inc.php test/properties.inc.php
-  #- if [ $TEST_DRIVER == 'mysql' ]; then mysql -e 'create database xpdotest;' fi;
+  - if [ $TEST_DRIVER == 'mysql' ]; then mysql -u root -e "SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES';"; fi;
 
 jobs:
   exclude:
@@ -39,6 +41,12 @@ jobs:
     - php: 7.2
       env: TEST_DRIVER=mysql
 
+    - php: 7.3
+      env: TEST_DRIVER=mysql
+
+    - php: 7.4
+      env: TEST_DRIVER=mysql
+
     - php: 5.6
       env: TEST_DRIVER=pgsql
 
@@ -49,6 +57,12 @@ jobs:
       env: TEST_DRIVER=pgsql
 
     - php: 7.2
+      env: TEST_DRIVER=pgsql
+
+    - php: 7.3
+      env: TEST_DRIVER=pgsql
+
+    - php: 7.4
       env: TEST_DRIVER=pgsql
 
   include:
@@ -68,6 +82,14 @@ jobs:
       env: TEST_DRIVER=mysql
       services: mysql
 
+    - php: 7.3
+      env: TEST_DRIVER=mysql
+      services: mysql
+
+    - php: 7.4
+      env: TEST_DRIVER=mysql
+      services: mysql
+
     - php: 5.6
       env: TEST_DRIVER=pgsql
       services: postgresql
@@ -87,6 +109,18 @@ jobs:
         postgresql: "9.6"
 
     - php: 7.2
+      env: TEST_DRIVER=pgsql
+      services: postgresql
+      addons:
+        postgresql: "9.6"
+
+    - php: 7.3
+      env: TEST_DRIVER=pgsql
+      services: postgresql
+      addons:
+        postgresql: "9.6"
+
+    - php: 7.4
       env: TEST_DRIVER=pgsql
       services: postgresql
       addons:
