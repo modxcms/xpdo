@@ -437,6 +437,7 @@ class xPDO {
      * @param string $pkg A package name to use when looking up classes in xPDO.
      * @param string $path The root path for looking up classes in this package.
      * @param string|null $prefix Provide a string to define a package-specific table_prefix.
+     * @param string|null $namespacePrefix An optional namespace prefix for working with PSR-4.
      * @return bool
      */
     public function setPackage($pkg= '', $path= '', $prefix= null, $namespacePrefix= null) {
@@ -456,6 +457,7 @@ class xPDO {
      * @param string $pkg A package name to use when looking up classes/maps in xPDO.
      * @param string $path The root path for looking up classes in this package.
      * @param string|null $prefix Provide a string to define a package-specific table_prefix.
+     * @param string|null $namespacePrefix An optional namespace prefix for working with PSR-4.
      * @return bool
      */
     public function addPackage($pkg= '', $path= '', $prefix= null, $namespacePrefix= null) {
@@ -486,6 +488,7 @@ class xPDO {
      *
      * @param string $pkg A package name to use when looking up classes/maps in xPDO.
      * @param string $path The root path for looking up classes in this package.
+     * @param string|null $namespacePrefix An optional namespace prefix for working with PSR-4.
      * @return bool
      */
     public function setPackageMeta($pkg, $path = '', $namespacePrefix= null) {
