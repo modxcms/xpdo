@@ -1708,7 +1708,7 @@ class xPDOObject {
                                 xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', null, xPDOCacheManager::CACHE_DIR)
                             )
                         );
-                        if (!$dbCache->delete($this->_class, array('multiple_object_delete' => true))) {
+                        if (!$dbCache->delete($this->_class, array(xPDO::OPT_CACHE_MULTIPLE_OBJECT_DELETE => true))) {
                             $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Could not remove cache entries for {$this->_class}", '', __METHOD__, __FILE__, __LINE__);
                         }
                     }

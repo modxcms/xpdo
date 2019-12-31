@@ -76,6 +76,7 @@ class xPDO {
     const OPT_CACHE_KEY = 'cache_key';
     const OPT_CACHE_PATH = 'cache_path';
     const OPT_CACHE_PREFIX = 'cache_prefix';
+    const OPT_CACHE_MULTIPLE_OBJECT_DELETE = 'multiple_object_delete';
     const OPT_CACHE_ATTEMPTS = 'cache_attempts';
     const OPT_CACHE_ATTEMPT_DELAY = 'cache_attempt_delay';
     const OPT_CALLBACK_ON_REMOVE = 'callback_on_remove';
@@ -907,7 +908,7 @@ class xPDO {
                                     xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, null, $this->getOption(xPDO::OPT_CACHE_HANDLER, null, 'xPDO\\Cache\\xPDOFileCache')),
                                     xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, Cache\xPDOCacheManager::CACHE_PHP)),
                                     xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', null, Cache\xPDOCacheManager::CACHE_DIR),
-                                    'multiple_object_delete' => true
+                                    xPDO::OPT_CACHE_MULTIPLE_OBJECT_DELETE => true
                                 ));
                             }
                         }
@@ -944,7 +945,7 @@ class xPDO {
                         } else {
                             $removed= true;
                             if ($this->getOption(xPDO::OPT_CACHE_DB)) {
-                                $this->cacheManager->delete(Cache\xPDOCacheManager::CACHE_DIR . $query->getAlias(), array('multiple_object_delete' => true));
+                                $this->cacheManager->delete(Cache\xPDOCacheManager::CACHE_DIR . $query->getAlias(), array(xPDO::OPT_CACHE_MULTIPLE_OBJECT_DELETE => true));
                             }
                             $callback = $this->getOption(xPDO::OPT_CALLBACK_ON_REMOVE);
                             if ($callback && is_callable($callback)) {
@@ -983,7 +984,7 @@ class xPDO {
                         $this->log(xPDO::LOG_LEVEL_ERROR, "xPDO->removeCollection - Error deleting {$className} instances using query " . $query->toSQL());
                     } else {
                         if ($this->getOption(xPDO::OPT_CACHE_DB)) {
-                            $this->cacheManager->delete(Cache\xPDOCacheManager::CACHE_DIR . $query->getAlias(), array('multiple_object_delete' => true));
+                            $this->cacheManager->delete(Cache\xPDOCacheManager::CACHE_DIR . $query->getAlias(), array(xPDO::OPT_CACHE_MULTIPLE_OBJECT_DELETE => true));
                         }
                         $callback = $this->getOption(xPDO::OPT_CALLBACK_ON_REMOVE);
                         if ($callback && is_callable($callback)) {
@@ -2374,7 +2375,7 @@ class xPDO {
                                         xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', $options, $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, Cache\xPDOCacheManager::CACHE_PHP)),
                                         xPDO::OPT_CACHE_EXPIRES => (integer) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
                                         xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', $options, Cache\xPDOCacheManager::CACHE_DIR),
-                                        'multiple_object_delete' => true
+                                        xPDO::OPT_CACHE_MULTIPLE_OBJECT_DELETE => true
                                     )));
                                     if ($this->getDebug() === true) {
                                         $this->log(xPDO::LOG_LEVEL_DEBUG, "Removing all cache objects of class {$gClass}: " . ($removed ? 'successful' : 'failed'));
