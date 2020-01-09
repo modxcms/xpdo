@@ -62,14 +62,19 @@ class xPDOAPCCache extends xPDOCache {
 
     public function delete($key, $options= array()) {
         $deleted = false;
-        if (!isset($options['multiple_object_delete']) || empty($options['multiple_object_delete'])) {
-            $deleted= apc_delete($this->getCacheKey($key));
-        } elseif (class_exists('APCIterator', true)) {
-            $iterator = new APCIterator('user', '/^' . str_replace('/', '\/', $this->getCacheKey($key)) . '/', APC_ITER_KEY);
-            if ($iterator) {
-                $deleted = apc_delete($iterator);
+        if ($this->getOption(xPDO::OPT_CACHE_MULTIPLE_OBJECT_DELETE, $options, false)) {
+            if (class_exists('APCIterator', true)) {
+                $iterator = new APCIterator('user', '/^' . str_replace('/', '\/', $this->getCacheKey($key)) . '/', APC_ITER_KEY);
+                if ($iterator) {
+                    $deleted = apc_delete($iterator);
+                }
+            } else {
+                $deleted = $this->flush($options);
             }
+        } else {
+            $deleted = apc_delete($this->getCacheKey($key));
         }
+
         return $deleted;
     }
 
