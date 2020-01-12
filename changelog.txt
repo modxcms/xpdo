@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Add option to restrict extraction of files by extension to xPDOZip
 - Fix invalid datetime value being used when formatting with regex
 - Fix xPDOFileCache->delete() when a directory with same cache key exists
 - Improve PSR-4 support by allowing namespace prefixes to be removed from package name
