@@ -163,4 +163,12 @@ class xPDOCriteria {
         }
         return $sql;
     }
+
+    public function __debugInfo()
+    {
+        return [
+            'sql' => $this->toSQL(),
+            'bindings' => $this->bindings,
+        ];
+    }
 }

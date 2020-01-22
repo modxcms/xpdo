@@ -2551,4 +2551,32 @@ class xPDOObject {
         }
         return $aliases;
     }
+
+    /**
+     * Allows dumping xPDOObject instances with var_dump/print_r without running out of memory.
+     *
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return [
+            'new' => $this->isNew(),
+            'fields' => $this->toArray(),
+            '_class' => $this->_class,
+            '_package' => $this->_package,
+
+            '_alias' => $this->_alias,
+            '_pk' => $this->_pk,
+            '_pktype' => $this->_pktype,
+            '_table' => $this->_table,
+            '_tableMeta' => $this->_tableMeta,
+
+            '_dirty' => $this->_dirty,
+            '_lazy' => $this->_lazy,
+            '_fields' => $this->_fields,
+            '_fieldMeta' => $this->_fieldMeta,
+            '_fieldNames' => $this->fieldNames,
+            '_fieldAliases' => $this->_fieldAliases,
+        ];
+    }
 }
