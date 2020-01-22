@@ -915,9 +915,9 @@ abstract class xPDOQuery extends xPDOCriteria {
     public function __debugInfo()
     {
         return [
-            'class' => $this->_class,
-            'alias' => $this->_alias,
-            'tableClass' => $this->_tableClass,
+            '_class' => $this->_class,
+            '_alias' => $this->_alias,
+            '_tableClass' => $this->_tableClass,
             'graph' => $this->graph,
             'query' => $this->query,
             'sql' => $this->toSQL(),
