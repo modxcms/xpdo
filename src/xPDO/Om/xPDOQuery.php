@@ -911,4 +911,17 @@ abstract class xPDOQuery extends xPDOCriteria {
         $this->bindings= $criteria->bindings;
         $this->cacheFlag= $criteria->cacheFlag;
     }
+
+    public function __debugInfo()
+    {
+        return [
+            '_class' => $this->_class,
+            '_alias' => $this->_alias,
+            '_tableClass' => $this->_tableClass,
+            'graph' => $this->graph,
+            'query' => $this->query,
+            'sql' => $this->toSQL(),
+            'bindings' => $this->bindings,
+        ];
+    }
 }

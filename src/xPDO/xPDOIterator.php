@@ -127,4 +127,17 @@ class xPDOIterator implements \Iterator {
             $this->current = null;
         }
     }
+
+    public function __debugInfo()
+    {
+        return [
+            'index' => $this->index,
+            'current' => $this->current,
+            'stmt' => $this->stmt,
+            'class' => $this->class,
+            'alias' => $this->alias,
+            'criteria' => $this->criteria,
+            'criteriaType' => $this->criteriaType,
+        ];
+    }
 }
