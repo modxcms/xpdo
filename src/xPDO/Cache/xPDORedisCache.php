@@ -9,6 +9,8 @@
  */
 namespace xPDO\Cache;
 use xPDO\xPDO;
+use Redis;
+
 /**
  * Provides a redis-powered xPDOCache implementation.
  *
