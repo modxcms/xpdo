@@ -10,6 +10,7 @@
 
 namespace xPDO\Cache;
 
+use Memcache;
 use xPDO\xPDO;
 
 /**

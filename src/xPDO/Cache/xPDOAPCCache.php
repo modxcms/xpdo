@@ -10,6 +10,7 @@
 
 namespace xPDO\Cache;
 
+use APCIterator;
 use xPDO\xPDO;
 
 /**
