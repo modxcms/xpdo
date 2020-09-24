@@ -129,6 +129,9 @@ abstract class xPDOGenerator {
                 $output[] = str_repeat('    ', $indentLevel + 1) . str_repeat('    ', $spaces / 2) . substr($line, ($spaces ? $spaces + 1 : 0));
             }
         }
+        else {
+            $output[] = var_export($var, true);
+        }
         return implode("\n", $output);
     }
 
