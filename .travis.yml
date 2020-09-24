@@ -1,22 +1,10 @@
 language: php
+dist: xenial
 
 cache:
   directories:
     - vendor
     - $HOME/.composer/cache
-
-php:
-  - 5.6
-  - 7.0
-  - 7.1
-  - 7.2
-  - 7.3
-  - 7.4
-
-env:
-  - TEST_DRIVER=mysql
-  - TEST_DRIVER=sqlite
-  - TEST_DRIVER=pgsql
 
 install:
   - travis_retry composer install --prefer-dist --no-interaction
@@ -28,44 +16,25 @@ before_script:
   - if [ $TEST_DRIVER == 'mysql' ]; then mysql -u root -e "SET GLOBAL sql_mode = 'STRICT_TRANS_TABLES';"; fi;
 
 jobs:
-  exclude:
-    - php: 5.6
-      env: TEST_DRIVER=mysql
-
-    - php: 7.0
-      env: TEST_DRIVER=mysql
-
-    - php: 7.1
-      env: TEST_DRIVER=mysql
-
-    - php: 7.2
-      env: TEST_DRIVER=mysql
-
-    - php: 7.3
-      env: TEST_DRIVER=mysql
-
-    - php: 7.4
-      env: TEST_DRIVER=mysql
-
-    - php: 5.6
-      env: TEST_DRIVER=pgsql
-
-    - php: 7.0
-      env: TEST_DRIVER=pgsql
-
-    - php: 7.1
-      env: TEST_DRIVER=pgsql
-
-    - php: 7.2
-      env: TEST_DRIVER=pgsql
-
-    - php: 7.3
-      env: TEST_DRIVER=pgsql
-
-    - php: 7.4
-      env: TEST_DRIVER=pgsql
-
   include:
+    - php: 5.6
+      env: TEST_DRIVER=sqlite
+
+    - php: 7.0
+      env: TEST_DRIVER=sqlite
+
+    - php: 7.1
+      env: TEST_DRIVER=sqlite
+
+    - php: 7.2
+      env: TEST_DRIVER=sqlite
+
+    - php: 7.3
+      env: TEST_DRIVER=sqlite
+
+    - php: 7.4
+      env: TEST_DRIVER=sqlite
+
     - php: 5.6
       env: TEST_DRIVER=mysql
       services: mysql
