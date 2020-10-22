@@ -29,7 +29,7 @@ xPDO 3.0.0 (TBD)
 - Add option to respect PSR-4 namespaces
 - Refactor for 5.3+ in the \xPDO namespace
 
-xPDO 2.5.3-pl (Jaunary 3, 2017)
+xPDO 2.5.3-pl (January 3, 2017)
 ====================================
 - Make sure xPDOQuery base class is always loaded
 
