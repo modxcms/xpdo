@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Add ability to define RegEx excludes in xPDOZip->pack()
 - Fix bug when generating platform files from classes with constants
 - Add __debugInfo() magic method
 - Load related object attributes correctly into nested relations

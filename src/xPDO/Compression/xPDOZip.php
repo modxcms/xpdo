@@ -22,11 +22,13 @@ class xPDOZip {
     const OVERWRITE = 'overwrite';
     const ZIP_TARGET = 'zip_target';
     const ALLOWED_EXTENSIONS = 'allowed_extensions';
+    const EXCLUDE = 'exclude';
 
     public $xpdo = null;
     protected $_filename = '';
     protected $_options = array();
     protected $_archive = null;
+    protected $_exclusions = array();
     protected $_errors = array();
 
     /**
@@ -90,30 +92,34 @@ class xPDOZip {
                         }
                     }
                     while (($file = readdir($dh)) !== false) {
-                        if (is_dir($source . $file)) {
-                            if (($file !== '.') && ($file !== '..')) {
-                                $results = $results + $this->pack($source . $file . '/', array_merge($options, array(xPDOZip::ZIP_TARGET => $target . $file . '/')));
-                            }
-                        } elseif (is_file($source . $file)) {
-                            if ($this->_archive->addFile($source . $file, $target . $file)) {
-                                $results[$target . $file] = "Successfully packed {$target}{$file} from {$source}{$file}";
+                        if ($this->checkExclude($target . $file, $options)) {
+                            if (is_dir($source . $file)) {
+                                if (($file !== '.') && ($file !== '..')) {
+                                    $results = $results + $this->pack($source . $file . '/', array_merge($options, array(xPDOZip::ZIP_TARGET => $target . $file . '/')));
+                                }
+                            } elseif (is_file($source . $file)) {
+                                if ($this->_archive->addFile($source . $file, $target . $file)) {
+                                    $results[$target . $file] = "Successfully packed {$target}{$file} from {$source}{$file}";
+                                } else {
+                                    $results[$target . $file] = "Error packing {$target}{$file} from {$source}{$file}";
+                                    $this->_errors[] = $results[$target . $file];
+                                }
                             } else {
                                 $results[$target . $file] = "Error packing {$target}{$file} from {$source}{$file}";
                                 $this->_errors[] = $results[$target . $file];
                             }
-                        } else {
-                            $results[$target . $file] = "Error packing {$target}{$file} from {$source}{$file}";
-                            $this->_errors[] = $results[$target . $file];
                         }
                     }
                 }
             } elseif (is_file($source)) {
                 $file = basename($source);
-                if ($this->_archive->addFile($source, $target . $file)) {
-                    $results[$target . $file] = "Successfully packed {$target}{$file} from {$source}";
-                } else {
-                    $results[$target . $file] = "Error packing {$target}{$file} from {$source}";
-                    $this->_errors[] = $results[$target . $file];
+                if ($this->checkExclude($target . $file, $options)) {
+                    if ($this->_archive->addFile($source, $target . $file)) {
+                        $results[$target . $file] = "Successfully packed {$target}{$file} from {$source}";
+                    } else {
+                        $results[$target . $file] = "Error packing {$target}{$file} from {$source}";
+                        $this->_errors[] = $results[$target . $file];
+                    }
                 }
             } else {
                 $this->_errors[]= "Invalid source specified: {$source}";
@@ -157,6 +163,37 @@ class xPDOZip {
         if ($this->_archive) {
             $this->_archive->close();
         }
+    }
+
+    /**
+     * Check files exclude regular expression.
+     * 
+     * @param string $target
+     * @param array $options
+     * @return bool
+     */
+    protected function checkExclude($target, $options = array()) {
+        $allow = true;
+        if (empty($this->_exclusions)) {
+            $exclude = $this->getOption(xPDOZip::EXCLUDE, $options, null);
+            switch (true) {
+                case (is_string($exclude)):
+                    $exclude = explode(',', $exclude);
+                case (is_array($exclude)):
+                    if (!$exclude = array_diff(array_map('trim', $exclude), array(''))) {
+                        $exclude = null;
+                    }
+            }
+            $this->_exclusions = $exclude;
+        }
+        if (!empty($this->_exclusions)) {
+            foreach ($this->_exclusions as $v) {
+                if (preg_match('/' . $v . '/u', $target)) {
+                    $allow = false;
+                }
+            }
+        }
+        return $allow;
     }
 
     /**
