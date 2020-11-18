@@ -20,7 +20,7 @@ class xPDOIteratorTest extends TestCase
     {
         parent::setUp();
 
-        $this->xpdo->manager->createObjectContainer('xPDO\Test\Sample\SecureItem');
+        $this->xpdo->getManager()->createObjectContainer('xPDO\Test\Sample\SecureItem');
 
         $i = 1;
         while ($i < 11) {

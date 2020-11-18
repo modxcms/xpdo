@@ -2,6 +2,7 @@ This file shows the changes in this release of xPDO.
 
 xPDO 3.0.0 (TBD)
 ====================================
+- Fix error merging driverOptions when creating an xPDOConnection
 - Add float phptype to quotable list to prevent quoting floats as integer
 - Add ability to define RegEx excludes in xPDOZip->pack()
 - Fix bug when generating platform files from classes with constants

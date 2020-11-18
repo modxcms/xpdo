@@ -67,7 +67,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      */
     protected function setUp()
     {
-        $this->xpdo = self::getInstance();
+        $this->xpdo = self::getInstance(true);
         $this->xpdo->setPackage('xPDO\\Test\\Sample', self::$properties['xpdo_test_path'] . 'model/');
     }
 
