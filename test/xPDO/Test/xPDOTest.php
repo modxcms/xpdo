@@ -38,6 +38,15 @@ class xPDOTest extends TestCase
     }
 
     /**
+     * Verify setting driverOptions via xPDO::connect works.
+     */
+    public function testDriverOptions()
+    {
+        $this->xpdo->connect([\PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING]);
+        $this->assertEquals(\PDO::ERRMODE_WARNING, $this->xpdo->getAttribute(\PDO::ATTR_ERRMODE));
+    }
+
+    /**
      * Test table creation.
      */
     public function testCreateObjectContainer()
