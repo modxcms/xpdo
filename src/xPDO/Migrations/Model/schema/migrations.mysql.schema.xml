@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="xPDO\Migrations\Model" baseClass="xPDO\Om\xPDOObject" platform="mysql" defaultEngine="MyISAM" version="3.0">
+	<object class="XPDOMigrations" table="xpdo_migrations" extends="xPDO\Om\xPDOSimpleObject">
+		<field key="name" dbtype="varchar" precision="255" phptype="string" null="false" />
+		<field key="version" dbtype="varchar" precision="32" phptype="string" null="true" />
+		<field key="type" dbtype="set" precision="'master','stagging','dev','local'" phptype="string" null="false" default="master" />
+		<field key="description" dbtype="text" phptype="string" null="true" />
+		<field key="status" dbtype="varchar" precision="16" phptype="string" null="false" default="ready" />
+		<field key="author" dbtype="varchar" precision="255" phptype="string" null="true" />
+		<field key="created_at" dbtype="timestamp" phptype="timestamp" null="false" default="CURRENT_TIMESTAMP" />
+		<field key="processed_at" dbtype="timestamp" phptype="timestamp" null="true" />
+	</object>
+</model>

@@ -1,0 +1,65 @@
+<?php
+
+/**
+ * Auto Generated from xPDO Migrations
+ * Date: [[+classCreateDate]] at [[+classCreateTime]]
+ */
+
+use \xPDO\Migrations\Migration;
+
+class [[+className]] extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        /** @var \xPDO\xPDO is now available */
+        $this->xPDO;
+        [[+classUpInners]]
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        [[+classDownInners]]
+    }
+
+    /**
+     * Method is called on construct, please fill me in
+     */
+    protected function assignDescription()
+    {
+        $this->description = '[[+description]]';
+    }
+
+    /**
+     * Method is called on construct, please fill me in
+     */
+    protected function assignVersion()
+    {
+        $this->version = '[[+version]]';
+    }
+
+    /**
+     * Method is called on construct, can change to only run this migration for those types
+     */
+    protected function assignType()
+    {
+        $this->type = '[[+serverType]]';
+    }
+
+    /**
+     * Method is called on construct, Child class can override and implement this
+     */
+    protected function assignSeedsDir()
+    {
+        $this->seeds_dir = '[[+seeds_dir]]';
+    }
+}
