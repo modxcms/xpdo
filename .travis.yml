@@ -35,6 +35,9 @@ jobs:
     - php: 7.4
       env: TEST_DRIVER=sqlite
 
+    - php: 8.0
+      env: TEST_DRIVER=sqlite
+
     - php: 5.6
       env: TEST_DRIVER=mysql
       services: mysql
@@ -59,6 +62,10 @@ jobs:
       env: TEST_DRIVER=mysql
       services: mysql
 
+    - php: 8.0
+      env: TEST_DRIVER=mysql
+      services: mysql
+
     - php: 5.6
       env: TEST_DRIVER=pgsql
       services: postgresql
@@ -90,6 +97,12 @@ jobs:
         postgresql: "9.6"
 
     - php: 7.4
+      env: TEST_DRIVER=pgsql
+      services: postgresql
+      addons:
+        postgresql: "9.6"
+
+    - php: 8.0
       env: TEST_DRIVER=pgsql
       services: postgresql
       addons:
