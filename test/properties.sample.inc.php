@@ -17,7 +17,7 @@ $properties['mysql_string_dsn_nodb']= 'mysql:host=localhost;charset=utf8';
 $properties['mysql_string_dsn_error']= 'mysql:host= nonesuchhost;dbname=nonesuchdb';
 $properties['mysql_string_username']= '';
 $properties['mysql_string_password']= '';
-$properties['mysql_array_driverOptions']= array();
+$properties['mysql_array_driverOptions']= [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT];
 $properties['mysql_array_options']= array(
     xPDO::OPT_CACHE_PATH => $properties['xpdo_test_path'] .'cache/',
     xPDO::OPT_HYDRATE_FIELDS => true,
@@ -43,7 +43,7 @@ $properties['pgsql_string_dsn_nodb']= 'pgsql:host=localhost';
 $properties['pgsql_string_dsn_error']= 'pgsql:host= nonesuchhost;dbname=nonesuchdb';
 $properties['pgsql_string_username']= '';
 $properties['pgsql_string_password']= '';
-$properties['pgsql_array_driverOptions']= array();
+$properties['pgsql_array_driverOptions']= [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT];
 $properties['pgsql_array_options']= array(
     xPDO::OPT_CACHE_PATH => $properties['xpdo_test_path'] .'cache/',
     xPDO::OPT_HYDRATE_FIELDS => true,
@@ -69,7 +69,7 @@ $properties['sqlite_string_dsn_nodb']= 'sqlite::memory:';
 $properties['sqlite_string_dsn_error']= 'sqlite:db/';
 $properties['sqlite_string_username']= '';
 $properties['sqlite_string_password']= '';
-$properties['sqlite_array_driverOptions']= array();
+$properties['sqlite_array_driverOptions']= [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT];
 $properties['sqlite_array_options']= array(
     xPDO::OPT_CACHE_PATH => $properties['xpdo_test_path'] . 'cache/',
     xPDO::OPT_HYDRATE_FIELDS => true,
@@ -95,7 +95,7 @@ $properties['sqlsrv_string_dsn_nodb']= 'sqlsrv:server=(local)';
 $properties['sqlsrv_string_dsn_error']= 'sqlsrv:server=xyz;123';
 $properties['sqlsrv_string_username']= '';
 $properties['sqlsrv_string_password']= '';
-$properties['sqlsrv_array_driverOptions']= array(/*PDO::SQLSRV_ATTR_DIRECT_QUERY => false*/);
+$properties['sqlsrv_array_driverOptions']= [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT];
 $properties['sqlsrv_array_options']= array(
     xPDO::OPT_CACHE_PATH => $properties['xpdo_test_path'] . 'cache/',
     xPDO::OPT_HYDRATE_FIELDS => true,

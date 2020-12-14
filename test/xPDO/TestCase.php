@@ -10,7 +10,9 @@
 
 namespace xPDO;
 
-abstract class TestCase extends \PHPUnit\Framework\TestCase
+use Yoast\PHPUnitPolyfills\TestCases\XTestCase;
+
+abstract class TestCase extends XTestCase
 {
     /**
      * @var xPDO A static xPDO fixture.
@@ -28,8 +30,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * Setup static properties when loading the test cases.
+     *
+     * @beforeClass
      */
-    public static function setUpBeforeClass()
+    public static function setUpFixturesBeforeClass()
     {
         self::$properties = include(__DIR__ . '/../properties.inc.php');
     }
@@ -64,8 +68,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * Set up the xPDO fixture for each test case.
+     *
+     * @before
      */
-    protected function setUp()
+    public function setUpFixtures()
     {
         $this->xpdo = self::getInstance(true);
         $this->xpdo->setPackage('xPDO\\Test\\Sample', self::$properties['xpdo_test_path'] . 'model/');
@@ -73,8 +79,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * Tear down the xPDO fixture after each test case.
+     *
+     * @after
      */
-    protected function tearDown()
+    public function tearDownFixtures()
     {
         $this->xpdo = null;
     }

@@ -13,7 +13,10 @@ namespace xPDO\Test\PSR4;
 
 class TestCase extends \xPDO\TestCase
 {
-    protected function setUp()
+    /**
+     * @before
+     */
+    public function setUpFixtures()
     {
         $this->xpdo = self::getInstance(true);
         $this->xpdo->setPackage('xPDO\Test\Sample', self::$properties['xpdo_test_path'] . 'model/PSR4/', null, 'xPDO\\Test\\');

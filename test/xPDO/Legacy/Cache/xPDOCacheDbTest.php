@@ -22,10 +22,12 @@ class xPDOCacheDbTest extends TestCase
 {
     /**
      * Setup dummy data for each test.
+     *
+     * @before
      */
-    public function setUp()
+    public function setUpFixtures()
     {
-        parent::setUp();
+        parent::setUpFixtures();
         try {
             /* ensure we have clear data and identity sequences */
             $this->xpdo->getManager();
@@ -103,8 +105,10 @@ class xPDOCacheDbTest extends TestCase
 
     /**
      * Remove dummy data prior to each test.
+     *
+     * @after
      */
-    public function tearDown()
+    public function tearDownFixtures()
     {
         try {
             $this->xpdo->manager->removeObjectContainer('Phone');
@@ -114,7 +118,7 @@ class xPDOCacheDbTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        parent::tearDown();
+        parent::tearDownFixtures();
     }
 
     /**

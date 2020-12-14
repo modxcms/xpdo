@@ -16,9 +16,12 @@ use xPDO\xPDO;
 
 class xPDOIteratorTest extends TestCase
 {
-    protected function setUp()
+    /**
+     * @before
+     */
+    public function setUpFixtures()
     {
-        parent::setUp();
+        parent::setUpFixtures();
 
         $this->xpdo->getManager()->createObjectContainer('xPDO\Test\Sample\SecureItem');
 
@@ -32,11 +35,14 @@ class xPDOIteratorTest extends TestCase
         }
     }
 
-    protected function tearDown()
+    /**
+     * @after
+     */
+    public function tearDownFixtures()
     {
         $this->xpdo->manager->removeObjectContainer('xPDO\Test\Sample\SecureItem');
 
-        parent::tearDown();
+        parent::tearDownFixtures();
     }
 
     public function testIteratorDoesNotFailIfRowExistsButObjectCanNotBeLoaded()

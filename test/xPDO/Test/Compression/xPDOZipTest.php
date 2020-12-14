@@ -21,9 +21,12 @@ use xPDO\xPDO;
  */
 class xPDOZipTest extends TestCase
 {
-    public static function setUpBeforeClass()
+    /**
+     * @beforeClass
+     */
+    public static function setUpFixturesBeforeClass()
     {
-        parent::setUpBeforeClass();
+        parent::setUpFixturesBeforeClass();
         $xpdo = self::getInstance();
 
         $zipPath = self::$properties['xpdo_test_path'] . "fs/zip/";
@@ -46,7 +49,10 @@ class xPDOZipTest extends TestCase
         $xpdo->getCacheManager()->writeTree($unzipPath);
     }
 
-    public static function tearDownAfterClass()
+    /**
+     * @afterClass
+     */
+    public static function tearDownFixturesAfterClass()
     {
         $xpdo = self::getInstance();
         $paths = array(

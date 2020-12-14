@@ -23,10 +23,12 @@ class xPDOQueryHavingTest extends TestCase
 {
     /**
      * Setup dummy data for each test.
+     *
+     * @before
      */
-    public function setUp()
+    public function setUpFixtures()
     {
-        parent::setUp();
+        parent::setUpFixtures();
         try {
             /* ensure we have clear data and identity sequences */
             $this->xpdo->getManager();
@@ -51,12 +53,14 @@ class xPDOQueryHavingTest extends TestCase
 
     /**
      * Clean up data when through.
+     *
+     * @after
      */
-    public function tearDown()
+    public function tearDownFixtures()
     {
         $this->xpdo->getManager();
         $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\Item');
-        parent::tearDown();
+        parent::tearDownFixtures();
     }
 
     /**

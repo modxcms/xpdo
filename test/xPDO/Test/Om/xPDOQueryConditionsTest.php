@@ -17,9 +17,12 @@ use xPDO\xPDO;
 
 class xPDOQueryConditionsTest extends TestCase
 {
-    protected function setUp()
+    /**
+     * @before
+     */
+    public function setUpFixtures()
     {
-        parent::setUp();
+        parent::setUpFixtures();
 
         try {
             $this->xpdo->getManager();
@@ -46,9 +49,12 @@ class xPDOQueryConditionsTest extends TestCase
         }
     }
 
-    protected function tearDown()
+    /**
+     * @after
+     */
+    public function tearDownFixtures()
     {
-        parent::tearDown();
+        parent::tearDownFixtures();
 
         try {
             $this->xpdo->manager->removeObjectContainer('xPDO\Test\Sample\xPDOSample');
