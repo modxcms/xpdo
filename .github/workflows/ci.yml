@@ -14,13 +14,13 @@ jobs:
 
     services:
       postgres:
-        image: "postgres:9.6"
+        image: postgres:9.6
         
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: xpdotest
 
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5 -N 1000
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5 -c max_connections=1000
 
         ports:
           - "5432:5432"
