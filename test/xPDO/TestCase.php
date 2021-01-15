@@ -84,6 +84,10 @@ abstract class TestCase extends XTestCase
      */
     public function tearDownFixtures()
     {
+        if (is_object($this->xpdo->pdo)) {
+            $this->xpdo->pdo = null;
+        }
+        
         $this->xpdo = null;
     }
 }
