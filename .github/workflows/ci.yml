@@ -8,92 +8,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  sqllite-check:
-    name: SQL Lite Check
-    runs-on: ubuntu-20.04
-    
-    strategy:
-      matrix:
-        php-version:
-          - 5.6
-          - 7.0
-          - 7.1
-          - 7.2
-          - 7.3
-          - 7.4
-          - 8.0
-        deps:
-          - highest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: Install PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-version }}
-        extensions: pdo, pdo_sqlite, zip
-
-    - name: Install dependencies with Composer
-      uses: ramsey/composer-install@v1
-      with:
-        dependency-versions: ${{ matrix.deps }}
-      
-    - name: Copy properties
-      run: cp test/properties.travis.inc.php test/properties.inc.php  
-
-    - name: Run PHPUnit
-      run: vendor/bin/phpunit -c ./test/sqlite.phpunit.xml
-
-  mysql-check:
-    name: MySQL Check
-    runs-on: ubuntu-20.04
-
-    services:
-      mysql:
-        image: "mysql:5.6"
-        
-        options: >-
-          --health-cmd "mysqladmin ping --silent"
-          -e MYSQL_ALLOW_EMPTY_PASSWORD=yes
-          -e MYSQL_DATABASE=xpdotest
-        ports:
-          - "3306:3306"
-    
-    strategy:
-      matrix:
-        php-version:
-          - 5.6
-          - 7.0
-          - 7.1
-          - 7.2
-          - 7.3
-          - 7.4
-          - 8.0
-        deps:
-          - highest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - name: Install PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-version }}
-        extensions: pdo, pdo_mysql, zip, mysqli
-
-    - name: Install dependencies with Composer
-      uses: ramsey/composer-install@v1
-      with:
-        dependency-versions: ${{ matrix.deps }}
-      
-    - name: Copy properties
-      run: cp test/properties.travis.inc.php test/properties.inc.php  
-
-    - name: Run PHPUnit
-      run: vendor/bin/phpunit -c ./test/mysql.phpunit.xml
-              
   postgresql-check:
     name: PostgreSQL Check
     runs-on: ubuntu-20.04
@@ -106,7 +20,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: xpdotest
 
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5 -N 1000
 
         ports:
           - "5432:5432"
@@ -132,7 +46,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-version }}
-        extensions: pdo, zip
+        extensions: pdo, zip, php_pgsql
 
     - name: Install dependencies with Composer
       uses: ramsey/composer-install@v1
