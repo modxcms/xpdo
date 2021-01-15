@@ -41,7 +41,7 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Copy properties
-        run: cp test/properties.travis.inc.php test/properties.inc.php
+        run: cp test/properties.ci.inc.php test/properties.inc.php
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit -c ./test/sqlite.phpunit.xml
@@ -90,7 +90,7 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Copy properties
-        run: cp test/properties.travis.inc.php test/properties.inc.php
+        run: cp test/properties.ci.inc.php test/properties.inc.php
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit -c ./test/mysql.phpunit.xml
@@ -141,7 +141,7 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Copy properties
-        run: cp test/properties.travis.inc.php test/properties.inc.php
+        run: cp test/properties.ci.inc.php test/properties.inc.php
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit -c ./test/pgsql.phpunit.xml
