@@ -12,10 +12,10 @@ use xPDO\xPDO;
 $properties['xpdo_test_path'] = dirname(__FILE__) . '/';
 
 /* mysql */
-$properties['mysql_string_dsn_test']= 'mysql:host=localhost;dbname=xpdotest;charset=utf8';
-$properties['mysql_string_dsn_nodb']= 'mysql:host=localhost;charset=utf8';
+$properties['mysql_string_dsn_test']= 'mysql:host=127.0.0.1;dbname=xpdotest;charset=utf8';
+$properties['mysql_string_dsn_nodb']= 'mysql:host=127.0.0.1;charset=utf8';
 $properties['mysql_string_dsn_error']= 'mysql:host= nonesuchhost;dbname=nonesuchdb';
-$properties['mysql_string_username']= 'travis';
+$properties['mysql_string_username']= 'root';
 $properties['mysql_string_password']= '';
 $properties['mysql_array_driverOptions']= [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT];
 $properties['mysql_array_options']= array(
