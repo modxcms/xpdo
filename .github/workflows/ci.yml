@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  sqllite-check:
+    name: SQL Lite Check
+    runs-on: ubuntu-20.04
+    
+    strategy:
+      matrix:
+        php-version:
+          - 5.6
+          - 7.0
+          - 7.1
+          - 7.2
+          - 7.3
+          - 7.4
+          - 8.0
+        deps:
+          - highest
+        include:
+          - deps: lowest
+            php-version: 5.6
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: pdo, pdo_sqlite
+
+    - name: Install dependencies with Composer
+      uses: ramsey/composer-install@v1
+      with:
+        dependency-versions: ${{ matrix.deps }}
+      
+    - name: Copy properties
+      run: cp test/properties.travis.inc.php test/properties.inc.php  
+
+    - name: Run PHPUnit
+      run: vendor/bin/phpunit -c ./test/sqlite.phpunit.xml
