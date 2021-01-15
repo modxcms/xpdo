@@ -49,23 +49,16 @@ jobs:
     name: MySQL Check
     runs-on: ubuntu-20.04
 
-    env:
-      DB_ADAPTER: mysql
-      DB_HOST: 127.0.0.1
-      DB_NAME: xpdotest
-      DB_USERNAME: root
-      DB_PASSWORD: notroot
-
     services:
       mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: false
-          MYSQL_ROOT_PASSWORD: notroot
-          MYSQL_DATABASE: xpdotest
+        image: "mysql:5.6"
+
+        options: >-
+          --health-cmd "mysqladmin ping --silent"
+          -e MYSQL_ALLOW_EMPTY_PASSWORD=yes
+          -e MYSQL_DATABASE=xpdotest
         ports:
-          - 3306/tcp
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+          - "3306:3306"
     
     strategy:
       matrix:
