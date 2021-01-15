@@ -42,7 +42,7 @@ $properties['pgsql_string_dsn_test']= 'pgsql:host=localhost;dbname=xpdotest';
 $properties['pgsql_string_dsn_nodb']= 'pgsql:host=localhost';
 $properties['pgsql_string_dsn_error']= 'pgsql:host= nonesuchhost;dbname=nonesuchdb';
 $properties['pgsql_string_username']= 'postgres';
-$properties['pgsql_string_password']= '';
+$properties['pgsql_string_password']= 'postgres';
 $properties['pgsql_array_driverOptions']= [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT];
 $properties['pgsql_array_options']= array(
     xPDO::OPT_CACHE_PATH => $properties['xpdo_test_path'] .'cache/',
