@@ -50,6 +50,8 @@ jobs:
     runs-on: ubuntu-20.04
 
     env:
+      DB_ADAPTER: mysql
+      DB_HOST: 127.0.0.1
       DB_NAME: xpdotest
       DB_USERNAME: root
       DB_PASSWORD: notroot
