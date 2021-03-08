@@ -252,9 +252,9 @@ class xPDOManager_mysql extends xPDOManager {
                 $sql .= ")";
                 if (!empty($tableType)) {
                     $sql .= " ENGINE={$tableType}";
-                    if (!empty($charset)) {
-                        $sql .= " DEFAULT CHARSET={$charset}";
-                    }
+                }
+                if (!empty($charset)) {
+                    $sql .= " DEFAULT CHARSET={$charset}";
                 }
                 $created= $this->xpdo->exec($sql);
                 if ($created === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== PDO::ERR_NONE) {
