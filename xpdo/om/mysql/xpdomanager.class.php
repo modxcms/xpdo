@@ -124,7 +124,9 @@ class xPDOManager_mysql extends xPDOManager {
 
     public function createObjectContainer($className) {
         $created= false;
-        if ($this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
+        $connection = $this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true));
+        if ($connection) {
+            $charset = $connection->getOption('charset');
             $instance= $this->xpdo->newObject($className);
             if ($instance) {
                 $tableName= $this->xpdo->getTableName($className);
@@ -144,7 +146,7 @@ class xPDOManager_mysql extends xPDOManager {
                 $fieldMeta = $this->xpdo->getFieldMeta($className, true);
                 $columns = array();
                 foreach ($fieldMeta as $key => $meta) {
-                    $columns[] = $this->getColumnDef($className, $key, $meta);
+                    $columns[] = $this->getColumnDef($className, $key, $meta, array('charset' => $charset));
                     /* Legacy index support for pre-2.0.0-rc3 models */
                     if ($legacyIndexes && isset ($meta['index']) && $meta['index'] !== 'pk') {
                         if ($meta['index'] === 'fulltext') {
@@ -250,6 +252,9 @@ class xPDOManager_mysql extends xPDOManager {
                 $sql .= ")";
                 if (!empty($tableType)) {
                     $sql .= " ENGINE={$tableType}";
+                    if (!empty($charset)) {
+                        $sql .= " DEFAULT CHARSET={$charset}";
+                    }
                 }
                 $created= $this->xpdo->exec($sql);
                 if ($created === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== PDO::ERR_NONE) {
@@ -436,6 +441,10 @@ class xPDOManager_mysql extends xPDOManager {
         if (empty ($extra) && isset ($meta['extra'])) {
             $extra= ' ' . $meta['extra'];
         }
+        $charset = '';
+        if (isset ($options['charset']) && in_array($this->xpdo->driver->getPhpType($dbtype), array('string'))) {
+            $charset = ' CHARACTER SET ' . $options['charset'];
+        }
         $default= '';
         if (isset ($meta['default']) && !preg_match($lobsPattern, $dbtype)) {
             $defaultVal= $meta['default'];
@@ -447,9 +456,9 @@ class xPDOManager_mysql extends xPDOManager {
         }
         $attributes= (isset ($meta['attributes'])) ? ' ' . $meta['attributes'] : '';
         if (strpos(strtolower($attributes), 'unsigned') !== false) {
-            $result = $this->xpdo->escape($name) . ' ' . $dbtype . $precision . $attributes . $null . $default . $extra;
+            $result = $this->xpdo->escape($name) . ' ' . $dbtype . $precision . $attributes . $charset . $null . $default . $extra;
         } else {
-            $result = $this->xpdo->escape($name) . ' ' . $dbtype . $precision . $null . $default . $attributes . $extra;
+            $result = $this->xpdo->escape($name) . ' ' . $dbtype . $precision . $charset . $null . $default . $attributes . $extra;
         }
         return $result;
     }
