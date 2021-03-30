@@ -818,7 +818,7 @@ abstract class xPDOQuery extends xPDOCriteria {
             $result = new xPDOQueryCondition($field);
         }
         else {
-            $result= new xPDOQueryCondition([
+            $result = new xPDOQueryCondition([
                 'sql' => $conditions,
                 'binding' => null,
                 'conjunction' => $conjunction
