@@ -328,11 +328,15 @@ class xPDOObjectTest extends TestCase
         $person->remove();
     }
 
-    public function testGetObjectDoesNotReturnUnexpectedResults()
+    /**
+     * @param $criteria
+     * @dataProvider providerInvalidIntegerPKCriteria
+     */
+    public function testGetObjectDoesNotReturnUnexpectedResults($criteria)
     {
-        $person = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', 'test');
+        $person = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', $criteria);
 
-        $this->assertNull($person, 'getObject returned an instance from an invalid key');
+        $this->assertNull($person, 'getObject returned an instance from an invalid primary key');
     }
 
     /**
@@ -401,11 +405,25 @@ class xPDOObjectTest extends TestCase
         $this->assertTrue($phone instanceof \xPDO\Test\Sample\Phone, "Error retrieving related Phone object via getObjectGraph");
     }
 
-    public function testGetObjectGraphDoesNotReturnUnexpectedResults()
+    /**
+     * @param $criteria
+     * @dataProvider providerInvalidIntegerPKCriteria
+     */
+    public function testGetObjectGraphDoesNotReturnUnexpectedResults($criteria)
     {
-        $person = $this->xpdo->getObjectGraph('xPDO\\Test\\Sample\\Person', '{"PersonPhone":{"Phone":{}}}', 'test');
+        $person = $this->xpdo->getObjectGraph('xPDO\\Test\\Sample\\Person', '{"PersonPhone":{"Phone":{}}}', $criteria);
 
-        $this->assertNull($person, 'getObjectGraph returned unexpected result from invalid key');
+        $this->assertNull($person, 'getObjectGraph returned unexpected result from invalid primary key');
+    }
+
+    public function providerInvalidIntegerPKCriteria()
+    {
+        return [
+            ['test'],
+            ['1=1'],
+            ['1.0'],
+            [1.1],
+        ];
     }
 
     /**
