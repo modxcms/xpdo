@@ -545,7 +545,7 @@ class xPDOQueryTest extends TestCase {
     public function testInvalidClauses($clause) {
         $criteria = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
         $criteria->where($clause);
-        $result = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person');
+        $result = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', $criteria);
 
         $this->assertTrue($result === null, 'xPDOQuery allowed invalid clause');
     }
@@ -561,7 +561,6 @@ class xPDOQueryTest extends TestCase {
             array(array("1=sleep(1)")),
             array("1 = sleep ( 69 )"),
             array("sleep ( 69 )"),
-            array("1=1"),
             array("benchmark(999, 100+1)"),
             array("if(now()=sysdate(),sleep (20),0)"),
         );
