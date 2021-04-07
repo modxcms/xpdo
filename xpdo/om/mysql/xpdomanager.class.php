@@ -446,9 +446,9 @@ class xPDOManager_mysql extends xPDOManager {
             $extra= ' ' . $meta['extra'];
         }
         $charset = '';
-        if (isset($options['charset']) && $options['charset'] != '' && in_array($this->xpdo->driver->getPhpType($dbtype), array('string'))) {
+        if (!empty($options['charset']) && in_array($this->xpdo->driver->getPhpType($dbtype), array('string'))) {
             $charset = ' CHARACTER SET ' . $options['charset'];
-            if (isset($options['collation']) && $options['collation'] != '') {
+            if (!empty($options['charset'])) {
                 $charset .= ' COLLATE ' . $options['collation'];
             }
         }
