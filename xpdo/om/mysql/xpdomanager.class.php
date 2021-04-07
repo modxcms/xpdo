@@ -127,6 +127,7 @@ class xPDOManager_mysql extends xPDOManager {
         $connection = $this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true));
         if ($connection) {
             $charset = $connection->getOption('charset');
+            $collation = $connection->getOption('collation');
             $instance= $this->xpdo->newObject($className);
             if ($instance) {
                 $tableName= $this->xpdo->getTableName($className);
@@ -146,7 +147,7 @@ class xPDOManager_mysql extends xPDOManager {
                 $fieldMeta = $this->xpdo->getFieldMeta($className, true);
                 $columns = array();
                 foreach ($fieldMeta as $key => $meta) {
-                    $columns[] = $this->getColumnDef($className, $key, $meta, array('charset' => $charset));
+                    $columns[] = $this->getColumnDef($className, $key, $meta, array('charset' => $charset, 'collation' => $collation));
                     /* Legacy index support for pre-2.0.0-rc3 models */
                     if ($legacyIndexes && isset ($meta['index']) && $meta['index'] !== 'pk') {
                         if ($meta['index'] === 'fulltext') {
@@ -252,9 +253,12 @@ class xPDOManager_mysql extends xPDOManager {
                 $sql .= ")";
                 if (!empty($tableType)) {
                     $sql .= " ENGINE={$tableType}";
-                }
-                if (!empty($charset)) {
-                    $sql .= " DEFAULT CHARSET={$charset}";
+                    if (!empty($charset)) {
+                        $sql .= " DEFAULT CHARSET={$charset}";
+                        if (!empty($collation)) {
+                            $sql .= " COLLATE={$collation}";
+                        }
+                    }
                 }
                 $created= $this->xpdo->exec($sql);
                 if ($created === false && $this->xpdo->errorCode() !== '' && $this->xpdo->errorCode() !== PDO::ERR_NONE) {
@@ -442,8 +446,11 @@ class xPDOManager_mysql extends xPDOManager {
             $extra= ' ' . $meta['extra'];
         }
         $charset = '';
-        if (isset ($options['charset']) && in_array($this->xpdo->driver->getPhpType($dbtype), array('string'))) {
+        if (isset($options['charset']) && $options['charset'] != '' && in_array($this->xpdo->driver->getPhpType($dbtype), array('string'))) {
             $charset = ' CHARACTER SET ' . $options['charset'];
+            if (isset($options['collation']) && $options['collation'] != '') {
+                $charset .= ' COLLATE ' . $options['collation'];
+            }
         }
         $default= '';
         if (isset ($meta['default']) && !preg_match($lobsPattern, $dbtype)) {
