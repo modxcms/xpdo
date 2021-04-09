@@ -448,7 +448,7 @@ class xPDOManager_mysql extends xPDOManager {
         $charset = '';
         if (!empty($options['charset']) && in_array($this->xpdo->driver->getPhpType($dbtype), array('string'))) {
             $charset = ' CHARACTER SET ' . $options['charset'];
-            if (!empty($options['charset'])) {
+            if (!empty($options['collation'])) {
                 $charset .= ' COLLATE ' . $options['collation'];
             }
         }
