@@ -287,7 +287,7 @@ abstract class xPDOVehicle {
             $this->payload['guid'] = md5(uniqid(rand(), true));
         }
         if (!isset ($this->payload['package'])) {
-            if ($object instanceof xPDOObject) {
+            if ($object instanceof xPDOObject && strpos(get_class($object), '\\') === false) {
                 $packageName = $object->_package;
             } else {
                 $packageName = '';

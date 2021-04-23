@@ -387,7 +387,7 @@ class xPDOObjectVehicle extends xPDOVehicle {
         parent :: put($transport, $object, $attributes);
         if (is_object($object)) {
             if (!isset ($this->payload['package'])) {
-                if ($object instanceof xPDOObject) {
+                if ($object instanceof xPDOObject && strpos(get_class($object), '\\') === false) {
                     $packageName = $object->_package;
                 } else {
                     $packageName = '';
