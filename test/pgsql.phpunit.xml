@@ -29,6 +29,7 @@
             <file>./xPDO/Test/Cache/xPDOCacheDbTest.php</file>
             <file>./xPDO/Test/Compression/xPDOZipTest.php</file>
             <file>./xPDO/Test/Transport/xPDOTransportTest.php</file>
+            <file>./xPDO/Test/Transport/xPDOVehicleTest.php</file>
             <file>./xPDO/Test/PSR4/xPDOTest.php</file>
             <file>./xPDO/Test/TearDownTest.php</file>
         </testsuite>
