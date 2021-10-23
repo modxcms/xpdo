@@ -20,6 +20,9 @@ namespace xPDO;
 
 use Composer\Autoload\ClassLoader;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use xPDO\Om\xPDOCriteria;
 use xPDO\Om\xPDOQuery;
 
@@ -55,7 +58,10 @@ if (!defined('XPDO_CLI_MODE')) {
  *
  * @package xpdo
  */
-class xPDO {
+class xPDO implements LoggerAwareInterface
+{
+    use LoggerAwareTrait;
+
     /**#@+
      * Constants
      */
@@ -96,10 +102,25 @@ class xPDO {
     const OPT_VALIDATE_ON_SAVE = 'validate_on_save';
     const OPT_VALIDATOR_CLASS = 'validator_class';
 
+    /**
+     * @deprecated Prefer Psr\Log\LogLevel::EMERGENCY
+     */
     const LOG_LEVEL_FATAL = 0;
+    /**
+     * @deprecated Prefer Psr\Log\LogLevel::ERROR
+     */
     const LOG_LEVEL_ERROR = 1;
+    /**
+     * @deprecated Prefer Psr\Log\LogLevel::WARNING
+     */
     const LOG_LEVEL_WARN = 2;
+    /**
+     * @deprecated Prefer Psr\Log\LogLevel::INFO
+     */
     const LOG_LEVEL_INFO = 3;
+    /**
+     * @deprecated Prefer Psr\Log\LogLevel::DEBUG
+     */
     const LOG_LEVEL_DEBUG = 4;
 
     const SCHEMA_VERSION = '3.0';
@@ -277,8 +298,20 @@ class xPDO {
             if ($this->services === null) {
                 $this->services = new xPDOContainer();
             }
-            $this->setLogLevel($this->getOption('log_level', null, xPDO::LOG_LEVEL_FATAL, true));
-            $this->setLogTarget($this->getOption('log_target', null, php_sapi_name() === 'cli' ? 'ECHO' : 'HTML', true));
+            $this->logLevel = $this->getOption('log_level', null, xPDO::LOG_LEVEL_FATAL, true);
+            $this->logTarget = $this->getOption('log_target', null, php_sapi_name() === 'cli' ? 'ECHO' : 'HTML', true);
+
+            if (!$this->services->has(LoggerInterface::class)) {
+                $this->services->add(LoggerInterface::class, function() {
+                    return new xPDOLogger(
+                        $this->getCacheManager(),
+                        $this->logTarget,
+                        $this->logLevel
+                    );
+                });
+            }
+            $this->logger = $this->services->get(LoggerInterface::class);
+
             if (!empty($dsn)) {
                 $this->addConnection($dsn, $username, $password, $this->config, $driverOptions);
             }
@@ -1964,15 +1997,23 @@ class xPDO {
      *
      * @param integer $level The logging level to switch to.
      * @return integer The previous log level.
+     * @deprecated To change the log settings, provide a new logger via setLogger(LoggerInterface $logger). Will be removed in v4.
      */
     public function setLogLevel($level= xPDO::LOG_LEVEL_FATAL) {
         $oldLevel = $this->logLevel;
-        $this->logLevel= intval($level);
+        if ($this->logger instanceof xPDOLogger) {
+            $this->logger->setLogLevel($level);
+            $this->logLevel= intval($level);
+        }
+        else {
+            $this->logger->error('Trying to change the log level on a custom logger implementation of type ' . get_class($this->logger));
+        }
         return $oldLevel;
     }
 
     /**
      * @return integer The current log level.
+     * @deprecated The log level is only available with the native xPDOLogger, not with custom loggers. Will be removed in v4.
      */
     public function getLogLevel() {
         return $this->logLevel;
@@ -1983,27 +2024,34 @@ class xPDO {
      *
      * Valid target values include:
      * <ul>
-     * <li>'ECHO': Returns output to the STDOUT.</li>
-     * <li>'HTML': Returns output to the STDOUT with HTML formatting.</li>
+     * <li>'ECHO': Returns output to the STDOUT / echo.</li>
+     * <li>'HTML': Returns output to the STDOUT / echo with HTML formatting.</li>
      * <li>'FILE': Sends output to a log file.</li>
-     * <li>An array with at least one element with key 'target' matching
-     * one of the valid log targets listed above. For 'target' => 'FILE'
-     * you can specify a second element with key 'options' with another
-     * associative array with one or both of the elements 'filename' and
-     * 'filepath'</li>
+     * <li>array ["target" => "FILE", "options" => ["filename" => "error.log", "filepath" => "/path/to/dir"]]</li>
+     * <li>array ["target" => "ARRAY", "options" => ["var" => &$arrayByRef]]</li>
+     * <li>array ["target" => "ARRAY_EXTENDED", "options" => ["var" => &$arrayByRef]]</li>
      * </ul>
      *
      * @param string $target An identifier indicating the target of the logging.
      * @return mixed The previous log target.
+     * @deprecated To change the log settings, provide a new logger via setLogger(LoggerInterface $logger). Will be removed in v4.
      */
-    public function setLogTarget($target= 'ECHO') {
+    public function setLogTarget($target = 'ECHO')
+    {
         $oldTarget = $this->logTarget;
-        $this->logTarget= $target;
+        if ($this->logger instanceof xPDOLogger) {
+            $this->logger->setLogTarget($target);
+            $this->logTarget = $target;
+        }
+        else {
+            $this->logger->error('Trying to change the log target on a custom logger implementation of type ' . get_class($this->logger));
+        }
         return $oldTarget;
     }
 
     /**
-     * @return integer The current log level.
+     * @return string|array The current log target.
+     * @deprecated The log target is only available with the native xPDOLogger, not with custom loggers. Will be removed in v4.
      */
     public function getLogTarget() {
         return $this->logTarget;
@@ -2020,6 +2068,7 @@ class xPDO {
      * @param string $file A filename in which the log event occurred.
      * @param string $line A line number to help locate the source of the event
      * within the indicated file.
+     * @deprecated Prefer using the installed Logger instance through $this->logger or the DI container.
      */
     public function log($level, $msg, $target= '', $def= '', $file= '', $line= '') {
         $this->_log($level, $msg, $target, $def, $file, $line);
@@ -2037,76 +2086,39 @@ class xPDO {
      * @param string $line A line number to help locate the source of the event
      * within the indicated file.
      */
-    protected function _log($level, $msg, $target= '', $def= '', $file= '', $line= '') {
-        if ($level !== xPDO::LOG_LEVEL_FATAL && $level > $this->logLevel && $this->_debug !== true) {
-            return;
-        }
-        if (empty ($target)) {
-            $target = $this->logTarget;
-        }
-        $targetOptions = array();
-        if (is_array($target)) {
-            if (isset($target['options'])) $targetOptions =& $target['options'];
-            $target = isset($target['target']) ? $target['target'] : 'ECHO';
-        }
-        if (empty($file)) {
-            if (version_compare(phpversion(), '5.4.0', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-            } elseif (version_compare(phpversion(), '5.3.6', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            } else {
-                $backtrace = debug_backtrace();
-            }
+    protected function _log($level, $msg, $target= '', $def= '', $file= '', $line= '')
+    {
+        $context = array_filter([
+            'def' => $def,
+            'file' => $file,
+            'line' => $line,
+        ]);
+
+        if (empty($context['file'])) {
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
             if ($backtrace && isset($backtrace[2])) {
-                $file = $backtrace[2]['file'];
-                $line = $backtrace[2]['line'];
+                $context['file'] = $backtrace[2]['file'];
+                $context['line'] = $backtrace[2]['line'];
             }
         }
-        if (empty($file) && isset($_SERVER['SCRIPT_NAME'])) {
-            $file = $_SERVER['SCRIPT_NAME'];
+
+        if (empty($context['file']) && isset($_SERVER['SCRIPT_NAME'])) {
+            $context['file'] = $_SERVER['SCRIPT_NAME'];
         }
-        if ($level === xPDO::LOG_LEVEL_FATAL) {
-            while (ob_get_level() && @ob_end_flush()) {}
-            exit ('[' . strftime('%Y-%m-%d %H:%M:%S') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $msg . "\n" . ($this->getDebug() === true ? '<pre>' . "\n" . print_r(debug_backtrace(), true) . "\n" . '</pre>' : ''));
+
+        // If the target is different, adjust it
+        $previousLogger = $this->logger;
+        $oldTarget = $this->logTarget;
+        if (!empty($target) && $this->logger instanceof xPDOLogger) {
+            $this->logger->setLogTarget($target);
         }
-        if ($this->_debug === true || $level <= $this->logLevel) {
-            @ob_start();
-            if (!empty ($def)) {
-                $def= " in {$def}";
-            }
-            if (!empty ($file)) {
-                $file= " @ {$file}";
-            }
-            if (!empty ($line)) {
-                $line= " : {$line}";
-            }
-            switch ($target) {
-                case 'HTML' :
-                    echo '<h5>[' . strftime('%Y-%m-%d %H:%M:%S') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ')</h5><pre>' . $msg . '</pre>' . "\n";
-                    break;
-                default :
-                    echo '[' . strftime('%Y-%m-%d %H:%M:%S') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $msg . "\n";
-            }
-            $content= @ob_get_contents();
-            @ob_end_clean();
-            if ($target=='FILE' && $this->getCacheManager()) {
-                $filename = isset($targetOptions['filename']) ? $targetOptions['filename'] : 'error.log';
-                $filepath = isset($targetOptions['filepath']) ? $targetOptions['filepath'] : $this->getCachePath() . Cache\xPDOCacheManager::LOG_DIR;
-                $this->cacheManager->writeFile($filepath . $filename, $content, 'a');
-            } elseif ($target=='ARRAY' && isset($targetOptions['var']) && is_array($targetOptions['var'])) {
-                $targetOptions['var'][] = $content;
-            } elseif ($target=='ARRAY_EXTENDED' && isset($targetOptions['var']) && is_array($targetOptions['var'])) {
-                $targetOptions['var'][] = array(
-                    'content' => $content,
-                    'level' => $this->_getLogLevel($level),
-                    'msg' => $msg,
-                    'def' => $def,
-                    'file' => $file,
-                    'line' => $line
-                );
-            } else {
-                echo $content;
-            }
+
+        // Pass the message on to the PSR-3 logger
+        $this->logger->log($level, $msg, $context);
+
+        // Restore the target if it was changed
+        if (!empty($oldTarget) && $this->logger instanceof xPDOLogger) {
+            $this->logger->setLogTarget($oldTarget);
         }
     }
 
@@ -2769,5 +2781,10 @@ class xPDO {
                 $criteria = null;
             }
         }
+    }
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->logger;
     }
 }
