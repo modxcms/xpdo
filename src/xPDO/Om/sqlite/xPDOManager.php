@@ -235,6 +235,14 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
         return $result;
     }
 
+    public function renameField($class, $oldName, $newName, array $options = array()) {
+        $result = false;
+        if ($this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
+            // TODO: Implement renameField() method somehow, no support in sqlite for altering existing columns
+        }
+        return $result;
+    }
+
     public function removeConstraint($class, $name, array $options = array()) {
         $result = false;
         if ($this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
