@@ -67,19 +67,19 @@ final class ParseSchema extends Command
         $platform = strtolower($input->getArgument('platform'));
         if (!in_array($platform, self::$platforms)) {
             $output->writeln("fatal: no valid platform specified");
-            return;
+            return 0;
         }
 
         $properties = $this->loadConfig($output, $input->getOption('config'));
         if ($properties === false) {
             $output->writeln('fatal: no valid configuration file could be loaded');
-            return;
+            return 0;
         }
 
         $schema = $input->getArgument('schema_file');
         if (!is_readable($schema)) {
             $output->writeln("fatal: no valid schema provided");
-            return;
+            return 0;
         }
 
         $namespacePrefix = $input->getOption('psr4');
@@ -104,5 +104,6 @@ final class ParseSchema extends Command
                 'namespacePrefix' => $namespacePrefix,
             )
         );
+        return 0;
     }
 }

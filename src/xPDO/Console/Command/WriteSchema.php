@@ -35,5 +35,6 @@ final class WriteSchema extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $output->writeln('write-schema command not yet implemented');
+        return 1;
     }
 }
