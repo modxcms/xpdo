@@ -1,6 +1,6 @@
 This file shows the changes in this release of xPDO.
 
-xPDO 3.0.0 (TBD)
+xPDO 3.0.0 (December 28, 2021)
 ====================================
 - Fix error merging driverOptions when creating an xPDOConnection
 - Add float phptype to quotable list to prevent quoting floats as integer
