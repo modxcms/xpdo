@@ -28,7 +28,7 @@ class Command extends \Symfony\Component\Console\Command\Command
                 if (is_readable($location)) {
                     $config = $location;
                     break;
-                };
+                }
             }
         }
         if (!empty($config) && is_readable($config)) {

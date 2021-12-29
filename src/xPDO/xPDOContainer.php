@@ -11,6 +11,8 @@
 namespace xPDO;
 
 
+use ArrayAccess;
+use Exception;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -22,7 +24,7 @@ use xPDO\Exception\Container\NotFoundException;
  *
  * @package xPDO
  */
-class xPDOContainer implements ContainerInterface, \ArrayAccess
+class xPDOContainer implements ContainerInterface, ArrayAccess
 {
     private $entries = array();
 
@@ -32,7 +34,7 @@ class xPDOContainer implements ContainerInterface, \ArrayAccess
      * @param string $id The identifier for the entry.
      * @param mixed  $entry The entry to add.
      */
-    public function add($id, $entry)
+    public function add(string $id, $entry)
     {
         $this->offsetSet($id, $entry);
     }
@@ -47,12 +49,12 @@ class xPDOContainer implements ContainerInterface, \ArrayAccess
      *
      * @return mixed Entry.
      */
-    public function get($id)
+    public function get(string $id)
     {
         if ($this->has($id)) {
             try {
                 return $this->offsetGet($id);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 throw new ContainerException($e->getMessage(), $e->getCode(), $e);
             }
         }
@@ -65,15 +67,15 @@ class xPDOContainer implements ContainerInterface, \ArrayAccess
      *
      * @param string $id Identifier of the entry to look for.
      *
-     * @return boolean
+     * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
         return $this->offsetExists($id);
     }
 
     /**
-     * Whether a offset exists
+     * Whether an offset exists
      *
      * @link  http://php.net/manual/en/arrayaccess.offsetexists.php
      *
@@ -81,13 +83,13 @@ class xPDOContainer implements ContainerInterface, \ArrayAccess
      *                      An offset to check for.
      *                      </p>
      *
-     * @return boolean true on success or false on failure.
+     * @return bool true on success or false on failure.
      * </p>
      * <p>
-     * The return value will be casted to boolean if non-boolean was returned.
+     * The return value will be cast to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return array_key_exists($offset, $this->entries);
     }
@@ -124,7 +126,7 @@ class xPDOContainer implements ContainerInterface, \ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->entries[$offset] = $value;
     }
@@ -141,7 +143,7 @@ class xPDOContainer implements ContainerInterface, \ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->entries[$offset]);
     }

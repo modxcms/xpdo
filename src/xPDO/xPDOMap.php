@@ -11,7 +11,9 @@
 namespace xPDO;
 
 
-class xPDOMap implements \ArrayAccess
+use ArrayAccess;
+
+class xPDOMap implements ArrayAccess
 {
     /**
      * @var array An object/relational map by class.
@@ -24,11 +26,11 @@ class xPDOMap implements \ArrayAccess
 
     public function __construct(xPDO &$xpdo)
     {
-        $this->map = array();
+        $this->map = [];
         $this->xpdo =& $xpdo;
     }
 
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         if (!isset($this->map[$offset])) {
             $this->_checkClass($offset);
