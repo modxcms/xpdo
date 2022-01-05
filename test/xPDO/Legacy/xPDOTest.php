@@ -37,7 +37,7 @@ class xPDOTest extends TestCase
      */
     public function testCreateObjectContainer()
     {
-        $result = false;
+        $result = [];
         try {
             $this->xpdo->getManager();
             $result[] = $this->xpdo->manager->createObjectContainer('Person');
@@ -48,7 +48,7 @@ class xPDOTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        $result = !array_search(false, $result, true);
+        $result = !empty($result) && !array_search(false, $result, true);
         $this->assertTrue($result, 'Error creating tables.');
     }
 
@@ -56,7 +56,7 @@ class xPDOTest extends TestCase
      * Test table engine override.
      */
     public function testOverrideTableType() {
-        $result = false;
+        $result = [];
         try {
             $this->xpdo->getManager();
             $oldType = $this->xpdo->getOption(xPDO::OPT_OVERRIDE_TABLE_TYPE);
@@ -82,7 +82,7 @@ class xPDOTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        $result = !array_search(false, $result, true);
+        $result = !empty($result) && !array_search(false, $result, true);
         $this->assertTrue($result, 'Error creating tables with table type override.');
     }
 
@@ -682,7 +682,7 @@ class xPDOTest extends TestCase
      */
     public function testRemoveObjectContainer()
     {
-        $result = false;
+        $result = [];
         try {
             $this->xpdo->getManager();
             $result[] = $this->xpdo->manager->removeObjectContainer('Person');
@@ -693,7 +693,7 @@ class xPDOTest extends TestCase
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
-        $result = !array_search(false, $result, true);
+        $result = !empty($result) && !array_search(false, $result, true);
         $this->assertTrue($result, 'Error dropping tables.');
     }
 }
