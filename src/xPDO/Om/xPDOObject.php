@@ -829,7 +829,7 @@ class xPDOObject {
                                                 $ts= strtotime($v);
                                             }
                                             if ($ts !== false) {
-                                                $this->_fields[$k]= strftime('%Y-%m-%d %H:%M:%S', $ts);
+                                                $this->_fields[$k]= date('Y-m-d H:i:s', $ts);
                                                 $set= true;
                                             }
                                         }
@@ -859,7 +859,7 @@ class xPDOObject {
                                             }
                                             $ts= strtotime($v);
                                             if ($ts !== false) {
-                                                $this->_fields[$k]= strftime('%Y-%m-%d', $ts);
+                                                $this->_fields[$k]= date('Y-m-d', $ts);
                                                 $set= true;
                                             }
                                         }
@@ -1018,7 +1018,7 @@ class xPDOObject {
                                         $value= strftime($format, $ts);
                                     }
                                 } else {
-                                    $value= strftime('%Y-%m-%d %H:%M:%S', $ts);
+                                    $value= date('Y-m-d H:i:s', $ts);
                                 }
                             }
                             break;
@@ -1033,7 +1033,7 @@ class xPDOObject {
                             if ($ts !== false && !empty($value)) {
                                 if (is_string($format) && !empty ($format)) {
                                     if (strpos($format, 're:') === 0) {
-                                        $value= strftime('%Y-%m-%d', $ts);
+                                        $value= date('Y-m-d', $ts);
                                         if (!empty ($formatTemplate) && is_string($formatTemplate)) {
                                             $value= preg_replace(substr($format, 3), $formatTemplate, $value);
                                         }
@@ -1043,7 +1043,7 @@ class xPDOObject {
                                         $value= strftime($format, $ts);
                                     }
                                 } else {
-                                    $value= strftime('%Y-%m-%d', $ts);
+                                    $value= date('Y-m-d', $ts);
                                 }
                             }
                             break;
@@ -1362,7 +1362,7 @@ class xPDOObject {
                 $fieldType= \PDO::PARAM_STR;
                 $fieldValue= $this->_fields[$_k];
                 if (in_array($this->_fieldMeta[$_k]['phptype'], array ('datetime', 'timestamp')) && !empty($this->_fieldMeta[$_k]['attributes']) && $this->_fieldMeta[$_k]['attributes'] == 'ON UPDATE CURRENT_TIMESTAMP') {
-                    $this->_fields[$_k]= strftime('%Y-%m-%d %H:%M:%S');
+                    $this->_fields[$_k]= date('Y-m-d H:i:s');
                     continue;
                 }
                 elseif ($fieldValue === null || $fieldValue === 'NULL') {
@@ -1371,11 +1371,11 @@ class xPDOObject {
                     $fieldValue= null;
                 }
                 elseif (in_array($this->_fieldMeta[$_k]['phptype'], array ('timestamp', 'datetime')) && in_array($fieldValue, $this->xpdo->driver->_currentTimestamps, true)) {
-                    $this->_fields[$_k]= strftime('%Y-%m-%d %H:%M:%S');
+                    $this->_fields[$_k]= date('Y-m-d H:i:s');
                     continue;
                 }
                 elseif (in_array($this->_fieldMeta[$_k]['phptype'], array ('date')) && in_array($fieldValue, $this->xpdo->driver->_currentDates, true)) {
-                    $this->_fields[$_k]= strftime('%Y-%m-%d');
+                    $this->_fields[$_k]= date('Y-m-d');
                     continue;
                 }
                 elseif ($this->_fieldMeta[$_k]['phptype'] == 'timestamp' && preg_match('/int/i', $this->_fieldMeta[$_k]['dbtype'])) {
