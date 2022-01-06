@@ -15,15 +15,15 @@
         }
     ],
     "require": {
-        "php": ">=5.6",
+        "php": ">=7.2.5",
         "ext-PDO": "*",
         "ext-json": "*",
         "ext-simplexml": "*",
-        "symfony/console": "~2.8|~3.4",
-        "psr/container": "^1.0"
+        "symfony/console": "^5.4",
+        "psr/container": "^2.0.1"
     },
     "require-dev": {
-        "yoast/phpunit-polyfills": "^0.2.0"
+        "yoast/phpunit-polyfills": "^1.0"
     },
     "suggest": {
         "ext-redis": "Allows caching using Redis"

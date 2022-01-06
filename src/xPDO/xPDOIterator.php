@@ -11,6 +11,11 @@
 namespace xPDO;
 
 
+use Iterator;
+use PDO;
+use PDOStatement;
+use xPDO\Om\xPDOQuery;
+
 /**
  * An iterable representation of an xPDOObject result set.
  *
@@ -20,15 +25,16 @@ namespace xPDO;
  *
  * @package xpdo
  */
-class xPDOIterator implements \Iterator {
+class xPDOIterator implements Iterator
+{
     private $xpdo = null;
     private $index = 0;
     private $current = null;
-    /** @var null|\PDOStatement */
+    /** @var null|PDOStatement */
     private $stmt = null;
     private $class = null;
-    private $alias = null;
-    /** @var null|int|string|array|\xPDO\Om\xPDOQuery */
+    private $alias;
+    /** @var null|int|string|array|xPDOQuery */
     private $criteria = null;
     private $criteriaType = 'xPDOQuery';
     private $cacheFlag = false;
@@ -36,12 +42,13 @@ class xPDOIterator implements \Iterator {
     /**
      * Construct a new xPDOIterator instance (do not call directly).
      *
-     * @see xPDO::getIterator()
      * @param xPDO &$xpdo A reference to a valid xPDO instance.
      * @param array $options An array of options for the iterator.
      * @return xPDOIterator An xPDOIterator instance.
+     * @see xPDO::getIterator()
      */
-    function __construct(& $xpdo, array $options= array()) {
+    public function __construct(xPDO &$xpdo, array $options = [])
+    {
         $this->xpdo =& $xpdo;
         if (isset($options['class'])) {
             $this->class = $this->xpdo->loadClass($options['class']);
@@ -67,9 +74,12 @@ class xPDOIterator implements \Iterator {
                 $this->alias = $this->criteria->getAlias();
             }
         }
+
+        return $this;
     }
 
-    public function rewind() {
+    public function rewind()
+    {
         $this->index = 0;
         if (!empty($this->stmt)) {
             $this->stmt->closeCursor();
@@ -86,15 +96,18 @@ class xPDOIterator implements \Iterator {
         }
     }
 
-    public function current() {
+    public function current()
+    {
         return $this->current;
     }
 
-    public function key() {
+    public function key()
+    {
         return $this->index;
     }
 
-    public function next() {
+    public function next()
+    {
         $this->fetch();
         if (!$this->valid()) {
             $this->index = null;
@@ -104,7 +117,8 @@ class xPDOIterator implements \Iterator {
         return $this->current();
     }
 
-    public function valid() {
+    public function valid(): bool
+    {
         return ($this->current !== null);
     }
 
@@ -114,10 +128,15 @@ class xPDOIterator implements \Iterator {
      * Calls the _loadInstance() method for the specified class, so it properly
      * inherits behavior from xPDOObject derivatives.
      */
-    protected function fetch() {
-        $row = $this->stmt->fetch(\PDO::FETCH_ASSOC);
+    protected function fetch()
+    {
+        $row = $this->stmt->fetch(PDO::FETCH_ASSOC);
         if (is_array($row) && !empty($row)) {
-            $instance = $this->xpdo->call($this->class, '_loadInstance', array(& $this->xpdo, $this->class, $this->alias, $row));
+            $instance = $this->xpdo->call(
+                $this->class,
+                '_loadInstance',
+                [& $this->xpdo, $this->class, $this->alias, $row]
+            );
             if ($instance === null) {
                 $this->fetch();
             } else {

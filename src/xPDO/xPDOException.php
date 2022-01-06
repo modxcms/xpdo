@@ -10,12 +10,14 @@
 
 namespace xPDO;
 
+use Exception;
+
 /**
  * Represents an xPDO-related Exception.
  *
  * @package xPDO
  */
-class xPDOException extends \Exception
+class xPDOException extends Exception
 {
 
 }
