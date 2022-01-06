@@ -1,5 +1,9 @@
 This file shows the changes in this release of xPDO.
 
+xPDO 3.0.1 (January 6, 2022)
+====================================
+- Fix deprecated warnings running in PHP 8.1
+
 xPDO 3.0.0 (December 28, 2021)
 ====================================
 - Fix error merging driverOptions when creating an xPDOConnection

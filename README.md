@@ -8,7 +8,7 @@ xPDO is an ultra-light object-relational bridge library for PHP 5.6+. It is a st
 
 xPDO can be installed in your project via composer:
 
-    composer require xpdo/xpdo ^3.0
+    composer require xpdo/xpdo ~3.0.1
 
 
 ## Usage
