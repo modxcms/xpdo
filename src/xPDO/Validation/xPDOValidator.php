@@ -65,7 +65,11 @@ class xPDOValidator {
                                 }
                                 break;
                             case 'preg_match':
-                                $result= (boolean) preg_match($rule['rule'], $this->object->_fields[$column]);
+                                if (is_null($this->object->_fields[$column])) {
+                                    $result = false;
+                                } else {
+                                    $result = (boolean)preg_match($rule['rule'], $this->object->_fields[$column]);
+                                }
                                 if (!$result) $this->addMessage($column, $ruleName, isset($rule['parameters']['message']) ? $rule['parameters']['message'] : $ruleName . ' failed');
                                 if ($this->object->xpdo->getDebug() === true)
                                     $this->object->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "preg_match validation against {$rule['rule']} resulted in " . print_r($result, 1));
