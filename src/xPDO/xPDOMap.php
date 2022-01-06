@@ -11,7 +11,9 @@
 namespace xPDO;
 
 
-class xPDOMap implements \ArrayAccess
+use ArrayAccess;
+
+class xPDOMap implements ArrayAccess
 {
     /**
      * @var array An object/relational map by class.
@@ -36,6 +38,7 @@ class xPDOMap implements \ArrayAccess
         return isset($this->map[$offset]);
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         if (!isset($this->map[$offset])) {
@@ -44,11 +47,13 @@ class xPDOMap implements \ArrayAccess
         return $this->map[$offset];
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         $this->map[$offset] = $value;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         unset($this->map[$offset]);
