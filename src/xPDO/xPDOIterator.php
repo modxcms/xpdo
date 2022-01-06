@@ -113,6 +113,7 @@ class xPDOIterator implements Iterator {
         }
     }
 
+    #[\ReturnTypeWillChange]
     public function valid() {
         return ($this->current !== null);
     }
