@@ -36,6 +36,7 @@ class xPDOMap implements \ArrayAccess
         return isset($this->map[$offset]);
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         if (!isset($this->map[$offset])) {
@@ -44,12 +45,12 @@ class xPDOMap implements \ArrayAccess
         return $this->map[$offset];
     }
 
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->map[$offset] = $value;
     }
 
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->map[$offset]);
     }

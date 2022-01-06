@@ -11,6 +11,9 @@
 namespace xPDO;
 
 
+use Iterator;
+use PDOStatement;
+
 /**
  * An iterable representation of an xPDOObject result set.
  *
@@ -20,11 +23,11 @@ namespace xPDO;
  *
  * @package xpdo
  */
-class xPDOIterator implements \Iterator {
+class xPDOIterator implements Iterator {
     private $xpdo = null;
     private $index = 0;
     private $current = null;
-    /** @var null|\PDOStatement */
+    /** @var null|PDOStatement */
     private $stmt = null;
     private $class = null;
     private $alias = null;
@@ -39,7 +42,6 @@ class xPDOIterator implements \Iterator {
      * @see xPDO::getIterator()
      * @param xPDO &$xpdo A reference to a valid xPDO instance.
      * @param array $options An array of options for the iterator.
-     * @return xPDOIterator An xPDOIterator instance.
      */
     function __construct(& $xpdo, array $options= array()) {
         $this->xpdo =& $xpdo;
@@ -69,7 +71,9 @@ class xPDOIterator implements \Iterator {
         }
     }
 
-    public function rewind() {
+    #[\ReturnTypeWillChange]
+    public function rewind()
+    {
         $this->index = 0;
         if (!empty($this->stmt)) {
             $this->stmt->closeCursor();
@@ -86,22 +90,27 @@ class xPDOIterator implements \Iterator {
         }
     }
 
-    public function current() {
+    #[\ReturnTypeWillChange]
+    public function current()
+    {
         return $this->current;
     }
 
-    public function key() {
+    #[\ReturnTypeWillChange]
+    public function key()
+    {
         return $this->index;
     }
 
-    public function next() {
+    #[\ReturnTypeWillChange]
+    public function next()
+    {
         $this->fetch();
         if (!$this->valid()) {
             $this->index = null;
         } else {
             $this->index++;
         }
-        return $this->current();
     }
 
     public function valid() {
