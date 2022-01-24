@@ -30,6 +30,7 @@ class xPDOMap implements ArrayAccess
         $this->xpdo =& $xpdo;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         if (!isset($this->map[$offset])) {
