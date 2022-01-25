@@ -2981,6 +2981,7 @@ class xPDOIterator implements Iterator {
         }
     }
 
+    #[\ReturnTypeWillChange]
     public function rewind() {
         $this->index = 0;
         if (!empty($this->stmt)) {
@@ -2998,14 +2999,17 @@ class xPDOIterator implements Iterator {
         }
     }
 
+    #[\ReturnTypeWillChange]
     public function current() {
         return $this->current;
     }
 
+    #[\ReturnTypeWillChange]
     public function key() {
         return $this->index;
     }
 
+    #[\ReturnTypeWillChange]
     public function next() {
         $this->fetch();
         if (!$this->valid()) {
@@ -3016,6 +3020,7 @@ class xPDOIterator implements Iterator {
         return $this->current();
     }
 
+    #[\ReturnTypeWillChange]
     public function valid() {
         return ($this->current !== null);
     }
