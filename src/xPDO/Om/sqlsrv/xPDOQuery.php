@@ -227,15 +227,15 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
         $tables= array ();
         foreach ($this->query['from']['tables'] as $table) {
             if ($command != 'SELECT') {
-                $tables[]= $this->xpdo->escape($table['table']);
+                $tables[]= $this->xpdo->escape($table['table_prefix']).'.'.$this->xpdo->escape(str_replace(array('[',']',$table['table_prefix']),'',$table['table']));
             } else {
-                $tables[]= $this->xpdo->escape($table['table']) . ' AS ' . $this->xpdo->escape($table['alias']);
+                $tables[]= $this->xpdo->escape($table['table_prefix']).'.'.$this->xpdo->escape(str_replace(array('[',']',$table['table_prefix']),'',$table['table'])) . ' AS ' . $this->xpdo->escape($table['alias']);
             }
         }
         $sql.= $this->query['from']['tables'] ? implode(', ', $tables) . ' ' : '';
         if (!empty ($this->query['from']['joins'])) {
             foreach ($this->query['from']['joins'] as $join) {
-                $sql.= $join['type'] . ' ' . $this->xpdo->escape($join['table']) . ' AS ' . $this->xpdo->escape($join['alias']) . ' ';
+                $sql.= $join['type'] . ' ' . $this->xpdo->escape($join['table_prefix']).'.'.$this->xpdo->escape(str_replace(array('[',']',$join['table_prefix']),'',$join['table'])) . ' AS ' . $this->xpdo->escape($join['alias']) . ' ';
                 if (!empty ($join['conditions'])) {
                     $sql.= 'ON ';
                     $sql.= $this->buildConditionalClause($join['conditions']);
