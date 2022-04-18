@@ -49,16 +49,18 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
      * specified tablePrefix; if tablePrefix is empty, this is ignored.
      * @return boolean True on success, false on failure.
      */
-    public function writeSchema($schemaFile, $package= '', $baseClass= '', $tablePrefix= '', $restrictPrefix= false) {
+    public function writeSchema(string $schemaFile, string $package = '', string $baseClass = '', string $tablePrefix = '', bool $restrictPrefix = false): bool
+    {
         if (empty ($package))
             $package= $this->manager->xpdo->package;
         if (empty ($baseClass))
             $baseClass= 'xPDO\Om\xPDOObject';
         if (empty ($tablePrefix))
             $tablePrefix= $this->manager->xpdo->config[xPDO::OPT_TABLE_PREFIX];
+        $schemaVersion = xPDO::SCHEMA_VERSION;
         $xmlContent = array();
         $xmlContent[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-        $xmlContent[] = "<model package=\"{$package}\" baseClass=\"{$baseClass}\" platform=\"sqlsrv\">";
+        $xmlContent[] = "<model package=\"{$package}\" baseClass=\"{$baseClass}\" platform=\"sqlsrv\" version=\"{$schemaVersion}\">";
         //read list of tables
         $tableLike= ($tablePrefix && $restrictPrefix);
         if ($tableLike) {
