@@ -6,6 +6,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Command extends \Symfony\Component\Console\Command\Command
 {
+    const SUCCESS = 0;
+    const FAILURE = 1;
+
     protected static $platforms = [
         'mysql', 
         'sqlite', 

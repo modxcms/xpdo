@@ -49,7 +49,8 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
      * specified tablePrefix; if tablePrefix is empty, this is ignored.
      * @return boolean True on success, false on failure.
      */
-    public function writeSchema($schemaFile, $package= '', $baseClass= '', $tablePrefix= '', $restrictPrefix= false) {
+    public function writeSchema(string $schemaFile, string $package = '', string $baseClass = '', string $tablePrefix = '', bool $restrictPrefix = false): bool
+    {
         if (empty ($package))
             $package= $this->manager->xpdo->package;
         if (empty ($baseClass))

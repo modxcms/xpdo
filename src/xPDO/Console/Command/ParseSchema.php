@@ -6,6 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use xPDO\xPDO;
+use xPDO\xPDOException;
 
 final class ParseSchema extends Command
 {
@@ -67,19 +68,19 @@ final class ParseSchema extends Command
         $platform = strtolower($input->getArgument('platform'));
         if (!in_array($platform, self::$platforms)) {
             $output->writeln("fatal: no valid platform specified");
-            return;
+            return Command::FAILURE;
         }
 
         $properties = $this->loadConfig($output, $input->getOption('config'));
         if ($properties === false) {
             $output->writeln('fatal: no valid configuration file could be loaded');
-            return;
+            return Command::FAILURE;
         }
 
         $schema = $input->getArgument('schema_file');
         if (!is_readable($schema)) {
             $output->writeln("fatal: no valid schema provided");
-            return;
+            return Command::FAILURE;
         }
 
         $namespacePrefix = $input->getOption('psr4');
@@ -91,10 +92,15 @@ final class ParseSchema extends Command
         $regen = $input->getOption('regen');
         $regen = $regen === null ? 0 : (int)$regen;
 
-        $xpdo = xPDO::getInstance('generator', $properties["{$platform}_array_options"]);
+        try {
+            $xpdo = xPDO::getInstance('generator', $properties["{$platform}_array_options"]);
+        } catch (xPDOException $e) {
+            $output->writeln("fatal: " . $e->getMessage());
+            return Command::FAILURE;
+        }
 
         $generator = $xpdo->getManager()->getGenerator();
-        $generator->parseSchema(
+        $parsed = $generator->parseSchema(
             $schema,
             $input->getArgument('path'),
             array(
@@ -104,5 +110,7 @@ final class ParseSchema extends Command
                 'namespacePrefix' => $namespacePrefix,
             )
         );
+
+        return $parsed ? Command::SUCCESS : Command::FAILURE;
     }
 }
