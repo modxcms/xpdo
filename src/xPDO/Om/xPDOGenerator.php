@@ -204,6 +204,26 @@ abstract class xPDOGenerator {
     abstract public function getIndex($index);
 
     /**
+     * Write an xPDO XML Schema from your database.
+     *
+     * @param string $schemaFile The name (including path) of the schemaFile you
+     * want to write.
+     * @param string $package Name of the package to generate the classes in.
+     * @param string $baseClass The class which all classes in the package will
+     * extend; by default this is set to {@link xPDOObject} and any
+     * auto_increment fields with the column name 'id' will extend {@link
+     * xPDOSimpleObject} automatically.
+     * @param string $tablePrefix The table prefix for the current connection,
+     * which will be removed from all of the generated class and table names.
+     * Specify a prefix when creating a new {@link xPDO} instance to recreate
+     * the tables with the same prefix, but still use the generic class names.
+     * @param boolean $restrictPrefix Only reverse-engineer tables that have the
+     * specified tablePrefix; if tablePrefix is empty, this is ignored.
+     * @return boolean True on success, false on failure.
+     */
+    abstract public function writeSchema(string $schemaFile, string $package = '', string $baseClass = '', string $tablePrefix = '', bool $restrictPrefix = false): bool;
+
+    /**
      * Parses an xPDO XML schema and generates classes and map files from it.
      *
      * Requires SimpleXML for parsing an XML schema.
