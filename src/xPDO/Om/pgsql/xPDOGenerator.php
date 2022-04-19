@@ -32,11 +32,12 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator
         return false;
     }
 
-    public function writeSchema($schemaFile, $package= '', $baseClass= '', $tablePrefix= '', $restrictPrefix= false) {
+    public function writeSchema(string $schemaFile, string $package = '', string $baseClass = '', string $tablePrefix = '', bool $restrictPrefix = false): bool
+    {
         if (empty ($package))
             $package= $this->manager->xpdo->package;
         if (empty ($baseClass))
-            $baseClass= 'xPDOObject';
+            $baseClass= 'xPDO\Om\xPDOObject';
         if (empty ($tablePrefix))
             $tablePrefix= $this->manager->xpdo->config[xPDO::OPT_TABLE_PREFIX];
         $schemaVersion = xPDO::SCHEMA_VERSION;
@@ -106,8 +107,8 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator
                 }
 
 
-                if ($baseClass === 'xPDOObject' && $Field === 'id') {
-                    $extends= 'xPDOSimpleObject';
+                if ($baseClass === 'xPDO\Om\xPDOObject' && $Field === 'id') {
+                    $extends= 'xPDO\Om\xPDOSimpleObject';
                     continue;
                 }
                 $xmlFields[]= "\t\t<field key=\"{$Field}\" dbtype=\"{$DataType}\" phptype=\"{$PhpType}\"{$Null}{$Default}{$precision}/>";

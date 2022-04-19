@@ -68,21 +68,30 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator {
      * specified tablePrefix; if tablePrefix is empty, this is ignored.
      * @return boolean True on success, false on failure.
      */
-    public function writeSchema($schemaFile, $package= '', $baseClass= '', $tablePrefix= '', $restrictPrefix= false) {
-        if (empty ($package))
-            $package= $this->manager->xpdo->package;
-        if (empty ($baseClass))
-            $baseClass= 'xPDO\Om\xPDOObject';
-        if (empty ($tablePrefix))
-            $tablePrefix= $this->manager->xpdo->config[xPDO::OPT_TABLE_PREFIX];
+    public function writeSchema(string $schemaFile, string $package = '', string $baseClass = '', string $tablePrefix = '', bool $restrictPrefix = false): bool
+    {
+        if (empty($package)) {
+            $package = $this->manager->xpdo->package;
+        }
+        if (empty($baseClass)) {
+            $baseClass = 'xPDO\Om\xPDOObject';
+        }
+        if (empty($tablePrefix)) {
+            $tablePrefix = $this->manager->xpdo->config[xPDO::OPT_TABLE_PREFIX];
+        }
         $schemaVersion = xPDO::SCHEMA_VERSION;
         $xmlContent = array();
         $xmlContent[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-        $xmlContent[] = "<model package=\"{$package}\" baseClass=\"{$baseClass}\" platform=\"mysql\" defaultEngine=\"MyISAM\" version=\"{$schemaVersion}\">";
+        $xmlContent[] = "<model package=\"{$package}\" baseClass=\"{$baseClass}\" platform=\"mysql\" defaultEngine=\"InnoDB\" version=\"{$schemaVersion}\">";
         //read list of tables
         $dbname= $this->manager->xpdo->escape($this->manager->xpdo->config['dbname']);
         $tableLike= ($tablePrefix && $restrictPrefix) ? " LIKE '{$tablePrefix}%'" : '';
         $tablesStmt= $this->manager->xpdo->prepare("SHOW TABLES FROM {$dbname}{$tableLike}");
+        if (!$tablesStmt) {
+            $this->manager->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not query tables from database ' . $dbname);
+            return false;
+        }
+
         $tstart = microtime(true);
         $tablesStmt->execute();
         $this->manager->xpdo->queryTime += microtime(true) - $tstart;
