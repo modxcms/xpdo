@@ -1,5 +1,9 @@
 This file shows the changes in this release of xPDO.
 
+xPDO 3.0.3 (April 20, 2022)
+====================================
+- Implement write-schema CLI command (#226)
+
 xPDO 3.0.2 (February 10, 2022)
 ====================================
 - Fix param typehint for xPDOCache add/set/replace methods (#210)
