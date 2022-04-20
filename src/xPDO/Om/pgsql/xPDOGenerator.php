@@ -32,7 +32,7 @@ class xPDOGenerator extends \xPDO\Om\xPDOGenerator
         return false;
     }
 
-    public function writeSchema(string $schemaFile, string $package = '', string $baseClass = '', string $tablePrefix = '', bool $restrictPrefix = false): bool
+    public function writeSchema($schemaFile, $package = '', $baseClass = '', $tablePrefix = '', $restrictPrefix = false)
     {
         if (empty ($package))
             $package= $this->manager->xpdo->package;

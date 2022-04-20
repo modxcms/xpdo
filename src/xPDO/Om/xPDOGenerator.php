@@ -221,7 +221,7 @@ abstract class xPDOGenerator {
      * specified tablePrefix; if tablePrefix is empty, this is ignored.
      * @return boolean True on success, false on failure.
      */
-    abstract public function writeSchema(string $schemaFile, string $package = '', string $baseClass = '', string $tablePrefix = '', bool $restrictPrefix = false): bool;
+    abstract public function writeSchema($schemaFile, $package = '', $baseClass = '', $tablePrefix = '', $restrictPrefix = false);
 
     /**
      * Parses an xPDO XML schema and generates classes and map files from it.
