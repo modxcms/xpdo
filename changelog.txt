@@ -1,5 +1,9 @@
 This file shows the changes in this release of xPDO.
 
+xPDO 3.0.4 (May 27, 2022)
+====================================
+- Update symfony/console version constraints (#227)
+
 xPDO 3.0.3 (April 20, 2022)
 ====================================
 - Implement write-schema CLI command (#226)
