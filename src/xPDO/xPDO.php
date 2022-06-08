@@ -1100,7 +1100,7 @@ class xPDO {
             if ($stmt->execute()) {
                 $this->queryTime += microtime(true) - $tstart;
                 $this->executedQueries++;
-                $value= $stmt->fetchColumn($column);
+                $value= $stmt->fetchColumn((int)$column);
                 $stmt->closeCursor();
             } else {
                 $this->queryTime += microtime(true) - $tstart;
