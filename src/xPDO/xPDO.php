@@ -2093,9 +2093,17 @@ class xPDO {
                 $filename = isset($targetOptions['filename']) ? $targetOptions['filename'] : 'error.log';
                 $filepath = isset($targetOptions['filepath']) ? $targetOptions['filepath'] : $this->getCachePath() . Cache\xPDOCacheManager::LOG_DIR;
                 $this->cacheManager->writeFile($filepath . $filename, $content, 'a');
-            } elseif ($target=='ARRAY' && isset($targetOptions['var']) && is_array($targetOptions['var'])) {
+            } elseif (
+                $target === 'ARRAY' &&
+                isset($targetOptions['var']) &&
+                (is_array($targetOptions['var']) || $targetOptions['var'] instanceof \ArrayAccess)
+            ) {
                 $targetOptions['var'][] = $content;
-            } elseif ($target=='ARRAY_EXTENDED' && isset($targetOptions['var']) && is_array($targetOptions['var'])) {
+            } elseif (
+                $target === 'ARRAY_EXTENDED' &&
+                isset($targetOptions['var']) &&
+                (is_array($targetOptions['var']) || $targetOptions['var'] instanceof \ArrayAccess)
+            ) {
                 $targetOptions['var'][] = array(
                     'content' => $content,
                     'level' => $this->_getLogLevel($level),
