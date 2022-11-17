@@ -2439,10 +2439,10 @@ class xPDO {
      * associative arrays; since all JSON associative arrays are objects, the default
      * is true.  Set to false to have JSON objects returned as PHP objects.
      *
-     * @throws xPDOException If json_decode is not available.
      * @return mixed The PHP representation of the JSON source.
+     *@throws xPDOException If json_decode is not available.
      */
-    public function fromJSON($src, $asArray= true) {
+    public function fromJSON(string $src, bool $asArray= true) {
         $decoded= '';
         if ($src) {
             if (!function_exists('json_decode')) {
