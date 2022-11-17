@@ -10,10 +10,13 @@
 
 namespace xPDO\Om;
 
+use PDO;
+use PDOStatement;
 use xPDO\Cache\xPDOCache;
 use xPDO\Cache\xPDOCacheManager;
 use xPDO\Validation\xPDOValidator;
 use xPDO\xPDO;
+use xPDO\xPDOException;
 use xPDO\xPDOIterator;
 
 /**
@@ -29,20 +32,21 @@ use xPDO\xPDOIterator;
  *
  * @package xPDO\Om
  */
-class xPDOObject {
+class xPDOObject
+{
     /**
      * A convenience reference to the xPDO object.
      * @var xPDO
      * @access public
      */
-    public $xpdo= null;
+    public $xpdo = null;
 
     /**
      * Name of the data source container the object belongs to.
      * @var string
      * @access public
      */
-    public $container= null;
+    public $container = null;
 
     /**
      * Names of the fields in the data table, fully-qualified with a table name.
@@ -52,32 +56,32 @@ class xPDOObject {
      * @var array
      * @access public
      */
-    public $fieldNames= null;
+    public $fieldNames = null;
 
     /**
      * The actual class name of an instance.
      * @var string
      */
-    public $_class= null;
+    public $_class = null;
 
     /**
      * The package the class is a part of.
      * @var string
      */
-    public $_package= null;
+    public $_package = null;
 
     /**
      * An alias for this instance of the class.
      * @var string
      */
-    public $_alias= null;
+    public $_alias = null;
 
     /**
      * The primary key field (or an array of primary key fields) for this object.
      * @var string|array
      * @access public
      */
-    public $_pk= null;
+    public $_pk = null;
 
     /**
      * The php native type of the primary key field.
@@ -87,76 +91,76 @@ class xPDOObject {
      * @var string|array
      * @access public
      */
-    public $_pktype= null;
+    public $_pktype = null;
 
     /**
      * Name of the actual table representing this class.
      * @var string
      * @access public
      */
-    public $_table= null;
+    public $_table = null;
 
     /**
-     * An array of meta data for the table.
+     * An array of metadata for the table.
      * @var string
      * @access public
      */
-    public $_tableMeta= null;
+    public $_tableMeta = null;
 
     /**
      * An array of field names that have been modified.
      * @var array
      * @access public
      */
-    public $_dirty= array ();
+    public $_dirty = array();
 
     /**
      * An array of field names that have not been loaded from the source.
      * @var array
      * @access public
      */
-    public $_lazy= array ();
+    public $_lazy = array();
 
     /**
      * An array of key-value pairs representing the fields of the instance.
      * @var array
      * @access public
      */
-    public $_fields= array ();
+    public $_fields = array();
 
     /**
      * An array of metadata definitions for each field in the class.
      * @var array
      * @access public
      */
-    public $_fieldMeta= array ();
+    public $_fieldMeta = array();
 
     /**
      * An optional array of field aliases.
      * @var array
      */
-    public $_fieldAliases= array();
+    public $_fieldAliases = array();
 
     /**
      * An array of aggregate foreign key relationships for the class.
      * @var array
      * @access public
      */
-    public $_aggregates= array ();
+    public $_aggregates = array();
 
     /**
      * An array of composite foreign key relationships for the class.
      * @var array
      * @access public
      */
-    public $_composites= array ();
+    public $_composites = array();
 
     /**
      * An array of object instances related to this object instance.
      * @var array
      * @access public
      */
-    public $_relatedObjects= array ();
+    public $_relatedObjects = array();
 
     /**
      * A validator object responsible for this object instance.
@@ -177,33 +181,33 @@ class xPDOObject {
      * @var array
      * @access public
      */
-    public $_validated= array ();
+    public $_validated = array();
 
     /**
      * Indicates if the validation map has been loaded.
      * @var boolean
      * @access public
      */
-    public $_validationLoaded= false;
+    public $_validationLoaded = false;
 
     /**
      * Indicates if the instance is transient (and thus new).
      * @var boolean
      * @access public
      */
-    public $_new= true;
+    public $_new = true;
 
     /**
      * Indicates the cacheability of the instance.
      * @var boolean
      */
-    public $_cacheFlag= true;
+    public $_cacheFlag = true;
 
     /**
      * A collection of various options that can be used on the instance.
      * @var array
      */
-    public $_options= array();
+    public $_options = array();
 
     /**
      * Responsible for loading a result set from the database.
@@ -212,59 +216,76 @@ class xPDOObject {
      * @param xPDO &$xpdo A valid xPDO instance.
      * @param string $className Name of the class.
      * @param xPDOCriteria $criteria A valid xPDOCriteria instance.
-     * @return \PDOStatement A reference to a PDOStatement representing the
+     * @return PDOStatement A reference to a PDOStatement representing the
      * result set.
      */
-    public static function _loadRows(& $xpdo, $className, $criteria) {
-        $rows= null;
+    public static function _loadRows(xPDO $xpdo, string $className, xPDOCriteria $criteria): ?PDOStatement
+    {
+        $rows = null;
         if ($criteria->prepare()) {
-            if ($xpdo->getDebug() === true) $xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Attempting to execute query using PDO statement object: " . print_r($criteria->sql, true) . print_r($criteria->bindings, true));
-            $tstart= microtime(true);
+            if ($xpdo->getDebug() === true) {
+                $xpdo->log(
+                    xPDO::LOG_LEVEL_DEBUG,
+                    "Attempting to execute query using PDO statement object: " . print_r($criteria->sql, true) . print_r($criteria->bindings, true)
+                );
+            }
+
+            $tstart = microtime(true);
+            $xpdo->queryTime += microtime(true) - $tstart;
+            $xpdo->executedQueries++;
             if (!$criteria->stmt->execute()) {
-                $xpdo->queryTime += microtime(true) - $tstart;
-                $xpdo->executedQueries++;
-                $errorInfo= $criteria->stmt->errorInfo();
-                $xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Error ' . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($errorInfo, true));
+                $errorInfo = $criteria->stmt->errorInfo();
+                $xpdo->log(
+                    xPDO::LOG_LEVEL_ERROR,
+                    'Error ' . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($errorInfo, true)
+                );
+
                 if (($errorInfo[1] == '1146' || $errorInfo[1] == '1') && $xpdo->getOption(xPDO::OPT_AUTO_CREATE_TABLES)) {
                     if ($xpdo->getManager() && $xpdo->manager->createObjectContainer($className)) {
-                        $tstart= microtime(true);
+                        $tstart = microtime(true);
+                        $xpdo->queryTime += microtime(true) - $tstart;
+                        $xpdo->executedQueries++;
                         if (!$criteria->stmt->execute()) {
-                            $xpdo->queryTime += microtime(true) - $tstart;
-                            $xpdo->executedQueries++;
-                            $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($criteria->stmt->errorInfo(), true));
-                        } else {
-                            $xpdo->queryTime += microtime(true) - $tstart;
-                            $xpdo->executedQueries++;
+                            $xpdo->log(
+                                xPDO::LOG_LEVEL_ERROR,
+                                "Error " . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($criteria->stmt->errorInfo(), true)
+                            );
                         }
                     } else {
-                        $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $xpdo->errorCode() . " attempting to create object container for class {$className}:\n" . print_r($xpdo->errorInfo(), true));
+                        $xpdo->log(
+                            xPDO::LOG_LEVEL_ERROR,
+                            "Error " . $xpdo->errorCode() . " attempting to create object container for class $className:\n" . print_r($xpdo->errorInfo(), true)
+                        );
                     }
                 }
-            } else {
-                $xpdo->queryTime += microtime(true) - $tstart;
-                $xpdo->executedQueries++;
             }
-            $rows= & $criteria->stmt;
+            $rows = &$criteria->stmt;
         } else {
             $errorInfo = $xpdo->errorInfo();
-            $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error preparing statement for query: {$criteria->sql} - " . print_r($errorInfo, true));
+            $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error preparing statement for query: $criteria->sql - " . print_r($errorInfo, true));
             if (($errorInfo[1] == '1146' || $errorInfo[1] == '1') && $xpdo->getOption(xPDO::OPT_AUTO_CREATE_TABLES)) {
                 if ($xpdo->getManager() && $xpdo->manager->createObjectContainer($className)) {
                     if (!$criteria->prepare()) {
-                        $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error preparing statement for query: {$criteria->sql} - " . print_r($errorInfo, true));
+                        $xpdo->log(
+                            xPDO::LOG_LEVEL_ERROR,
+                            "Error preparing statement for query: $criteria->sql - " . print_r($errorInfo, true)
+                        );
                     } else {
-                        $tstart= microtime(true);
+                        $tstart = microtime(true);
+                        $xpdo->queryTime += microtime(true) - $tstart;
+                        $xpdo->executedQueries++;
                         if (!$criteria->stmt->execute()) {
-                            $xpdo->queryTime += microtime(true) - $tstart;
-                            $xpdo->executedQueries++;
-                            $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($criteria->stmt->errorInfo(), true));
-                        } else {
-                            $xpdo->queryTime += microtime(true) - $tstart;
-                            $xpdo->executedQueries++;
+                            $xpdo->log(
+                                xPDO::LOG_LEVEL_ERROR,
+                                "Error " . $criteria->stmt->errorCode() . " executing statement: \n" . print_r($criteria->stmt->errorInfo(), true)
+                            );
                         }
                     }
                 } else {
-                    $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $xpdo->errorCode() . " attempting to create object container for class {$className}:\n" . print_r($xpdo->errorInfo(), true));
+                    $xpdo->log(
+                        xPDO::LOG_LEVEL_ERROR,
+                        "Error " . $xpdo->errorCode() . " attempting to create object container for class $className:\n" . print_r($xpdo->errorInfo(), true)
+                    );
                 }
             }
         }
@@ -280,10 +301,12 @@ class xPDOObject {
      * @param xPDOQuery|string $criteria A valid xPDOQuery instance or relation alias.
      * @param array $row The associative array containing the instance data.
      * @return xPDOObject A new xPDOObject derivative representing a data row.
+     * @throws xPDOException
      */
-    public static function _loadInstance(& $xpdo, $className, $criteria, $row) {
-        $rowPrefix= '';
-        if (is_object($criteria) && $criteria instanceof xPDOQuery) {
+    public static function _loadInstance(xPDO &$xpdo, string $className, $criteria, array $row): xPDOObject
+    {
+        $rowPrefix = '';
+        if ($criteria instanceof xPDOQuery) {
             $alias = $criteria->getAlias();
             $actualClass = $criteria->getClass();
         } elseif (is_string($criteria) && !empty($criteria)) {
@@ -291,49 +314,47 @@ class xPDOObject {
             $actualClass = $className;
         } else {
             $alias = $className;
-            $actualClass= $className;
+            $actualClass = $className;
         }
         if (isset ($row["{$alias}_class_key"])) {
-            $actualClass= $row["{$alias}_class_key"];
-            $rowPrefix= $alias . '_';
+            $actualClass = $row["{$alias}_class_key"];
+            $rowPrefix = $alias . '_';
         } elseif (isset($row["{$className}_class_key"])) {
-            $actualClass= $row["{$className}_class_key"];
-            $rowPrefix= $className . '_';
+            $actualClass = $row["{$className}_class_key"];
+            $rowPrefix = $className . '_';
         } elseif (isset ($row['class_key'])) {
-            $actualClass= $row['class_key'];
+            $actualClass = $row['class_key'];
         }
         /** @var xPDOObject $instance */
-        $instance= $xpdo->newObject($actualClass);
-        if (is_object($instance) && $instance instanceof xPDOObject) {
+        $instance = $xpdo->newObject($actualClass);
+        if ($instance instanceof xPDOObject) {
             $pk = $xpdo->getPK($actualClass);
             if ($pk) {
                 if (is_array($pk)) $pk = reset($pk);
                 if (isset($row["{$alias}_{$pk}"])) {
-                    $rowPrefix= $alias . '_';
-                }
-                elseif ($actualClass !== $className && $actualClass !== $alias && isset($row["{$actualClass}_{$pk}"])) {
-                    $rowPrefix= $actualClass . '_';
-                }
-                elseif ($className !== $alias && isset($row["{$className}_{$pk}"])) {
-                    $rowPrefix= $className . '_';
+                    $rowPrefix = $alias . '_';
+                } elseif ($actualClass !== $className && $actualClass !== $alias && isset($row["{$actualClass}_{$pk}"])) {
+                    $rowPrefix = $actualClass . '_';
+                } elseif ($className !== $alias && isset($row["{$className}_{$pk}"])) {
+                    $rowPrefix = $className . '_';
                 }
             } elseif (strpos(strtolower(key($row)), strtolower($alias . '_')) === 0) {
-                $rowPrefix= $alias . '_';
+                $rowPrefix = $alias . '_';
             } elseif (strpos(strtolower(key($row)), strtolower($className . '_')) === 0) {
-                $rowPrefix= $className . '_';
+                $rowPrefix = $className . '_';
             }
             $parentClass = $className;
-            $isSubPackage = strpos($className,'.');
+            $isSubPackage = strpos($className, '.');
             if ($isSubPackage !== false) {
-                $parentClass = substr($className,$isSubPackage+1);
+                $parentClass = substr($className, $isSubPackage + 1);
             }
             if (!$instance instanceof $parentClass) {
                 $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Instantiated a derived class {$actualClass} that is not a subclass of the requested class {$className}");
             }
-            $instance->_lazy= $actualClass !== $className ? array_keys($xpdo->getFieldMeta($actualClass)) : array_keys($instance->_fieldMeta);
+            $instance->_lazy = $actualClass !== $className ? array_keys($xpdo->getFieldMeta($actualClass)) : array_keys($instance->_fieldMeta);
             $instance->fromArray($row, $rowPrefix, true, true);
-            $instance->_dirty= array ();
-            $instance->_new= false;
+            $instance->_dirty = array();
+            $instance->_new = false;
         }
         return $instance;
     }
@@ -351,15 +372,25 @@ class xPDOObject {
      * @param bool|int $cacheFlag Indicates if the objects should be cached and
      * optionally, by specifying an integer value, for how many seconds.
      * @return bool True if a valid instance was loaded, false otherwise.
+     * @throws xPDOException
      */
-    public static function _loadCollectionInstance(xPDO & $xpdo, array & $objCollection, $className, $criteria, $row, $fromCache, $cacheFlag=true) {
+    public static function _loadCollectionInstance(
+        xPDO   &$xpdo,
+        array  &$objCollection,
+        string $className,
+               $criteria,
+        array  $row,
+        bool   $fromCache,
+               $cacheFlag = true
+    ): bool
+    {
         $loaded = false;
-        if ($obj= xPDOObject :: _loadInstance($xpdo, $className, $criteria, $row)) {
-            if (($cacheKey= $obj->getPrimaryKey()) && !$obj->isLazy()) {
+        if ($obj = xPDOObject::_loadInstance($xpdo, $className, $criteria, $row)) {
+            if (($cacheKey = $obj->getPrimaryKey()) && !$obj->isLazy()) {
                 if (is_array($cacheKey)) {
-                    $pkval= implode('-', $cacheKey);
+                    $pkval = implode('-', $cacheKey);
                 } else {
-                    $pkval= $cacheKey;
+                    $pkval = $cacheKey;
                 }
                 /* set OPT_CACHE_DB_COLLECTIONS to 2 to cache instances by primary key from collection result sets */
                 if ($xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1) == 2 && $xpdo->_cacheEnabled && $cacheFlag) {
@@ -367,15 +398,14 @@ class xPDOObject {
                         $pkCriteria = $xpdo->newQuery($className, $cacheKey, $cacheFlag);
                         $xpdo->toCache($pkCriteria, $obj, $cacheFlag);
                     } else {
-                        $obj->_cacheFlag= true;
+                        $obj->_cacheFlag = true;
                     }
                 }
-                $objCollection[$pkval]= $obj;
-                $loaded = true;
+                $objCollection[$pkval] = $obj;
             } else {
-                $objCollection[]= $obj;
-                $loaded = true;
+                $objCollection[] = $obj;
             }
+            $loaded = true;
         }
         return $loaded;
     }
@@ -392,42 +422,42 @@ class xPDOObject {
      * optionally, by specifying an integer value, for how many seconds.
      * @return object|null An instance of the requested class, or null if it
      * could not be instantiated.
+     * @throws xPDOException
      */
-    public static function load(xPDO & $xpdo, $className, $criteria, $cacheFlag= true) {
-        $instance= null;
-        $fromCache= false;
-        if ($className= $xpdo->loadClass($className)) {
+    public static function load(xPDO &$xpdo, string $className, $criteria, $cacheFlag = true)
+    {
+        $instance = null;
+        $fromCache = false;
+        if ($className = $xpdo->loadClass($className)) {
             if (!is_object($criteria)) {
                 $criteria = $xpdo->getCriteria($className, $criteria, $cacheFlag);
             }
             if ($criteria instanceof xPDOCriteria) {
                 $criteria = $xpdo->addDerivativeCriteria($className, $criteria);
-                $row= null;
+                $row = null;
                 if ($xpdo->_cacheEnabled && $criteria->cacheFlag && $cacheFlag) {
-                    $row= $xpdo->fromCache($criteria, $className);
+                    $row = $xpdo->fromCache($criteria, $className);
                 }
-                if ($row === null || !is_array($row)) {
-                    if ($rows= xPDOObject :: _loadRows($xpdo, $className, $criteria)) {
-                        $row= $rows->fetch(\PDO::FETCH_ASSOC);
+                if (!is_array($row)) {
+                    if ($rows = xPDOObject:: _loadRows($xpdo, $className, $criteria)) {
+                        $row = $rows->fetch(PDO::FETCH_ASSOC);
                         $rows->closeCursor();
                     }
                 } else {
-                    $fromCache= true;
+                    $fromCache = true;
                 }
                 if (!is_array($row)) {
                     if ($xpdo->getDebug() === true) $xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Fetched empty result set from statement: " . print_r($criteria->sql, true) . " with bindings: " . print_r($criteria->bindings, true));
                 } else {
-                    $instance= xPDOObject :: _loadInstance($xpdo, $className, $criteria, $row);
-                    if (is_object($instance)) {
-                        if (!$fromCache && $cacheFlag && $xpdo->_cacheEnabled) {
-                            $xpdo->toCache($criteria, $instance, $cacheFlag);
-                            if ($xpdo->getOption(xPDO::OPT_CACHE_DB_OBJECTS_BY_PK) && ($cacheKey= $instance->getPrimaryKey()) && !$instance->isLazy()) {
-                                $pkCriteria = $xpdo->newQuery($className, $cacheKey, $cacheFlag);
-                                $xpdo->toCache($pkCriteria, $instance, $cacheFlag);
-                            }
+                    $instance = xPDOObject::_loadInstance($xpdo, $className, $criteria, $row);
+                    if (!$fromCache && $cacheFlag && $xpdo->_cacheEnabled) {
+                        $xpdo->toCache($criteria, $instance, $cacheFlag);
+                        if ($xpdo->getOption(xPDO::OPT_CACHE_DB_OBJECTS_BY_PK) && ($cacheKey = $instance->getPrimaryKey()) && !$instance->isLazy()) {
+                            $pkCriteria = $xpdo->newQuery($className, $cacheKey, $cacheFlag);
+                            $xpdo->toCache($pkCriteria, $instance, $cacheFlag);
                         }
-                        if ($xpdo->getDebug() === true) $xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Loaded object instance: " . print_r($instance->toArray('', true), true));
                     }
+                    if ($xpdo->getDebug() === true) $xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Loaded object instance: " . print_r($instance->toArray('', true), true));
                 }
             } else {
                 $xpdo->log(xPDO::LOG_LEVEL_ERROR, 'No valid statement could be found in or generated from the given criteria.');
@@ -449,35 +479,36 @@ class xPDOObject {
      * cached and optionally, by specifying an integer value, for how many
      * seconds.
      * @return array An array of xPDOObject instances or an empty array if no instances are loaded.
+     * @throws xPDOException
      */
-    public static function loadCollection(xPDO & $xpdo, $className, $criteria= null, $cacheFlag= true) {
-        $objCollection= array ();
+    public static function loadCollection(xPDO &$xpdo, string $className, $criteria = null, $cacheFlag = true): array
+    {
+        $objCollection = [];
+        if (!$className = $xpdo->loadClass($className)) return $objCollection;
+        $rows = false;
         $fromCache = false;
-        if (!$className= $xpdo->loadClass($className)) return $objCollection;
-        $rows= false;
-        $fromCache= false;
-        $collectionCaching = (integer) $xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
+        $collectionCaching = (integer)$xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, [], 1);
         if (!is_object($criteria)) {
-            $criteria= $xpdo->getCriteria($className, $criteria, $cacheFlag);
+            $criteria = $xpdo->getCriteria($className, $criteria, $cacheFlag);
         }
         if (is_object($criteria)) {
             $criteria = $xpdo->addDerivativeCriteria($className, $criteria);
         }
         if ($collectionCaching > 0 && $xpdo->_cacheEnabled && $cacheFlag) {
-            $rows= $xpdo->fromCache($criteria);
+            $rows = $xpdo->fromCache($criteria);
             $fromCache = (is_array($rows) && !empty($rows));
         }
         if (!$fromCache && is_object($criteria)) {
-            $rows= xPDOObject :: _loadRows($xpdo, $className, $criteria);
+            $rows = xPDOObject:: _loadRows($xpdo, $className, $criteria);
         }
-        if (is_array ($rows)) {
+        if (is_array($rows)) {
             foreach ($rows as $row) {
-                xPDOObject :: _loadCollectionInstance($xpdo, $objCollection, $className, $criteria, $row, $fromCache, $cacheFlag);
+                xPDOObject:: _loadCollectionInstance($xpdo, $objCollection, $className, $criteria, $row, $fromCache, $cacheFlag);
             }
         } elseif (is_object($rows)) {
             $cacheRows = array();
-            while ($row = $rows->fetch(\PDO::FETCH_ASSOC)) {
-                xPDOObject :: _loadCollectionInstance($xpdo, $objCollection, $className, $criteria, $row, $fromCache, $cacheFlag);
+            while ($row = $rows->fetch(PDO::FETCH_ASSOC)) {
+                xPDOObject:: _loadCollectionInstance($xpdo, $objCollection, $className, $criteria, $row, $fromCache, $cacheFlag);
                 if ($collectionCaching > 0 && $xpdo->_cacheEnabled && $cacheFlag && !$fromCache) $cacheRows[] = $row;
             }
             if ($collectionCaching > 0 && $xpdo->_cacheEnabled && $cacheFlag && !$fromCache) $rows =& $cacheRows;
@@ -504,35 +535,34 @@ class xPDOObject {
      * seconds.
      * @return array An array of xPDOObject instances or an empty array if no instances are loaded.
      */
-    public static function loadCollectionGraph(xPDO & $xpdo, $className, $graph, $criteria, $cacheFlag) {
+    public static function loadCollectionGraph(xPDO &$xpdo, string $className, $graph, $criteria, $cacheFlag): array
+    {
         $objCollection = array();
-        if ($query= $xpdo->newQuery($className, $criteria, $cacheFlag)) {
+        if ($query = $xpdo->newQuery($className, $criteria, $cacheFlag)) {
             $query = $xpdo->addDerivativeCriteria($className, $query);
             $query->bindGraph($graph);
             $rows = array();
             $fromCache = false;
-            $collectionCaching = (integer) $xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
+            $collectionCaching = (integer)$xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
             if ($collectionCaching > 0 && $xpdo->_cacheEnabled && $cacheFlag) {
-                $rows= $xpdo->fromCache($query);
+                $rows = $xpdo->fromCache($query);
                 $fromCache = !empty($rows);
             }
             if (!$fromCache) {
                 if ($query->prepare()) {
                     $tstart = microtime(true);
+                    $xpdo->queryTime += microtime(true) - $tstart;
+                    $xpdo->executedQueries++;
                     if ($query->stmt->execute()) {
-                        $xpdo->queryTime += microtime(true) - $tstart;
-                        $xpdo->executedQueries++;
-                        $objCollection= $query->hydrateGraph($query->stmt, $cacheFlag);
+                        $objCollection = $query->hydrateGraph($query->stmt, $cacheFlag);
                     } else {
-                        $xpdo->queryTime += microtime(true) - $tstart;
-                        $xpdo->executedQueries++;
                         $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error {$query->stmt->errorCode()} executing query: {$query->sql} - " . print_r($query->stmt->errorInfo(), true));
                     }
                 } else {
                     $xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error {$xpdo->errorCode()} preparing statement: {$query->sql} - " . print_r($xpdo->errorInfo(), true));
                 }
             } elseif (!empty($rows)) {
-                $objCollection= $query->hydrateGraph($rows, $cacheFlag);
+                $objCollection = $query->hydrateGraph($rows, $cacheFlag);
             }
         }
         return $objCollection;
@@ -552,39 +582,45 @@ class xPDOObject {
      * or excluded from the set of results.
      * @return string A comma-delimited list of the field names for use in a SELECT clause.
      */
-    public static function getSelectColumns(xPDO & $xpdo, $className, $tableAlias= '', $columnPrefix= '', $columns= array (), $exclude= false) {
-        $columnarray= array ();
-        $aColumns= $xpdo->getFields($className);
+    public static function getSelectColumns(
+        xPDO   $xpdo,
+        string $className,
+        string $tableAlias = '',
+        string $columnPrefix = '',
+        array  $columns = array(),
+        bool   $exclude = false
+    ): string
+    {
+        $columnarray = array();
+        $aColumns = $xpdo->getFields($className);
         if ($aColumns) {
             if (!empty ($tableAlias)) {
-                $tableAlias= $xpdo->escape($tableAlias);
-                $tableAlias.= '.';
+                $tableAlias = $xpdo->escape($tableAlias);
+                $tableAlias .= '.';
             }
             if (!$exclude && !empty($columns)) {
                 foreach ($columns as $column) {
                     if (!in_array($column, array_keys($aColumns))) {
                         continue;
                     }
-                    $columnarray[$column]= "{$tableAlias}" . $xpdo->escape($column);
+                    $columnarray[$column] = "{$tableAlias}" . $xpdo->escape($column);
                     if (!empty ($columnPrefix)) {
-                        $columnarray[$column]= $columnarray[$column] . " AS " . $xpdo->escape("{$columnPrefix}{$column}");
+                        $columnarray[$column] = $columnarray[$column] . " AS " . $xpdo->escape("{$columnPrefix}{$column}");
                     }
                 }
             } else {
                 foreach (array_keys($aColumns) as $k) {
                     if ($exclude && in_array($k, $columns)) {
                         continue;
-                    }
-                    elseif (empty ($columns)) {
-                        $columnarray[$k]= "{$tableAlias}" . $xpdo->escape($k);
-                    }
-                    elseif ($exclude || in_array($k, $columns)) {
-                        $columnarray[$k]= "{$tableAlias}" . $xpdo->escape($k);
+                    } elseif (empty ($columns)) {
+                        $columnarray[$k] = "{$tableAlias}" . $xpdo->escape($k);
+                    } elseif ($exclude || in_array($k, $columns)) {
+                        $columnarray[$k] = "{$tableAlias}" . $xpdo->escape($k);
                     } else {
                         continue;
                     }
                     if (!empty ($columnPrefix)) {
-                        $columnarray[$k]= $columnarray[$k] . " AS " . $xpdo->escape("{$columnPrefix}{$k}");
+                        $columnarray[$k] = $columnarray[$k] . " AS " . $xpdo->escape("{$columnPrefix}{$k}");
                     }
                 }
             }
@@ -609,38 +645,38 @@ class xPDOObject {
      *
      * @access public
      * @param xPDO &$xpdo A reference to a valid xPDO instance.
-     * @return xPDOObject
+     * @return void
      */
-    public function __construct(xPDO & $xpdo) {
-        $this->xpdo= & $xpdo;
-        $this->container= $xpdo->config['dbname'];
-        $this->_class= get_class($this);
-        $pos= strrpos($this->_class, '_');
+    public function __construct(xPDO &$xpdo)
+    {
+        $this->xpdo = &$xpdo;
+        $this->container = $xpdo->config['dbname'];
+        $this->_class = get_class($this);
+        $pos = strrpos($this->_class, '_');
         if ($pos !== false && substr($this->_class, $pos + 1) == $xpdo->config['dbtype']) {
-            $this->_class= substr($this->_class, 0, $pos);
+            $this->_class = substr($this->_class, 0, $pos);
         } elseif (strpos($this->_class, '\\' . $xpdo->config['dbtype'] . '\\')) {
             $exploded = explode('\\', $this->_class);
             $class = array_pop($exploded);
             array_pop($exploded);
             $this->_class = implode('\\', $exploded) . '\\' . $class;
         }
-        $this->_package= $xpdo->getPackage($this->_class);
-        $this->_alias= $this->_class;
-        $this->_table= $xpdo->getTableName($this->_class);
-        $this->_tableMeta= $xpdo->getTableMeta($this->_class);
-        $this->_fields= $xpdo->getFields($this->_class);
-        $this->_fieldMeta= $xpdo->getFieldMeta($this->_class);
-        $this->_fieldAliases= $xpdo->getFieldAliases($this->_class);
-        $this->_aggregates= $xpdo->getAggregates($this->_class);
-        $this->_composites= $xpdo->getComposites($this->_class);
-        if ($relatedObjs= array_merge($this->_aggregates, $this->_composites)) {
+        $this->_package = $xpdo->getPackage($this->_class);
+        $this->_alias = $this->_class;
+        $this->_table = $xpdo->getTableName($this->_class);
+        $this->_tableMeta = $xpdo->getTableMeta($this->_class);
+        $this->_fields = $xpdo->getFields($this->_class);
+        $this->_fieldMeta = $xpdo->getFieldMeta($this->_class);
+        $this->_fieldAliases = $xpdo->getFieldAliases($this->_class);
+        $this->_aggregates = $xpdo->getAggregates($this->_class);
+        $this->_composites = $xpdo->getComposites($this->_class);
+        if ($relatedObjs = array_merge($this->_aggregates, $this->_composites)) {
             foreach ($relatedObjs as $aAlias => $aMeta) {
                 if (!array_key_exists($aAlias, $this->_relatedObjects)) {
                     if ($aMeta['cardinality'] == 'many') {
-                        $this->_relatedObjects[$aAlias]= array ();
-                    }
-                    else {
-                        $this->_relatedObjects[$aAlias]= null;
+                        $this->_relatedObjects[$aAlias] = array();
+                    } else {
+                        $this->_relatedObjects[$aAlias] = null;
                     }
                 }
             }
@@ -658,7 +694,8 @@ class xPDOObject {
      * @param string $alias The name of the reference.
      * @return bool True if the reference is added successfully.
      */
-    public function addFieldAlias($field, $alias) {
+    public function addFieldAlias(string $field, string $alias): bool
+    {
         $added = false;
         if (array_key_exists($field, $this->_fields)) {
             if (!array_key_exists($alias, $this->_fields)) {
@@ -666,7 +703,7 @@ class xPDOObject {
                 if (!array_key_exists($alias, $this->_fieldAliases)) {
                     $this->_fieldAliases[$alias] = $field;
                     if (!array_key_exists($alias, $this->xpdo->map[$this->_class]['fieldAliases'])) {
-                        $this->xpdo->map[$this->_class]['fieldAliases'][$alias]= $field;
+                        $this->xpdo->map[$this->_class]['fieldAliases'][$alias] = $field;
                     }
                 }
                 $added = true;
@@ -685,13 +722,14 @@ class xPDOObject {
      * @param mixed $default A default value to return if no value is found; null is the default.
      * @return mixed The value of the option or the provided default if it is not set.
      */
-    public function getOption($key, $options = null, $default = null) {
+    public function getOption(string $key, array $options = null, $default = null)
+    {
         if (is_array($options) && array_key_exists($key, $options)) {
-            $value= $options[$key];
+            $value = $options[$key];
         } elseif (array_key_exists($key, $this->_options)) {
-            $value= $this->_options[$key];
+            $value = $this->_options[$key];
         } else {
-            $value= $this->xpdo->getOption($key, null, $default);
+            $value = $this->xpdo->getOption($key, null, $default);
         }
         return $value;
     }
@@ -702,11 +740,16 @@ class xPDOObject {
      * @param string $key The option key to set a value for.
      * @param mixed $value A value to assign to the option.
      */
-    public function setOption($key, $value) {
-        $this->_options[$key]= $value;
+    public function setOption(string $key, $value)
+    {
+        $this->_options[$key] = $value;
     }
 
-    public function __get($name) {
+    /**
+     * @throws xPDOException
+     */
+    public function __get($name)
+    {
         if ($this->getOption(xPDO::OPT_HYDRATE_FIELDS) && array_key_exists($name, $this->_fields)) {
             return $this->_fields[$name];
         } elseif ($this->getOption(xPDO::OPT_HYDRATE_RELATED_OBJECTS)) {
@@ -727,7 +770,11 @@ class xPDOObject {
         }
     }
 
-    public function __set($name, $value) {
+    /**
+     * @throws xPDOException
+     */
+    public function __set($name, $value)
+    {
         if ($this->getOption(xPDO::OPT_HYDRATE_FIELDS) && array_key_exists($name, $this->_fields)) {
             return $this->_setRaw($name, $value);
         } elseif ($this->getOption(xPDO::OPT_HYDRATE_RELATED_OBJECTS)) {
@@ -748,17 +795,16 @@ class xPDOObject {
         }
     }
 
-    public function __isset($name) {
+    public function __isset($name)
+    {
         return ($this->getOption(xPDO::OPT_HYDRATE_FIELDS) && array_key_exists($name, $this->_fields) && isset($this->_fields[$name]))
             || ($this->getOption(xPDO::OPT_HYDRATE_RELATED_OBJECTS)
                 && ((array_key_exists($name, $this->_composites) && isset($this->_composites[$name]))
-                || (array_key_exists($name, $this->_aggregates) && isset($this->_aggregates[$name]))));
+                    || (array_key_exists($name, $this->_aggregates) && isset($this->_aggregates[$name]))));
     }
 
     /**
      * Set a field value by the field key or name.
-     *
-     * @todo Define and implement field validation.
      *
      * @param string $k The field key or name.
      * @param mixed $v The value to set the field to.
@@ -767,19 +813,23 @@ class xPDOObject {
      * set the field value, overriding the default behavior.
      * @return boolean Determines whether the value was set successfully and was
      * determined to be dirty (i.e. different from the previous value).
+     * @throws xPDOException
+     * @todo Define and implement field validation.
+     *
      */
-    public function set($k, $v= null, $vType= '') {
-        $set= false;
-        $callback= '';
-        $callable= !empty($vType) && is_callable($vType, false, $callback) ? true : false;
+    public function set(string $k, $v = null, $vType = ''): bool
+    {
+        $set = false;
+        $callback = '';
+        $callable = !empty($vType) && is_callable($vType, false, $callback);
         if (!$callable && isset($this->_fieldMeta[$k]['callback'])) {
             $callable = is_callable($this->_fieldMeta[$k]['callback'], false, $callback);
         }
-        $oldValue= null;
+        $oldValue = null;
         $k = $this->getField($k);
         if (is_string($k) && !empty($k)) {
             if (array_key_exists($k, $this->_fieldMeta)) {
-                $oldValue= $this->_fields[$k];
+                $oldValue = $this->_fields[$k];
                 if (isset($this->_fieldMeta[$k]['generated']) && !$this->_fieldMeta[$k]['generated'] === 'callback') {
                     return false;
                 }
@@ -787,50 +837,49 @@ class xPDOObject {
                     $set = call_user_func_array($callback, array($k, $v, $this));
                 } else {
                     if (is_string($v) && $this->getOption(xPDO::OPT_ON_SET_STRIPSLASHES)) {
-                        $v= stripslashes($v);
+                        $v = stripslashes($v);
                     }
                     if ($oldValue !== $v) {
                         //type validation
-                        $phptype= $this->_fieldMeta[$k]['phptype'];
-                        $dbtype= $this->_fieldMeta[$k]['dbtype'];
-                        $allowNull= isset($this->_fieldMeta[$k]['null']) ? (boolean) $this->_fieldMeta[$k]['null'] : true;
+                        $phptype = $this->_fieldMeta[$k]['phptype'];
+                        $dbtype = $this->_fieldMeta[$k]['dbtype'];
+                        $allowNull = !isset($this->_fieldMeta[$k]['null']) || (boolean)$this->_fieldMeta[$k]['null'];
                         if ($v === null) {
                             if ($allowNull) {
-                                $this->_fields[$k]= null;
-                                $set= true;
+                                $this->_fields[$k] = null;
+                                $set = true;
                             } else {
                                 $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "{$this->_class}: Attempt to set NOT NULL field {$k} to NULL");
                             }
-                        }
-                        else {
+                        } else {
                             switch ($phptype) {
                                 case 'timestamp' :
                                 case 'datetime' :
-                                    $ts= false;
+                                    $ts = false;
                                     if (preg_match('/int/i', $dbtype)) {
                                         if (strtolower($vType) == 'integer' || is_int($v) || $v == '0') {
-                                            $ts= (integer) $v;
+                                            $ts = (integer)$v;
                                         } else {
-                                            $ts= strtotime($v);
+                                            $ts = strtotime($v);
                                         }
                                         if ($ts === false) {
-                                            $ts= 0;
+                                            $ts = 0;
                                         }
-                                        $this->_fields[$k]= $ts;
-                                        $set= true;
+                                        $this->_fields[$k] = $ts;
+                                        $set = true;
                                     } else {
                                         if ($vType == 'utc' || in_array($v, $this->xpdo->driver->_currentTimestamps) || $v === '0000-00-00 00:00:00') {
-                                            $this->_fields[$k]= (string) $v;
-                                            $set= true;
+                                            $this->_fields[$k] = (string)$v;
+                                            $set = true;
                                         } else {
                                             if (strtolower($vType) == 'integer' || is_int($v)) {
-                                                $ts= intval($v);
+                                                $ts = intval($v);
                                             } elseif (is_string($v) && !empty($v)) {
-                                                $ts= strtotime($v);
+                                                $ts = strtotime($v);
                                             }
                                             if ($ts !== false) {
-                                                $this->_fields[$k]= date('Y-m-d H:i:s', $ts);
-                                                $set= true;
+                                                $this->_fields[$k] = date('Y-m-d H:i:s', $ts);
+                                                $set = true;
                                             }
                                         }
                                     }
@@ -838,82 +887,79 @@ class xPDOObject {
                                 case 'date' :
                                     if (preg_match('/int/i', $dbtype)) {
                                         if (strtolower($vType) == 'integer' || is_int($v) || $v == '0') {
-                                            $ts= (integer) $v;
+                                            $ts = (integer)$v;
                                         } else {
-                                            $ts= strtotime($v);
+                                            $ts = strtotime($v);
                                         }
                                         if ($ts === false) {
-                                            $ts= 0;
+                                            $ts = 0;
                                         }
-                                        $this->_fields[$k]= $ts;
-                                        $set= true;
+                                        $this->_fields[$k] = $ts;
+                                        $set = true;
                                     } else {
                                         if ($vType == 'utc' || in_array($v, $this->xpdo->driver->_currentDates) || $v === '0000-00-00') {
-                                            $this->_fields[$k]= $v;
-                                            $set= true;
+                                            $this->_fields[$k] = $v;
+                                            $set = true;
                                         } else {
                                             if (strtolower($vType) == 'integer' || is_int($v)) {
-                                                $ts= intval($v);
+                                                $ts = intval($v);
                                             } elseif (is_string($v) && !empty($v)) {
-                                                $ts= strtotime($v);
+                                                $ts = strtotime($v);
                                             }
-                                            $ts= strtotime($v);
+                                            $ts = strtotime($v);
                                             if ($ts !== false) {
-                                                $this->_fields[$k]= date('Y-m-d', $ts);
-                                                $set= true;
+                                                $this->_fields[$k] = date('Y-m-d', $ts);
+                                                $set = true;
                                             }
                                         }
                                     }
                                     break;
+                                case 'integer':
                                 case 'boolean' :
-                                    $this->_fields[$k]= intval($v);
-                                    $set= true;
-                                    break;
-                                case 'integer' :
-                                    $this->_fields[$k]= intval($v);
-                                    $set= true;
+                                    $this->_fields[$k] = intval($v);
+                                    $set = true;
                                     break;
                                 case 'array' :
-                                    if (is_object($v) && $v instanceof xPDOObject) {
+                                    if ($v instanceof xPDOObject) {
                                         $v = $v->toArray();
                                     }
                                     if (is_array($v)) {
-                                        $this->_fields[$k]= serialize($v);
-                                        $set= true;
+                                        $this->_fields[$k] = serialize($v);
+                                        $set = true;
                                     }
                                     break;
                                 case 'json' :
-                                    if (is_object($v) && $v instanceof xPDOObject) {
+                                    if ($v instanceof xPDOObject) {
                                         $v = $v->toArray();
                                     }
                                     if (is_string($v)) {
-                                        $v= $this->xpdo->fromJSON($v, true);
+                                        $v = $this->xpdo->fromJSON($v, true);
                                     }
                                     if (is_array($v)) {
-                                        $this->_fields[$k]= $this->xpdo->toJSON($v);
-                                        $set= true;
+                                        $this->_fields[$k] = $this->xpdo->toJSON($v);
+                                        $set = true;
                                     }
                                     break;
                                 default :
-                                    $this->_fields[$k]= $v;
-                                    $set= true;
+                                    $this->_fields[$k] = $v;
+                                    $set = true;
                             }
                         }
                     }
                 }
             } elseif ($this->getOption(xPDO::OPT_HYDRATE_ADHOC_FIELDS)) {
-                $oldValue= isset($this->_fields[$k]) ? $this->_fields[$k] : null;
+                $oldValue = $this->_fields[$k] ?? null;
                 if ($callable) {
                     $set = call_user_func_array($callback, array($k, $v, $this));
                 } else {
-                    $this->_fields[$k]= $v;
-                    $set= true;
+                    $this->_fields[$k] = $v;
+                    $set = true;
                 }
             }
             if ($set && $oldValue !== $this->_fields[$k]) {
                 $this->setDirty($k);
             } else {
-                $set= false;
+                $set = false;
             }
         } else {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'xPDOObject - Called set() with an invalid field name: ' . print_r($k, 1));
@@ -936,9 +982,12 @@ class xPDOObject {
      * @param mixed $formatTemplate An additional optional variable that can be used in
      * formatting the return value(s).
      * @return mixed The value(s) of the field(s) requested.
+     * @throws xPDOException
      */
-    public function get($k, $format = null, $formatTemplate= null) {
-        $value= null;
+    public function get($k, $format = null, $formatTemplate = null)
+    {
+        $value = null;
+        // @todo move to method's, need deep refactoring
         if (is_array($k)) {
             $lazy = array_intersect($k, $this->_lazy);
             if ($lazy) {
@@ -947,15 +996,15 @@ class xPDOObject {
             foreach ($k as $key) {
                 if (array_key_exists($key, $this->_fields)) {
                     if (is_array($format) && isset ($format[$key])) {
-                        $formatTpl= null;
-                        if (is_array ($formatTemplate) && isset ($formatTemplate[$key])) {
-                            $formatTpl= $formatTemplate[$key];
+                        $formatTpl = null;
+                        if (is_array($formatTemplate) && isset ($formatTemplate[$key])) {
+                            $formatTpl = $formatTemplate[$key];
                         }
-                        $value[$key]= $this->get($key, $format[$key], $formatTpl);
+                        $value[$key] = $this->get($key, $format[$key], $formatTpl);
                     } elseif (!empty ($format) && is_string($format)) {
-                        $value[$key]= $this->get($key, $format, $formatTemplate);
+                        $value[$key] = $this->get($key, $format, $formatTemplate);
                     } else {
-                        $value[$key]= $this->get($key);
+                        $value[$key] = $this->get($key);
                     }
                 }
             }
@@ -964,107 +1013,107 @@ class xPDOObject {
                 if ($this->isLazy($k)) {
                     $this->_loadFieldData($k);
                 }
-                $dbType= $this->_getDataType($k);
-                $fieldType= $this->_getPHPType($k);
-                $value= $this->_fields[$k];
+                $dbType = $this->_getDataType($k);
+                $fieldType = $this->_getPHPType($k);
+                $value = $this->_fields[$k];
                 if ($value !== null) {
                     switch ($fieldType) {
                         case 'boolean' :
-                            $value= (boolean) $value;
+                            $value = (boolean)$value;
                             break;
                         case 'integer' :
-                            $value= intval($value);
+                            $value = intval($value);
                             if (is_string($format) && !empty ($format)) {
                                 if (strpos($format, 're:') === 0) {
                                     if (!empty ($formatTemplate) && is_string($formatTemplate)) {
-                                        $value= preg_replace(substr($format, 3), $formatTemplate, $value);
+                                        $value = preg_replace(substr($format, 3), $formatTemplate, $value);
                                     }
                                 } else {
-                                    $value= sprintf($format, $value);
+                                    $value = sprintf($format, $value);
                                 }
                             }
                             break;
                         case 'float' :
-                            $value= (float) $value;
+                            $value = (float)$value;
                             if (is_string($format) && !empty ($format)) {
                                 if (strpos($format, 're:') === 0) {
                                     if (!empty ($formatTemplate) && is_string($formatTemplate)) {
-                                        $value= preg_replace(substr($format, 3), $formatTemplate, $value);
+                                        $value = preg_replace(substr($format, 3), $formatTemplate, $value);
                                     }
                                 } else {
-                                    $value= sprintf($format, $value);
+                                    $value = sprintf($format, $value);
                                 }
                             }
                             break;
                         case 'timestamp' :
                         case 'datetime' :
                             if (preg_match('/int/i', $dbType)) {
-                                $ts= intval($value);
+                                $ts = intval($value);
                             } elseif (in_array($value, $this->xpdo->driver->_currentTimestamps)) {
-                                $ts= time();
+                                $ts = time();
                             } else {
-                                $ts= strtotime($value);
+                                $ts = strtotime($value);
                             }
                             if ($ts !== false && !empty($value)) {
                                 if (is_string($format) && !empty ($format)) {
                                     if (strpos($format, 're:') === 0) {
-                                        $value= date('Y-m-d H:i:s', $ts);
+                                        $value = date('Y-m-d H:i:s', $ts);
                                         if (!empty ($formatTemplate) && is_string($formatTemplate)) {
-                                            $value= preg_replace(substr($format, 3), $formatTemplate, $value);
+                                            $value = preg_replace(substr($format, 3), $formatTemplate, $value);
                                         }
                                     } elseif (strpos($format, '%') === false) {
-                                        $value= date($format, $ts);
+                                        $value = date($format, $ts);
                                     } else {
-                                        $value= strftime($format, $ts);
+                                        $value = strftime($format, $ts);
                                     }
                                 } else {
-                                    $value= date('Y-m-d H:i:s', $ts);
+                                    $value = date('Y-m-d H:i:s', $ts);
                                 }
                             }
                             break;
                         case 'date' :
                             if (preg_match('/int/i', $dbType)) {
-                                $ts= intval($value);
+                                $ts = intval($value);
                             } elseif (in_array($value, $this->xpdo->driver->_currentDates)) {
-                                $ts= time();
+                                $ts = time();
                             } else {
-                                $ts= strtotime($value);
+                                $ts = strtotime($value);
                             }
                             if ($ts !== false && !empty($value)) {
                                 if (is_string($format) && !empty ($format)) {
                                     if (strpos($format, 're:') === 0) {
-                                        $value= date('Y-m-d', $ts);
+                                        $value = date('Y-m-d', $ts);
                                         if (!empty ($formatTemplate) && is_string($formatTemplate)) {
-                                            $value= preg_replace(substr($format, 3), $formatTemplate, $value);
+                                            $value = preg_replace(substr($format, 3), $formatTemplate, $value);
                                         }
                                     } elseif (strpos($format, '%') === false) {
-                                        $value= date($format, $ts);
-                                    } elseif ($ts !== false) {
-                                        $value= strftime($format, $ts);
+                                        $value = date($format, $ts);
+                                    } elseif ($ts !== false) { //wtf
+                                        $value = strftime($format, $ts);
                                     }
                                 } else {
-                                    $value= date('Y-m-d', $ts);
+                                    $value = date('Y-m-d', $ts);
                                 }
                             }
                             break;
                         case 'array' :
                             if (is_string($value)) {
-                                $value= unserialize($value);
+                                $value = unserialize($value);
                             }
                             break;
                         case 'json' :
                             if (is_string($value) && strlen($value) > 1) {
-                                $value= $this->xpdo->fromJSON($value, true);
+                                $value = $this->xpdo->fromJSON($value);
                             }
                             break;
                         default :
                             if (is_string($format) && !empty ($format)) {
                                 if (strpos($format, 're:') === 0) {
                                     if (!empty ($formatTemplate) && is_string($formatTemplate)) {
-                                        $value= preg_replace(substr($format, 3), $formatTemplate, $value);
+                                        $value = preg_replace(substr($format, 3), $formatTemplate, $value);
                                     }
                                 } else {
-                                    $value= sprintf($format, $value);
+                                    $value = sprintf($format, $value);
                                 }
                             }
                             break;
@@ -1084,37 +1133,39 @@ class xPDOObject {
      *
      * For all 1:* relationships for this instance, see {@link getMany()}.
      *
-     * @see xPDOObject::getMany()
-     * @see xPDOObject::addOne()
-     * @see xPDOObject::addMany()
-     *
      * @param string $alias Alias of the foreign class representing the related
      * object.
-     * @param object $criteria xPDOCriteria object to get the related objects
+     * @param object|null $criteria xPDOCriteria object to get the related objects
      * @param boolean|integer $cacheFlag Indicates if the object should be
      * cached and optionally, by specifying an integer value, for how many
      * seconds.
      * @return xPDOObject|null The related object or null if no instance exists.
+     * @throws xPDOException
+     * @see xPDOObject::addMany()
+     *
+     * @see xPDOObject::getMany()
+     * @see xPDOObject::addOne()
      */
-    public function getOne($alias, $criteria= null, $cacheFlag= true) {
-        $object= null;
-        if ($fkdef= $this->getFKDefinition($alias)) {
-            $k= $fkdef['local'];
-            $fk= $fkdef['foreign'];
+    public function getOne(string $alias, object $criteria = null, $cacheFlag = true): ?xPDOObject
+    {
+        $object = null;
+        if ($fkdef = $this->getFKDefinition($alias)) {
+            $k = $fkdef['local'];
+            $fk = $fkdef['foreign'];
             if (isset ($this->_relatedObjects[$alias])) {
                 if (is_object($this->_relatedObjects[$alias])) {
-                    $object= & $this->_relatedObjects[$alias];
+                    $object = &$this->_relatedObjects[$alias];
                     return $object;
                 }
             }
             if ($criteria === null) {
-                $criteria= array ($fk => $this->get($k));
+                $criteria = array($fk => $this->get($k));
                 if (isset($fkdef['criteria']) && isset($fkdef['criteria']['foreign'])) {
-                    $criteria= array($fkdef['criteria']['foreign'], $criteria);
+                    $criteria = array($fkdef['criteria']['foreign'], $criteria);
                 }
             }
-            if ($object= $this->xpdo->getObject($fkdef['class'], $criteria, $cacheFlag)) {
-                $this->_relatedObjects[$alias]= $object;
+            if ($object = $this->xpdo->getObject($fkdef['class'], $criteria, $cacheFlag)) {
+                $this->_relatedObjects[$alias] = $object;
             }
         } else {
             $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Could not getOne: foreign key definition for alias {$alias} not found.");
@@ -1125,21 +1176,22 @@ class xPDOObject {
     /**
      * Gets a collection of objects related by aggregate or composite relations.
      *
-     * @see xPDOObject::getOne()
-     * @see xPDOObject::addOne()
-     * @see xPDOObject::addMany()
-     *
      * @param string $alias Alias of the foreign class representing the related
      * object.
-     * @param object $criteria xPDOCriteria object to get the related objects
+     * @param object|null $criteria xPDOCriteria object to get the related objects
      * @param boolean|integer $cacheFlag Indicates if the objects should be
      * cached and optionally, by specifying an integer value, for how many
      * seconds.
      * @return array A collection of related objects or an empty array.
+     * @throws xPDOException
+     * @see xPDOObject::addMany()
+     *
+     * @see xPDOObject::getOne()
+     * @see xPDOObject::addOne()
      */
-    public function getMany($alias, $criteria= null, $cacheFlag= true) {
-        $collection= $this->_getRelatedObjectsByFK($alias, $criteria, $cacheFlag);
-        return $collection;
+    public function getMany(string $alias, object $criteria = null, $cacheFlag = true): array
+    {
+        return $this->_getRelatedObjectsByFK($alias, $criteria, $cacheFlag);
     }
 
     /**
@@ -1150,19 +1202,21 @@ class xPDOObject {
      * @param bool|int $cacheFlag Indicates if the objects should be cached and optionally, by
      * specifying  an integer values, for how many seconds.
      * @return bool|xPDOIterator An iterator for the collection or false if no relation is found.
+     * @throws xPDOException
      */
-    public function getIterator($alias, $criteria= null, $cacheFlag= true) {
+    public function getIterator(string $alias, $criteria = null, $cacheFlag = true)
+    {
         $iterator = false;
-        $fkMeta= $this->getFKDefinition($alias);
+        $fkMeta = $this->getFKDefinition($alias);
         if ($fkMeta) {
             $fkCriteria = isset($fkMeta['criteria']) && isset($fkMeta['criteria']['foreign']) ? $fkMeta['criteria']['foreign'] : null;
             if ($criteria === null) {
-                $criteria= array($fkMeta['foreign'] => $this->get($fkMeta['local']));
+                $criteria = array($fkMeta['foreign'] => $this->get($fkMeta['local']));
                 if ($fkCriteria !== null) {
                     $criteria = array($fkCriteria, $criteria);
                 }
             } else {
-                $criteria= $this->xpdo->newQuery($fkMeta['class'], $criteria);
+                $criteria = $this->xpdo->newQuery($fkMeta['class'], $criteria);
                 $addCriteria = array("{$criteria->getAlias()}.{$fkMeta['foreign']}" => $this->get($fkMeta['local']));
                 if ($fkCriteria !== null) {
                     $fkAddCriteria = array();
@@ -1184,17 +1238,19 @@ class xPDOObject {
     /**
      * Adds an object related to this instance by a foreign key relationship.
      *
-     * @see xPDOObject::getOne()
-     * @see xPDOObject::getMany()
-     * @see xPDOObject::addMany()
-     *
      * @param mixed &$obj A single object to be related to this instance.
      * @param string $alias The relation alias of the related object (only
      * required if more than one relation exists to the same foreign class).
      * @return boolean True if the related object was added to this object.
+     * @throws xPDOException
+     * @see xPDOObject::getMany()
+     * @see xPDOObject::addMany()
+     *
+     * @see xPDOObject::getOne()
      */
-    public function addOne(& $obj, $alias= '') {
-        $added= false;
+    public function addOne($obj, string $alias = ''): bool
+    {
+        $added = false;
         if (is_object($obj)) {
             if (empty ($alias)) {
                 if ($obj->_alias == $obj->_class) {
@@ -1203,16 +1259,16 @@ class xPDOObject {
                         $obj->_alias = reset($aliases);
                     }
                 }
-                $alias= $obj->_alias;
+                $alias = $obj->_alias;
             }
-            $fkMeta= $this->getFKDefinition($alias);
+            $fkMeta = $this->getFKDefinition($alias);
             if ($fkMeta && $fkMeta['cardinality'] === 'one') {
-                $obj->_alias= $alias;
-                $fk= $fkMeta['foreign'];
-                $key= $fkMeta['local'];
-                $owner= isset ($fkMeta['owner']) ? $fkMeta['owner'] : 'local';
-                $kval= $this->get($key);
-                $fkval= $obj->get($fk);
+                $obj->_alias = $alias;
+                $fk = $fkMeta['foreign'];
+                $key = $fkMeta['local'];
+                $owner = $fkMeta['owner'] ?? 'local';
+                $kval = $this->get($key);
+                $fkval = $obj->get($fk);
                 if ($owner == 'local') {
                     $fkCriteria = isset($fkMeta['criteria']) && isset($fkMeta['criteria']['foreign']) ? $fkMeta['criteria']['foreign'] : null;
                     $obj->set($fk, $kval);
@@ -1222,8 +1278,7 @@ class xPDOObject {
                             $obj->set($fkCritKey, $fkCritVal);
                         }
                     }
-                }
-                else {
+                } else {
                     $this->set($key, $fkval);
                     $fkCriteria = isset($fkMeta['criteria']) && isset($fkMeta['criteria']['local']) ? $fkMeta['criteria']['local'] : null;
                     if (is_array($fkCriteria)) {
@@ -1234,9 +1289,9 @@ class xPDOObject {
                     }
                 }
 
-                $this->_relatedObjects[$obj->_alias]= $obj;
+                $this->_relatedObjects[$obj->_alias] = $obj;
                 $this->setDirty($key);
-                $added= true;
+                $added = true;
             } else {
                 $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Foreign key definition for class {$obj->class}, alias {$obj->_alias} not found, or cardinality is not 'one'.");
             }
@@ -1258,18 +1313,19 @@ class xPDOObject {
      * {@link xPDOObject::save()}, {@link xPDOObject::remove()}, and other
      * operations based on the type of relationships defined.
      *
-     * @see xPDOObject::addOne()
-     * @see xPDOObject::getOne()
-     * @see xPDOObject::getMany()
-     *
      * @param mixed &$obj A single object or collection of objects to be related
      * to this instance via the intersection class.
      * @param string $alias An optional alias, required only for instances where
      * you have more than one relation defined to the same class.
      * @return boolean Indicates if the addMany was successful.
+     * @see xPDOObject::addOne()
+     * @see xPDOObject::getOne()
+     * @see xPDOObject::getMany()
+     *
      */
-    public function addMany(& $obj, $alias= '') {
-        $added= false;
+    public function addMany($obj, string $alias = ''): bool
+    {
+        $added = false;
         if (!is_array($obj)) {
             if (is_object($obj)) {
                 if (empty ($alias)) {
@@ -1279,28 +1335,28 @@ class xPDOObject {
                             $obj->_alias = reset($aliases);
                         }
                     }
-                    $alias= $obj->_alias;
+                    $alias = $obj->_alias;
                 }
-                if ($fkMeta= $this->getFKDefinition($alias)) {
-                    $obj->_alias= $alias;
+                if ($fkMeta = $this->getFKDefinition($alias)) {
+                    $obj->_alias = $alias;
                     if ($fkMeta['cardinality'] === 'many') {
                         if ($obj->_new) {
-                            $objpk= '__new' . (isset ($this->_relatedObjects[$alias]) ? count($this->_relatedObjects[$alias]) : 0);
+                            $objpk = '__new' . (isset ($this->_relatedObjects[$alias]) ? count($this->_relatedObjects[$alias]) : 0);
                         } else {
-                            $objpk= $obj->getPrimaryKey();
+                            $objpk = $obj->getPrimaryKey();
                             if (is_array($objpk)) {
-                                $objpk= implode('-', $objpk);
+                                $objpk = implode('-', $objpk);
                             }
                         }
-                        $this->_relatedObjects[$alias][$objpk]= $obj;
+                        $this->_relatedObjects[$alias][$objpk] = $obj;
                         if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, 'Added related object with alias: ' . $alias . ' and pk: ' . $objpk . "\n" . print_r($obj->toArray('', true), true));
-                        $added= true;
+                        $added = true;
                     }
                 }
             }
         } else {
             foreach ($obj as $o) {
-                $added= $this->addMany($o, $alias);
+                $added = $this->addMany($o, $alias);
             }
         }
         return $added;
@@ -1318,17 +1374,19 @@ class xPDOObject {
      * be cached and optionally, by specifying an integer value, for how many
      * seconds before expiring.  Overrides the cacheFlag for the object(s).
      * @return boolean Returns true on success, false on failure.
+     * @throws xPDOException
      */
-    public function save($cacheFlag= null) {
+    public function save($cacheFlag = null): bool
+    {
         if ($this->isLazy()) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Attempt to save lazy object: ' . print_r($this->toArray('', true), 1));
             return false;
         }
-        $result= true;
-        $sql= '';
-        $pk= $this->getPrimaryKey();
-        $pkn= $this->getPK();
-        $pkGenerated= false;
+        $result = true;
+        $sql = '';
+        $pk = $this->getPrimaryKey();
+        $pkn = $this->getPK();
+        $pkGenerated = false;
         if ($this->isNew()) {
             $this->setDirty();
         }
@@ -1343,158 +1401,175 @@ class xPDOObject {
         }
         $this->_saveRelatedObjects();
         if (!empty ($this->_dirty)) {
-            $cols= array ();
-            $bindings= array ();
-            $updateSql= array ();
+            $cols = [];
+            $bindings = [];
+            $updateSql = [];
             foreach (array_keys($this->_dirty) as $_k) {
                 if (!array_key_exists($_k, $this->_fieldMeta)) {
                     continue;
                 }
                 if (isset($this->_fieldMeta[$_k]['generated'])) {
                     if (!$this->_new || !isset($this->_fields[$_k]) || empty($this->_fields[$_k])) {
-                        $pkGenerated= true;
+                        $pkGenerated = true;
                         continue;
                     }
                 }
                 if ($this->_fieldMeta[$_k]['phptype'] === 'password') {
-                    $this->_fields[$_k]= $this->encode($this->_fields[$_k], 'password');
+                    $this->_fields[$_k] = $this->encode($this->_fields[$_k], 'password');
                 }
-                $fieldType= \PDO::PARAM_STR;
-                $fieldValue= $this->_fields[$_k];
-                if (in_array($this->_fieldMeta[$_k]['phptype'], array ('datetime', 'timestamp')) && !empty($this->_fieldMeta[$_k]['attributes']) && $this->_fieldMeta[$_k]['attributes'] == 'ON UPDATE CURRENT_TIMESTAMP') {
-                    $this->_fields[$_k]= date('Y-m-d H:i:s');
+                $fieldType = PDO::PARAM_STR;
+                $fieldValue = $this->_fields[$_k];
+                if (
+                    in_array($this->_fieldMeta[$_k]['phptype'], ['datetime', 'timestamp'])
+                    && !empty($this->_fieldMeta[$_k]['attributes'])
+                    && $this->_fieldMeta[$_k]['attributes'] == 'ON UPDATE CURRENT_TIMESTAMP'
+                ) {
+                    $this->_fields[$_k] = date('Y-m-d H:i:s');
                     continue;
-                }
-                elseif ($fieldValue === null || $fieldValue === 'NULL') {
+                } elseif ($fieldValue === null || $fieldValue === 'NULL') {
                     if ($this->_new) continue;
-                    $fieldType= \PDO::PARAM_NULL;
-                    $fieldValue= null;
-                }
-                elseif (in_array($this->_fieldMeta[$_k]['phptype'], array ('timestamp', 'datetime')) && in_array($fieldValue, $this->xpdo->driver->_currentTimestamps, true)) {
-                    $this->_fields[$_k]= date('Y-m-d H:i:s');
+                    $fieldType = PDO::PARAM_NULL;
+                    $fieldValue = null;
+                } elseif (
+                    in_array($this->_fieldMeta[$_k]['phptype'], ['timestamp', 'datetime'])
+                    && in_array($fieldValue, $this->xpdo->driver->_currentTimestamps, true)
+                ) {
+                    $this->_fields[$_k] = date('Y-m-d H:i:s');
                     continue;
-                }
-                elseif (in_array($this->_fieldMeta[$_k]['phptype'], array ('date')) && in_array($fieldValue, $this->xpdo->driver->_currentDates, true)) {
-                    $this->_fields[$_k]= date('Y-m-d');
+                } elseif (
+                    $this->_fieldMeta[$_k]['phptype'] == 'date'
+                    && in_array($fieldValue, $this->xpdo->driver->_currentDates, true)
+                ) {
+                    $this->_fields[$_k] = date('Y-m-d');
                     continue;
-                }
-                elseif ($this->_fieldMeta[$_k]['phptype'] == 'timestamp' && preg_match('/int/i', $this->_fieldMeta[$_k]['dbtype'])) {
-                    $fieldType= \PDO::PARAM_INT;
-                }
-                elseif (!in_array($this->_fieldMeta[$_k]['phptype'], array ('string','password','datetime','timestamp','date','time','array','json','float'))) {
-                    $fieldType= \PDO::PARAM_INT;
+                } elseif (
+                    $this->_fieldMeta[$_k]['phptype'] == 'timestamp'
+                    && preg_match('/int/i', $this->_fieldMeta[$_k]['dbtype'])
+                ) {
+                    $fieldType = PDO::PARAM_INT;
+                } elseif (
+                    !in_array(
+                        $this->_fieldMeta[$_k]['phptype'],
+                        ['string', 'password', 'datetime', 'timestamp', 'date', 'time', 'array', 'json', 'float']
+                    )
+                ) {
+                    $fieldType = PDO::PARAM_INT;
                 }
                 if ($this->_new) {
-                    $cols[$_k]= $this->xpdo->escape($_k);
-                    $bindings[":{$_k}"]['value']= $fieldValue;
-                    $bindings[":{$_k}"]['type']= $fieldType;
+                    $cols[$_k] = $this->xpdo->escape($_k);
+                    $bindings[":{$_k}"]['value'] = $fieldValue;
+                    $bindings[":{$_k}"]['type'] = $fieldType;
                 } else {
-                    $bindings[":{$_k}"]['value']= $fieldValue;
-                    $bindings[":{$_k}"]['type']= $fieldType;
-                    $updateSql[]= $this->xpdo->escape($_k) . " = :{$_k}";
+                    $bindings[":{$_k}"]['value'] = $fieldValue;
+                    $bindings[":{$_k}"]['type'] = $fieldType;
+                    $updateSql[] = $this->xpdo->escape($_k) . " = :{$_k}";
                 }
             }
             if ($this->_new) {
-                $sql= "INSERT INTO {$this->_table} (" . implode(', ', array_values($cols)) . ") VALUES (" . implode(', ', array_keys($bindings)) . ")";
+                $sql = "INSERT INTO {$this->_table} (" . implode(', ', array_values($cols)) . ") VALUES (" . implode(', ', array_keys($bindings)) . ")";
             } else {
                 if ($pk && $pkn) {
                     if (is_array($pkn)) {
-                        $iteration= 0;
-                        $where= '';
+                        $iteration = 0;
+                        $where = '';
                         foreach ($pkn as $k => $v) {
-                            $vt= \PDO::PARAM_INT;
-                            if (in_array($this->_fieldMeta[$k]['phptype'], array('string', 'float'))) {
-                                $vt= \PDO::PARAM_STR;
+                            $vt = PDO::PARAM_INT;
+                            if (in_array($this->_fieldMeta[$k]['phptype'], ['string', 'float'])) {
+                                $vt = PDO::PARAM_STR;
                             }
                             if ($iteration) {
                                 $where .= " AND ";
                             }
                             $where .= $this->xpdo->escape($k) . " = :{$k}";
-                            $bindings[":{$k}"]['value']= $this->_fields[$k];
-                            $bindings[":{$k}"]['type']= $vt;
+                            $bindings[":{$k}"]['value'] = $this->_fields[$k];
+                            $bindings[":{$k}"]['type'] = $vt;
                             $iteration++;
                         }
                     } else {
-                        $pkn= $this->getPK();
-                        $pkt= \PDO::PARAM_INT;
-                        if (in_array($this->_fieldMeta[$pkn]['phptype'], array('string', 'float'))) {
-                            $pkt= \PDO::PARAM_STR;
+                        $pkn = $this->getPK();
+                        $pkt = PDO::PARAM_INT;
+                        if (in_array($this->_fieldMeta[$pkn]['phptype'], ['string', 'float'])) {
+                            $pkt = PDO::PARAM_STR;
                         }
-                        $bindings[":{$pkn}"]['value']= $pk;
-                        $bindings[":{$pkn}"]['type']= $pkt;
-                        $where= $this->xpdo->escape($pkn) . ' = :' . $pkn;
+                        $bindings[":{$pkn}"]['value'] = $pk;
+                        $bindings[":{$pkn}"]['type'] = $pkt;
+                        $where = $this->xpdo->escape($pkn) . ' = :' . $pkn;
                     }
                     if (!empty ($updateSql)) {
-                        $sql= "UPDATE {$this->_table} SET " . implode(',', $updateSql) . " WHERE {$where}";
+                        $sql = "UPDATE {$this->_table} SET " . implode(',', $updateSql) . " WHERE {$where}";
                     }
                 }
             }
-            if (!empty ($sql) && $criteria= new xPDOCriteria($this->xpdo, $sql)) {
+            if (!empty ($sql) && $criteria = new xPDOCriteria($this->xpdo, $sql)) {
                 if ($criteria->prepare()) {
                     if (!empty ($bindings)) {
-                        $criteria->bind($bindings, true, false);
+                        $criteria->bind($bindings);
                     }
-                    if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Executing SQL:\n{$sql}\nwith bindings:\n" . print_r($bindings, true));
+
+                    if ($this->xpdo->getDebug() === true) {
+                        $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Executing SQL:\n{$sql}\nwith bindings:\n" . print_r($bindings, true));
+                    }
+
                     $tstart = microtime(true);
-                    if (!$result= $criteria->stmt->execute()) {
-                        $this->xpdo->queryTime += microtime(true) - $tstart;
-                        $this->xpdo->executedQueries++;
-                        $errorInfo= $criteria->stmt->errorInfo();
+                    $this->xpdo->queryTime += microtime(true) - $tstart;
+                    $this->xpdo->executedQueries++;
+                    if (!$result = $criteria->stmt->execute()) {
+                        $errorInfo = $criteria->stmt->errorInfo();
                         $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement:\n" . $criteria->toSQL() . "\n" . print_r($errorInfo, true));
                         if (($errorInfo[1] == '1146' || $errorInfo[1] == '1') && $this->getOption(xPDO::OPT_AUTO_CREATE_TABLES)) {
                             if ($this->xpdo->getManager() && $this->xpdo->manager->createObjectContainer($this->_class) === true) {
                                 $tstart = microtime(true);
-                                if (!$result= $criteria->stmt->execute()) {
-                                    $this->xpdo->queryTime += microtime(true) - $tstart;
-                                    $this->xpdo->executedQueries++;
-                                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $criteria->stmt->errorCode() . " executing statement:\n{$sql}\n");
-                                } else {
-                                    $this->xpdo->queryTime += microtime(true) - $tstart;
-                                    $this->xpdo->executedQueries++;
+                                $this->xpdo->queryTime += microtime(true) - $tstart;
+                                $this->xpdo->executedQueries++;
+                                if (!$result = $criteria->stmt->execute()) {
+                                    $this->xpdo->log(
+                                        xPDO::LOG_LEVEL_ERROR,
+                                        "Error " . $criteria->stmt->errorCode() . " executing statement:\n{$sql}\n"
+                                    );
                                 }
                             } else {
-                                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error " . $this->xpdo->errorCode() . " attempting to create object container for class {$this->_class}:\n" . print_r($this->xpdo->errorInfo(), true));
+                                $this->xpdo->log(
+                                    xPDO::LOG_LEVEL_ERROR,
+                                    "Error " . $this->xpdo->errorCode() . " attempting to create object container for class {$this->_class}:\n" . print_r($this->xpdo->errorInfo(), true)
+                                );
                             }
                         }
-                    } else {
-                        $this->xpdo->queryTime += microtime(true) - $tstart;
-                        $this->xpdo->executedQueries++;
                     }
                 } else {
-                    $result= false;
+                    $result = false;
                 }
                 if ($result) {
                     if ($pkn && !$pk) {
                         if ($pkGenerated) {
-                            $this->_fields[$this->getPK()]= $this->getGeneratedKey();
+                            $this->_fields[$this->getPK()] = $this->getGeneratedKey();
                         }
-                        $pk= $this->getPrimaryKey();
+                        $pk = $this->getPrimaryKey();
                     }
                     if ($pk || !$this->getPK()) {
-                        $this->_dirty= array();
-                        $this->_validated= array();
-                        $this->_new= false;
+                        $this->_dirty = [];
+                        $this->_validated = [];
+                        $this->_new = false;
                     }
                     $callback = $this->getOption(xPDO::OPT_CALLBACK_ON_SAVE);
                     if ($callback && is_callable($callback)) {
                         call_user_func($callback, array('className' => $this->_class, 'criteria' => $criteria, 'object' => $this));
                     }
                     if ($this->xpdo->_cacheEnabled && $pk && ($cacheFlag || ($cacheFlag === null && $this->_cacheFlag))) {
-                        $cacheKey= $this->xpdo->newQuery($this->_class, $pk, $cacheFlag);
+                        $cacheKey = $this->xpdo->newQuery($this->_class, $pk, $cacheFlag);
                         if (is_bool($cacheFlag)) {
-                            $expires= 0;
+                            $expires = 0;
                         } else {
-                            $expires= intval($cacheFlag);
+                            $expires = intval($cacheFlag);
                         }
-                        $this->xpdo->toCache($cacheKey, $this, $expires, array('modified' => true));
+                        $this->xpdo->toCache($cacheKey, $this, $expires, ['modified' => true]);
                     }
                 }
             }
         }
         $this->_saveRelatedObjects();
         if ($result) {
-            $this->_dirty= array ();
-            $this->_validated= array ();
+            $this->_dirty = [];
+            $this->_validated = [];
         }
         return $result;
     }
@@ -1513,33 +1588,37 @@ class xPDOObject {
      * Searches for any related objects with pending changes to save.
      *
      * @access protected
-     * @uses xPDOObject::_saveRelatedObject()
      * @return integer The number of related objects processed.
+     * @throws xPDOException
+     * @uses xPDOObject::_saveRelatedObject()
      */
-    protected function _saveRelatedObjects() {
-        $saved= 0;
+    protected function _saveRelatedObjects(): int
+    {
+        $saved = 0;
+        $cardinality = '';
+
         if (!empty ($this->_relatedObjects)) {
             foreach ($this->_relatedObjects as $alias => $ro) {
-                $objects= array ();
+                $objects = [];
                 if (is_object($ro)) {
-                    $primaryKey= $ro->_new ? '__new' : $ro->getPrimaryKey();
-                    if (is_array($primaryKey)) $primaryKey= implode('-', $primaryKey);
-                    $objects[$primaryKey]= & $ro;
-                    $cardinality= 'one';
+                    $primaryKey = $ro->_new ? '__new' : $ro->getPrimaryKey();
+                    if (is_array($primaryKey)) $primaryKey = implode('-', $primaryKey);
+                    $objects[$primaryKey] = &$ro;
+                    $cardinality = 'one';
+                } elseif (is_array($ro)) {
+                    $objects = $ro;
+                    $cardinality = 'many';
                 }
-                elseif (is_array($ro)) {
-                    $objects= $ro;
-                    $cardinality= 'many';
-                }
+
                 if (!empty($objects)) {
                     foreach ($objects as $pk => $obj) {
-                        if ($fkMeta= $this->getFKDefinition($alias)) {
+                        if ($fkMeta = $this->getFKDefinition($alias)) {
                             if ($this->_saveRelatedObject($obj, $fkMeta)) {
                                 if ($cardinality == 'many') {
-                                    $newPk= $obj->getPrimaryKey();
-                                    if (is_array($newPk)) $newPk= implode('-', $newPk);
+                                    $newPk = $obj->getPrimaryKey();
+                                    if (is_array($newPk)) $newPk = implode('-', $newPk);
                                     if ($pk != $newPk) {
-                                        $this->_relatedObjects[$alias][$newPk]= $obj;
+                                        $this->_relatedObjects[$alias][$newPk] = $obj;
                                         unset($this->_relatedObjects[$alias][$pk]);
                                     }
                                 }
@@ -1561,21 +1640,23 @@ class xPDOObject {
      * object is new and needs the foreign key.
      *
      * @access protected
-     * @param xPDOObject &$obj A reference to the related object.
-     * @param array $fkMeta The meta data representing the relation.
+     * @param xPDOObject $obj A reference to the related object.
+     * @param array $fkMeta The metadata representing the relation.
      * @return boolean True if a related object was dirty and saved successfully.
+     * @throws xPDOException
      */
-    protected function _saveRelatedObject(& $obj, $fkMeta) {
-        $saved= false;
-        $local= $fkMeta['local'];
-        $foreign= $fkMeta['foreign'];
-        $cardinality= $fkMeta['cardinality'];
-        $owner= isset ($fkMeta['owner']) ? $fkMeta['owner'] : '';
+    protected function _saveRelatedObject(xPDOObject $obj, array $fkMeta): bool
+    {
+        $saved = false;
+        $local = $fkMeta['local'];
+        $foreign = $fkMeta['foreign'];
+        $cardinality = $fkMeta['cardinality'];
+        $owner = $fkMeta['owner'] ?? '';
         if (!$owner) {
-            $owner= $cardinality === 'many' ? 'foreign' : 'local';
+            $owner = $cardinality === 'many' ? 'foreign' : 'local';
         }
-        $criteria = isset($fkMeta['criteria']) ? $fkMeta['criteria'] : null;
-        if ($owner === 'local' && $fk= $this->get($local)) {
+        $criteria = $fkMeta['criteria'] ?? null;
+        if ($owner === 'local' && $fk = $this->get($local)) {
             $obj->set($foreign, $fk);
             if (isset($criteria['foreign']) && is_array($criteria['foreign'])) {
                 foreach ($criteria['foreign'] as $critKey => $critVal) {
@@ -1583,12 +1664,12 @@ class xPDOObject {
                     $obj->set($critKey, $critVal);
                 }
             }
-            $saved= $obj->save();
+            $saved = $obj->save();
         } elseif ($owner === 'foreign') {
             if ($obj->isNew() || !empty($obj->_dirty)) {
-                $saved= $obj->save();
+                $saved = $obj->save();
             }
-            $fk= $obj->get($foreign);
+            $fk = $obj->get($foreign);
             if ($fk) {
                 $this->set($local, $fk);
                 if (isset($criteria['local']) && is_array($criteria['local'])) {
@@ -1599,7 +1680,12 @@ class xPDOObject {
                 }
             }
         }
-        if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG , ($saved ? 'Successfully saved' : 'Could not save') . " related object\nMain object: " . print_r($this->toArray('', true), true) . "\nRelated Object: " . print_r($obj->toArray('', true), true));
+        if ($this->xpdo->getDebug() === true) {
+            $this->xpdo->log(
+                xPDO::LOG_LEVEL_DEBUG,
+                ($saved ? 'Successfully saved' : 'Could not save') . " related object\nMain object: " . print_r($this->toArray('', true), true) . "\nRelated Object: " . print_r($obj->toArray('', true), true)
+            );
+        }
         return $saved;
     }
 
@@ -1610,18 +1696,20 @@ class xPDOObject {
      * called, including any dependent objects defined by composite foreign key
      * relationships.
      *
+     * @param array $ancestors Keeps track of instances which have already been
+     * removed to prevent loops with circular references.
+     * @return boolean Returns true on success, false on failure.
+     * @throws xPDOException
      * @todo Implement some way to reassign ownership of related composite
      * objects when remove is called, perhaps by passing another object
      * instance as an optional parameter, or creating a separate method.
      *
-     * @param array $ancestors Keeps track of instances which have already been
-     * removed to prevent loops with circular references.
-     * @return boolean Returns true on success, false on failure.
      */
-    public function remove(array $ancestors= array ()) {
-        $result= false;
-        $pk= $this->getPrimaryKey();
-        if ($pk && $this->xpdo->getConnection(array(xPDO::OPT_CONN_MUTABLE => true))) {
+    public function remove(array $ancestors = []): bool
+    {
+        $result = false;
+        $pk = $this->getPrimaryKey();
+        if ($pk && $this->xpdo->getConnection([xPDO::OPT_CONN_MUTABLE => true])) {
             $primaryKey = $pk;
             if (is_array($primaryKey)) {
                 $primaryKey = implode('|', $primaryKey);
@@ -1639,7 +1727,7 @@ class xPDOObject {
                         $ancestors[$composite['class']] = array();
                     }
                     if ($composite['cardinality'] === 'many') {
-                        if ($many= $this->getMany($compositeAlias)) {
+                        if ($many = $this->getMany($compositeAlias)) {
                             /** @var xPDOObject $one */
                             foreach ($many as $one) {
                                 $childPK = $one->getPrimaryKey();
@@ -1650,15 +1738,17 @@ class xPDOObject {
                                     continue;
                                 }
                                 if (!$one->remove($ancestors)) {
-                                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error removing dependent object: " . print_r($one->toArray('', true), true));
+                                    $this->xpdo->log(
+                                        xPDO::LOG_LEVEL_ERROR,
+                                        "Error removing dependent object: " . print_r($one->toArray('', true), true)
+                                    );
                                 } else {
-                                    $ancestors[$composite['class']][]= $childPK;
+                                    $ancestors[$composite['class']][] = $childPK;
                                 }
                             }
                             unset($many);
                         }
-                    }
-                    elseif ($one= $this->getOne($compositeAlias)) {
+                    } elseif ($one = $this->getOne($compositeAlias)) {
                         $childPK = $one->getPrimaryKey();
                         if (is_array($childPK)) {
                             $childPK = implode('|', $childPK);
@@ -1670,7 +1760,10 @@ class xPDOObject {
                             $ancestors[$composite['class']] = array();
                         }
                         if (!$one->remove($ancestors)) {
-                            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error removing dependent object: " . print_r($one->toArray('', true), true));
+                            $this->xpdo->log(
+                                xPDO::LOG_LEVEL_ERROR,
+                                "Error removing dependent object: " . print_r($one->toArray('', true), true)
+                            );
                         } else {
                             $ancestors[$composite['class']][] = $childPK;
                         }
@@ -1678,20 +1771,21 @@ class xPDOObject {
                     }
                 }
             }
-            $delete= $this->xpdo->newQuery($this->_class);
+            $delete = $this->xpdo->newQuery($this->_class);
             $delete->command('DELETE');
             $delete->where(array_combine((array)$this->getPK(), (array)$pk));
             // $delete->limit(1);
-            $stmt= $delete->prepare();
+            $stmt = $delete->prepare();
             if (is_object($stmt)) {
                 $tstart = microtime(true);
-                if (!$result= $stmt->execute()) {
-                    $this->xpdo->queryTime += microtime(true) - $tstart;
-                    $this->xpdo->executedQueries++;
-                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not delete from ' . $this->_table . '; primary key specified was ' . print_r($pk, true) . "\n" . print_r($stmt->errorInfo(), true));
+                $this->xpdo->queryTime += microtime(true) - $tstart;
+                $this->xpdo->executedQueries++;
+                if (!$result = $stmt->execute()) {
+                    $this->xpdo->log(
+                        xPDO::LOG_LEVEL_ERROR,
+                        'Could not delete from ' . $this->_table . '; primary key specified was ' . print_r($pk, true) . "\n" . print_r($stmt->errorInfo(), true)
+                    );
                 } else {
-                    $this->xpdo->queryTime += microtime(true) - $tstart;
-                    $this->xpdo->executedQueries++;
                     $callback = $this->getOption(xPDO::OPT_CALLBACK_ON_REMOVE);
                     if ($callback && is_callable($callback)) {
                         call_user_func($callback, array('className' => $this->_class, 'criteria' => $delete, 'object' => $this));
@@ -1700,22 +1794,53 @@ class xPDOObject {
                         /** @var xPDOCache $dbCache */
                         $dbCache = $this->xpdo->getCacheManager()->getCacheProvider(
                             $this->getOption('cache_db_key', null, 'db'),
-                            array(
+                            [
                                 xPDO::OPT_CACHE_KEY => $this->getOption('cache_db_key', null, 'db'),
-                                xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, null, $this->getOption(xPDO::OPT_CACHE_HANDLER, null, 'xPDO\\Cache\\xPDOFileCache')),
-                                xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, xPDOCacheManager::CACHE_PHP)),
-                                xPDO::OPT_CACHE_EXPIRES => (integer) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
-                                xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', null, xPDOCacheManager::CACHE_DIR)
-                            )
+                                xPDO::OPT_CACHE_HANDLER => $this->getOption(
+                                    xPDO::OPT_CACHE_DB_HANDLER, null,
+                                    $this->getOption(xPDO::OPT_CACHE_HANDLER,
+                                        null,
+                                        'xPDO\\Cache\\xPDOFileCache'
+                                    )
+                                ),
+                                xPDO::OPT_CACHE_FORMAT => (integer)$this->getOption(
+                                    'cache_db_format',
+                                    null,
+                                    $this->getOption(xPDO::OPT_CACHE_FORMAT, null, xPDOCacheManager::CACHE_PHP)
+                                ),
+                                xPDO::OPT_CACHE_EXPIRES => (integer)$this->getOption(
+                                    xPDO::OPT_CACHE_DB_EXPIRES,
+                                    null,
+                                    $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)
+                                ),
+                                xPDO::OPT_CACHE_PREFIX => $this->getOption(
+                                    'cache_db_prefix',
+                                    null,
+                                    xPDOCacheManager::CACHE_DIR
+                                )
+                            ]
                         );
                         if (!$dbCache->delete($this->_class, array(xPDO::OPT_CACHE_MULTIPLE_OBJECT_DELETE => true))) {
-                            $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Could not remove cache entries for {$this->_class}", '', __METHOD__, __FILE__, __LINE__);
+                            $this->xpdo->log(
+                                xPDO::LOG_LEVEL_WARN,
+                                "Could not remove cache entries for {$this->_class}",
+                                '',
+                                __METHOD__,
+                                __FILE__,
+                                __LINE__
+                            );
                         }
                     }
-                    $this->xpdo->log(xPDO::LOG_LEVEL_INFO, "Removed {$this->_class} instance with primary key " . print_r($pk, true));
+                    $this->xpdo->log(
+                        xPDO::LOG_LEVEL_INFO,
+                        "Removed {$this->_class} instance with primary key " . print_r($pk, true)
+                    );
                 }
             } else {
-                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not build criteria to delete from ' . $this->_table . '; primary key specified was ' . print_r($pk, true));
+                $this->xpdo->log(
+                    xPDO::LOG_LEVEL_ERROR,
+                    'Could not build criteria to delete from ' . $this->_table . '; primary key specified was ' . print_r($pk, true)
+                );
             }
         }
         return $result;
@@ -1729,35 +1854,38 @@ class xPDOObject {
      * return null; the default is true
      * @return mixed The string (or an array) representing the value(s) of the
      * primary key field(s) for this instance.
+     * @throws xPDOException
      */
-    public function getPrimaryKey($validateCompound= true) {
-        $value= null;
-        if ($pk= $this->getPK()) {
+    public function getPrimaryKey(bool $validateCompound = true)
+    {
+        $value = null;
+        if ($pk = $this->getPK()) {
             if (is_array($pk)) {
                 foreach ($pk as $k) {
-                    $_pk= $this->get($k);
+                    $_pk = $this->get($k);
                     if (($_pk && strtolower($_pk) !== 'null') || !$validateCompound) {
-                        $value[]= $_pk;
+                        $value[] = $_pk;
                     } else {
                         if (isset ($this->_fieldMeta[$k]['default'])) {
-                            $value[]= $this->_fieldMeta[$k]['default'];
-                            $this->_fields[$k]= $this->_fieldMeta[$k]['default'];
-                        }
-                        elseif (isset ($this->_fieldMeta[$k]['null']) && $this->_fieldMeta[$k]['null']) {
-                            $value[]= null;
-                        }
-                        else {
-                            $value= null;
+                            $value[] = $this->_fieldMeta[$k]['default'];
+                            $this->_fields[$k] = $this->_fieldMeta[$k]['default'];
+                        } elseif (isset ($this->_fieldMeta[$k]['null']) && $this->_fieldMeta[$k]['null']) {
+                            $value[] = null;
+                        } else {
+                            $value = null;
                             break;
                         }
                     }
                 }
             } else {
-                $value= $this->get($pk);
+                $value = $this->get($pk);
             }
         }
         if (!$value && $this->xpdo->getDebug() === true) {
-            $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "No primary key value found for pk definition: " . print_r($this->getPK(), true));
+            $this->xpdo->log(
+                xPDO::LOG_LEVEL_DEBUG,
+                "No primary key value found for pk definition: " . print_r($this->getPK(), true)
+            );
         }
         return $value;
     }
@@ -1768,9 +1896,10 @@ class xPDOObject {
      * @return mixed The string (or an array of strings) representing the name(s)
      * of the primary key field(s) for this instance.
      */
-    public function getPK() {
+    public function getPK()
+    {
         if ($this->_pk === null) {
-            $this->_pk= $this->xpdo->getPK($this->_class);
+            $this->_pk = $this->xpdo->getPK($this->_class);
         }
         return $this->_pk;
     }
@@ -1780,12 +1909,13 @@ class xPDOObject {
      *
      * @return string The type of the primary key field for this instance.
      */
-    public function getPKType() {
+    public function getPKType()
+    {
         if ($this->_pktype === null) {
             if ($this->_pk === null) {
                 $this->getPK();
             }
-            $this->_pktype= $this->xpdo->getPKType($this->_class);
+            $this->_pktype = $this->xpdo->getPKType($this->_class);
         }
         return $this->_pktype;
     }
@@ -1799,27 +1929,28 @@ class xPDOObject {
      * @param string $k The field name or key to lookup a related class for.
      * @return bool|null|string
      */
-    public function getFKClass($k) {
-        $fkclass= null;
+    public function getFKClass(string $k)
+    {
+        $fkclass = null;
         $k = $this->getField($k, true);
         if (is_string($k)) {
             if (!empty ($this->_aggregates)) {
-                foreach ($this->_aggregates as $aggregateAlias => $aggregate) {
+                foreach ($this->_aggregates as $aggregate) {
                     if ($aggregate['local'] === $k) {
-                        $fkclass= $aggregate['class'];
+                        $fkclass = $aggregate['class'];
                         break;
                     }
                 }
             }
             if (!$fkclass && !empty ($this->_composites)) {
-                foreach ($this->_composites as $compositeAlias => $composite) {
+                foreach ($this->_composites as $composite) {
                     if ($composite['local'] === $k) {
-                        $fkclass= $composite['class'];
+                        $fkclass = $composite['class'];
                         break;
                     }
                 }
             }
-            $fkclass= $this->xpdo->loadClass($fkclass);
+            $fkclass = $this->xpdo->loadClass($fkclass);
         }
         if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Returning foreign key class {$fkclass} for column {$k}");
         return $fkclass;
@@ -1835,7 +1966,8 @@ class xPDOObject {
      * definition from.
      * @return array A foreign key definition.
      */
-    public function getFKDefinition($alias) {
+    public function getFKDefinition(string $alias): array
+    {
         return $this->xpdo->getFKDefinition($this->_class, $alias);
     }
 
@@ -1846,21 +1978,22 @@ class xPDOObject {
      * table name or a specified alias, and properly quoted.
      *
      * @param string $k The simple name of the field.
-     * @param string $alias An optional alias for the table in a specific query.
+     * @param string|null $alias An optional alias for the table in a specific query.
      * @return string The name of the field, qualified with the table name or an
      * optional table alias.
      */
-    public function getFieldName($k, $alias= null) {
+    public function getFieldName(string $k, string $alias = null): ?string
+    {
         if ($this->fieldNames === null) {
             $this->_initFields();
         }
-        $name= null;
+        $name = null;
         $k = $this->getField($k, true);
         if (is_string($k) && isset ($this->fieldNames[$k])) {
-            $name= $this->fieldNames[$k];
+            $name = $this->fieldNames[$k];
         }
         if ($name !== null && $alias !== null) {
-            $name= str_replace("{$this->_table}.", "{$alias}.", $name);
+            $name = str_replace("{$this->_table}.", "{$alias}.", $name);
         }
         return $name;
     }
@@ -1874,7 +2007,8 @@ class xPDOObject {
      * @return string|bool The actual field name, the key as passed, or false if not a field
      * or alias and validate is true.
      */
-    public function getField($key, $validate = false) {
+    public function getField(string $key, bool $validate = false)
+    {
         $field = $key;
         if (!array_key_exists($key, $this->_fieldMeta)) {
             if (array_key_exists($key, $this->_fieldAliases)) {
@@ -1897,8 +2031,10 @@ class xPDOObject {
      * @param boolean|integer $cacheFlag Indicates if the objects should be cached and optionally, by specifying an
      * integer value, for how many seconds.
      * @return array|boolean The graph that was loaded or false if nothing was loaded.
+     * @throws xPDOException
      */
-    public function getGraph($graph = true, $criteria = null, $cacheFlag = true) {
+    public function getGraph($graph = true, $criteria = null, $cacheFlag = true)
+    {
         /* graph is true, get all relations to max depth */
         if ($graph === true) {
             $graph = $this->xpdo->getGraph($this->_class);
@@ -1909,7 +2045,7 @@ class xPDOObject {
         }
         /* graph defined as JSON, convert to array */
         if (is_string($graph)) {
-            $graph= $this->xpdo->fromJSON($graph);
+            $graph = $this->xpdo->fromJSON($graph);
         }
         /* graph as an array */
         if (is_array($graph)) {
@@ -1918,13 +2054,13 @@ class xPDOObject {
                 if ($fkMeta) {
                     $fkCriteria = isset($fkMeta['criteria']) && isset($fkMeta['criteria']['foreign']) ? $fkMeta['criteria']['foreign'] : null;
                     if ($criteria === null) {
-                        $query= array($fkMeta['foreign'] => $this->get($fkMeta['local']));
+                        $query = array($fkMeta['foreign'] => $this->get($fkMeta['local']));
                         if ($fkCriteria !== null) {
-                            $query= array($fkCriteria, $query);
+                            $query = array($fkCriteria, $query);
                         }
                     } else {
-                        $query= $this->xpdo->newQuery($fkMeta['class'], $criteria);
-                        $addCriteria= array("{$query->getAlias()}.{$fkMeta['foreign']}" => $this->get($fkMeta['local']));
+                        $query = $this->xpdo->newQuery($fkMeta['class'], $criteria);
+                        $addCriteria = array("{$query->getAlias()}.{$fkMeta['foreign']}" => $this->get($fkMeta['local']));
                         if ($fkCriteria !== null) {
                             $fkAddCriteria = array();
                             foreach ($fkCriteria as $fkCritKey => $fkCritVal) {
@@ -1974,17 +2110,24 @@ class xPDOObject {
      * As an array, only loaded related objects matching the graph array will be included.
      * As boolean true, all currently loaded related objects will be included.
      * @return array An array representation of the object fields/values.
+     * @throws xPDOException
      */
-    public function toArray($keyPrefix= '', $rawValues= false, $excludeLazy= false, $includeRelated= false) {
-        $objArray= null;
+    public function toArray(
+        string $keyPrefix = '',
+        bool   $rawValues = false,
+        bool   $excludeLazy = false,
+               $includeRelated = false
+    ): array
+    {
+        $objArray = null;
         if (is_array($this->_fields)) {
-            $keys= array_keys($this->_fields);
+            $keys = array_keys($this->_fields);
             if (!$excludeLazy && $this->isLazy()) {
                 $this->_loadFieldData($this->_lazy);
             }
             foreach ($keys as $key) {
                 if (!$excludeLazy || !$this->isLazy($key)) {
-                    $objArray[$keyPrefix . $key]= $rawValues ? $this->_fields[$key] : $this->get($key);
+                    $objArray[$keyPrefix . $key] = $rawValues ? $this->_fields[$key] : $this->get($key);
                 }
             }
         }
@@ -2000,13 +2143,23 @@ class xPDOObject {
             if ($includeRelated === true || is_array($graph)) {
                 foreach ($this->_relatedObjects as $alias => $branch) {
                     if ($includeRelated === true || array_key_exists($alias, $graph)) {
-                        if (is_array($branch)){
+                        if (is_array($branch)) {
                             /** @var xPDOObject $obj */
-                            foreach($branch as $pk => $obj){
-                                $objArray[$alias][$pk] = $obj->toArray($keyPrefix, $rawValues, $excludeLazy, $includeRelated === true ? true : $graph[$alias]);
+                            foreach ($branch as $pk => $obj) {
+                                $objArray[$alias][$pk] = $obj->toArray(
+                                    $keyPrefix,
+                                    $rawValues,
+                                    $excludeLazy,
+                                    $includeRelated === true ? true : $graph[$alias]
+                                );
                             }
                         } elseif ($branch instanceof xPDOObject) {
-                            $objArray[$alias] = $branch->toArray($keyPrefix, $rawValues, $excludeLazy, $includeRelated === true ? true : $graph[$alias]);
+                            $objArray[$alias] = $branch->toArray(
+                                $keyPrefix,
+                                $rawValues,
+                                $excludeLazy,
+                                $includeRelated === true ? true : $graph[$alias]
+                            );
                         }
                     }
                 }
@@ -2026,54 +2179,61 @@ class xPDOObject {
      * {@link xPDOObject::set()} method.
      * @param boolean $adhocValues Optional way to set adhoc values so that all the values of
      * fldarray become object vars.
+     * @throws xPDOException
      */
-    public function fromArray($fldarray, $keyPrefix= '', $setPrimaryKeys= false, $rawValues= false, $adhocValues= false) {
-        if (is_array($fldarray)) {
-            $pkSet= false;
-            $generatedKey= false;
-            foreach ($fldarray as $key => $val) {
-                if (!empty ($keyPrefix)) {
-                    $prefixPos= strpos($key, $keyPrefix);
-                    if ($prefixPos === 0) {
-                        $key= substr($key, strlen($keyPrefix));
-                    } else {
-                        continue;
-                    }
-                    if ($this->xpdo->getDebug() === true) $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Stripped prefix {$keyPrefix} to produce key {$key}");
+    public function fromArray(
+        array  $fldarray,
+        string $keyPrefix = '',
+        bool   $setPrimaryKeys = false,
+        bool   $rawValues = false,
+        bool   $adhocValues = false
+    )
+    {
+        $generatedKey = false;
+        foreach ($fldarray as $key => $val) {
+            if (!empty ($keyPrefix)) {
+                $prefixPos = strpos($key, $keyPrefix);
+                if ($prefixPos === 0) {
+                    $key = substr($key, strlen($keyPrefix));
+                } else {
+                    continue;
                 }
-                $key = $this->getField($key);
-                if (isset ($this->_fieldMeta[$key]['index']) && $this->_fieldMeta[$key]['index'] == 'pk') {
-                    if ($setPrimaryKeys) {
-                        if (isset ($this->_fieldMeta[$key]['generated'])) {
-                            $generatedKey= true;
+                if ($this->xpdo->getDebug() === true) {
+                    $this->xpdo->log(
+                        xPDO::LOG_LEVEL_DEBUG,
+                        "Stripped prefix {$keyPrefix} to produce key {$key}"
+                    );
+                }
+            }
+            $key = $this->getField($key);
+            if (isset ($this->_fieldMeta[$key]['index']) && $this->_fieldMeta[$key]['index'] == 'pk') {
+                if ($setPrimaryKeys) {
+                    if (isset ($this->_fieldMeta[$key]['generated'])) {
+                        $generatedKey = true;
+                    }
+                    if ($this->_new) {
+                        if ($rawValues || $generatedKey) {
+                            $this->_setRaw($key, $val);
+                        } else {
+                            $this->set($key, $val);
                         }
-                        if ($this->_new) {
-                            if ($rawValues || $generatedKey) {
-                                $this->_setRaw($key, $val);
-                            } else {
-                                $this->set($key, $val);
-                            }
-                            $pkSet= true;
-                        }
                     }
                 }
-                elseif (isset ($this->_fieldMeta[$key])) {
-                    if ($rawValues) {
-                        $this->_setRaw($key, $val);
-                    } else {
-                        $this->set($key, $val);
-                    }
+            } elseif (isset ($this->_fieldMeta[$key])) {
+                if ($rawValues) {
+                    $this->_setRaw($key, $val);
+                } else {
+                    $this->set($key, $val);
                 }
-                elseif ($adhocValues || $this->getOption(xPDO::OPT_HYDRATE_ADHOC_FIELDS)) {
-                    if ($rawValues) {
-                        $this->_setRaw($key, $val);
-                    } else {
-                        $this->set($key, $val);
-                    }
+            } elseif ($adhocValues || $this->getOption(xPDO::OPT_HYDRATE_ADHOC_FIELDS)) {
+                if ($rawValues) {
+                    $this->_setRaw($key, $val);
+                } else {
+                    $this->set($key, $val);
                 }
-                if ($this->isLazy($key)) {
-                    $this->_lazy = array_diff($this->_lazy, array($key));
-                }
+            }
+            if ($this->isLazy($key)) {
+                $this->_lazy = array_diff($this->_lazy, array($key));
             }
         }
     }
@@ -2087,18 +2247,25 @@ class xPDOObject {
      * @param string $rule The rule definition.
      * @param array $parameters Any input parameters for the rule.
      */
-    public function addValidationRule($field, $name, $type, $rule, array $parameters= array()) {
+    public function addValidationRule(
+        string $field,
+        string $name,
+        string $type,
+        string $rule,
+        array  $parameters = []
+    )
+    {
         $field = $this->getField($field);
         if (is_string($field)) {
             if (!$this->_validationLoaded) $this->_loadValidation();
-            if (!isset($this->_validationRules[$field])) $this->_validationRules[$field]= array();
-            $this->_validationRules[$field][$name]= array(
+            if (!isset($this->_validationRules[$field])) $this->_validationRules[$field] = array();
+            $this->_validationRules[$field][$name] = array(
                 'type' => $type,
                 'rule' => $rule,
                 'parameters' => array()
             );
             foreach ($parameters as $paramKey => $paramValue) {
-                $this->_validationRules[$field][$name]['parameters'][$paramKey]= $paramValue;
+                $this->_validationRules[$field][$name]['parameters'][$paramKey] = $paramValue;
             }
         }
     }
@@ -2106,12 +2273,13 @@ class xPDOObject {
     /**
      * Remove one or more validation rules from this instance.
      *
-     * @param string $field An optional field name to remove rules from. If not
+     * @param string|null $field An optional field name to remove rules from. If not
      * specified or null, all rules from all columns will be removed.
      * @param array $rules An optional array of rule names to remove if a single
      * field is specified.  If $field is null, this parameter is ignored.
      */
-    public function removeValidationRules($field = null, array $rules = array()) {
+    public function removeValidationRules(string $field = null, array $rules = [])
+    {
         if (!$this->_validationLoaded) $this->_loadValidation();
         if (empty($rules) && is_string($field)) {
             unset($this->_validationRules[$this->getField($field)]);
@@ -2131,7 +2299,8 @@ class xPDOObject {
      * @return xPDOValidator|null The xPDOValidator instance or null if it could
      * not be loaded.
      */
-    public function getValidator() {
+    public function getValidator(): ?xPDOValidator
+    {
         if (!$this->_validator instanceof xPDOValidator) {
             $validatorClass = $this->getOption(xPDO::OPT_VALIDATOR_CLASS, null, 'xPDO\\Validation\\xPDOValidator');
             if ($validatorClass = $this->xpdo->loadClass($validatorClass, '', false, true)) {
@@ -2148,10 +2317,11 @@ class xPDOObject {
      * @param boolean $reload Indicates if the schema validation rules should be
      * reloaded.
      */
-    public function _loadValidation($reload= false) {
-        if (!$this->_validationLoaded || $reload == true) {
-            $validation= $this->xpdo->getValidationRules($this->_class);
-            $this->_validationLoaded= true;
+    public function _loadValidation(bool $reload = false)
+    {
+        if (!$this->_validationLoaded || $reload) {
+            $validation = $this->xpdo->getValidationRules($this->_class);
+            $this->_validationLoaded = true;
             foreach ($validation as $column => $rules) {
                 foreach ($rules as $name => $rule) {
                     $parameters = array_diff($rule, array($rule['type'], $rule['rule']));
@@ -2167,19 +2337,20 @@ class xPDOObject {
      * @param array $options An array of options to pass to the validator.
      * @return boolean True if validation was successful.
      */
-    public function validate(array $options = array()) {
-        $validated= false;
-        if ($validator= $this->getValidator()) {
-            $validated= $this->_validator->validate($options);
-            if ($this->xpdo->getDebug() === true) {
-                $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Validator class executed, result = " . print_r($validated, true));
-            }
-        } else {
+    public function validate(array $options = []): bool
+    {
+        if (!$this->getValidator()) {
             if ($this->xpdo->getDebug() === true) {
                 $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "No validator found for {$this->_class} instance.");
             }
-            $validated= true;
+            return true;
         }
+
+        $validated = $this->_validator->validate($options);
+        if ($this->xpdo->getDebug() === true) {
+            $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Validator class executed, result = " . print_r($validated, true));
+        }
+
         return $validated;
     }
 
@@ -2190,7 +2361,8 @@ class xPDOObject {
      * @return boolean True if the object or specified field has been fully
      * validated successfully.
      */
-    public function isValidated($key= '') {
+    public function isValidated(string $key = ''): bool
+    {
         $unvalidated = array_diff($this->_dirty, $this->_validated);
         if (empty($key)) {
             $validated = (count($unvalidated) > 0);
@@ -2207,7 +2379,8 @@ class xPDOObject {
      * @return boolean True if the field specified or if any field is lazy if no
      * field is specified.
      */
-    public function isLazy($key= '') {
+    public function isLazy(string $key = ''): bool
+    {
         $lazy = false;
         if (empty($key)) {
             $lazy = (count($this->_lazy) > 0);
@@ -2226,26 +2399,28 @@ class xPDOObject {
      * @access protected
      * @param string $alias The alias representing the relationship.
      * @param mixed $criteria An optional xPDO criteria expression.
-     * @param bool|int Indicates if the saved object(s) should be cached and
+     * @param bool|int $cacheFlag Indicates if the saved object(s) should be cached and
      * optionally, by specifying an integer value, for how many seconds before
      * expiring.  Overrides the cacheFlag for the object.
      * @return array A collection of objects matching the criteria.
+     * @throws xPDOException
      */
-    protected function _getRelatedObjectsByFK($alias, $criteria= null, $cacheFlag= true) {
-        $collection= array ();
+    protected function _getRelatedObjectsByFK(string $alias, $criteria = null, $cacheFlag = true): array
+    {
+        $collection = array();
         if (isset($this->_relatedObjects[$alias]) && (is_object($this->_relatedObjects[$alias]) || (is_array($this->_relatedObjects[$alias]) && !empty ($this->_relatedObjects[$alias])))) {
-            $collection= & $this->_relatedObjects[$alias];
+            $collection = &$this->_relatedObjects[$alias];
         } else {
-            $fkMeta= $this->getFKDefinition($alias);
+            $fkMeta = $this->getFKDefinition($alias);
             if ($fkMeta) {
                 $fkCriteria = isset($fkMeta['criteria']) && isset($fkMeta['criteria']['foreign']) ? $fkMeta['criteria']['foreign'] : null;
                 if ($criteria === null) {
-                    $criteria= array($fkMeta['foreign'] => $this->get($fkMeta['local']));
+                    $criteria = array($fkMeta['foreign'] => $this->get($fkMeta['local']));
                     if ($fkCriteria !== null) {
-                        $criteria= array($fkCriteria, $criteria);
+                        $criteria = array($fkCriteria, $criteria);
                     }
                 } else {
-                    $criteria= $this->xpdo->newQuery($fkMeta['class'], $criteria);
+                    $criteria = $this->xpdo->newQuery($fkMeta['class'], $criteria);
                     $addCriteria = array("{$criteria->getAlias()}.{$fkMeta['foreign']}" => $this->get($fkMeta['local']));
                     if ($fkCriteria !== null) {
                         $fkAddCriteria = array();
@@ -2259,13 +2434,13 @@ class xPDOObject {
                     }
                     $criteria->andCondition($addCriteria);
                 }
-                if ($collection= $this->xpdo->getCollection($fkMeta['class'], $criteria, $cacheFlag)) {
-                    $this->_relatedObjects[$alias]= array_diff_key($this->_relatedObjects[$alias], $collection) + $collection;
+                if ($collection = $this->xpdo->getCollection($fkMeta['class'], $criteria, $cacheFlag)) {
+                    $this->_relatedObjects[$alias] = array_diff_key($this->_relatedObjects[$alias], $collection) + $collection;
                 }
             }
         }
         if ($this->xpdo->getDebug() === true) {
-            $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "_getRelatedObjectsByFK :: {$alias} :: " . (is_object($criteria) ? print_r($criteria->sql, true)."\n".print_r($criteria->bindings, true) : 'no criteria'));
+            $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "_getRelatedObjectsByFK :: {$alias} :: " . (is_object($criteria) ? print_r($criteria->sql, true) . "\n" . print_r($criteria->bindings, true) : 'no criteria'));
         }
         return $collection;
     }
@@ -2278,9 +2453,10 @@ class xPDOObject {
      *
      * @access protected
      */
-    protected function _initFields() {
+    protected function _initFields()
+    {
         foreach ($this->_fieldMeta as $k => $v) {
-            $this->fieldNames[$k]= $this->xpdo->escape($this->_table) . '.' . $this->xpdo->escape($k);
+            $this->fieldNames[$k] = $this->xpdo->escape($this->_table) . '.' . $this->xpdo->escape($k);
         }
     }
 
@@ -2291,12 +2467,14 @@ class xPDOObject {
      * @param boolean $rawValues An optional flag indicating if the field values
      * should be returned raw or via {@link xPDOObject::get()}.
      * @return string A JSON string representing the object.
+     * @throws xPDOException
      */
-    public function toJSON($keyPrefix= '', $rawValues= false) {
-        $json= '';
-        $array= $this->toArray($keyPrefix, $rawValues);
+    public function toJSON(string $keyPrefix = '', bool $rawValues = false): string
+    {
+        $json = '';
+        $array = $this->toArray($keyPrefix, $rawValues);
         if ($array) {
-            $json= $this->xpdo->toJSON($array);
+            $json = $this->xpdo->toJSON($array);
         }
         return $json;
     }
@@ -2311,9 +2489,17 @@ class xPDOObject {
      * {@link xPDOObject::set()}.
      * @param boolean $adhocValues Indicates if ad hoc fields should be added to the
      * xPDOObject from the source object.
+     * @throws xPDOException
      */
-    public function fromJSON($jsonSource, $keyPrefix= '', $setPrimaryKeys= false, $rawValues= false, $adhocValues= false) {
-        $array= $this->xpdo->fromJSON($jsonSource, true);
+    public function fromJSON(
+        string $jsonSource,
+        string $keyPrefix = '',
+        bool   $setPrimaryKeys = false,
+        bool   $rawValues = false,
+        bool   $adhocValues = false
+    )
+    {
+        $array = $this->xpdo->fromJSON($jsonSource);
         if ($array) {
             $this->fromArray($array, $keyPrefix, $setPrimaryKeys, $rawValues, $adhocValues);
         } else {
@@ -2331,18 +2517,19 @@ class xPDOObject {
      * @param string $type The type of encoding algorithm to apply, md5 by default.
      * @return string The encoded string.
      */
-    public function encode($source, $type= 'md5') {
-        if (!is_string($source) || empty ($source)) {
+    public function encode(string $source, string $type = 'md5'): string
+    {
+        if (empty ($source)) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'xPDOObject::encode() -- Attempt to encode source data that is not a string (or is empty); encoding skipped.');
             return $source;
         }
         switch ($type) {
             case 'password':
             case 'md5':
-                $encoded= md5($source);
+                $encoded = md5($source);
                 break;
             default :
-                $encoded= $source;
+                $encoded = $source;
                 $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "xPDOObject::encode() -- Attempt to encode source data using an unsupported encoding algorithm ({$type}).");
                 break;
         }
@@ -2356,12 +2543,13 @@ class xPDOObject {
      * @param string $key The field name to check.
      * @return boolean True if the field exists and either has been modified or the object is new.
      */
-    public function isDirty($key) {
-        $dirty= false;
+    public function isDirty(string $key): bool
+    {
+        $dirty = false;
         $actualKey = $this->getField($key, true);
         if ($actualKey !== false) {
             if (array_key_exists($actualKey, $this->_dirty) || $this->isNew()) {
-                $dirty= true;
+                $dirty = true;
             }
         } else {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "xPDOObject::isDirty() -- Attempt to check if an unknown field ({$key}) has been modified.");
@@ -2376,13 +2564,13 @@ class xPDOObject {
      *
      * @param string $key The key of the field to set dirty.
      */
-    public function setDirty($key= '') {
+    public function setDirty(string $key = '')
+    {
         if (empty($key)) {
             foreach (array_keys($this->_fieldMeta) as $fIdx => $fieldKey) {
                 $this->setDirty($fieldKey);
             }
-        }
-        else {
+        } else {
             $key = $this->getField($key, true);
             if ($key !== false) {
                 $this->_dirty[$key] = $key;
@@ -2397,8 +2585,9 @@ class xPDOObject {
      * @return boolean True if the object has not been saved or was loaded from
      * the database.
      */
-    public function isNew() {
-        return (boolean) $this->_new;
+    public function isNew(): bool
+    {
+        return $this->_new;
     }
 
     /**
@@ -2408,11 +2597,12 @@ class xPDOObject {
      * @param string $key The field name to get the data type for.
      * @return string The DB data type of the field.
      */
-    protected function _getDataType($key) {
-        $type= 'text';
+    protected function _getDataType(string $key): string
+    {
+        $type = 'text';
         $actualKey = $this->getField($key, true);
         if ($actualKey !== false && isset($this->_fieldMeta[$actualKey]['dbtype'])) {
-            $type= strtolower($this->_fieldMeta[$actualKey]['dbtype']);
+            $type = strtolower($this->_fieldMeta[$actualKey]['dbtype']);
         } elseif ($this->xpdo->getDebug() === true) {
             $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "xPDOObject::_getDataType() -- No data type specified for field ({$key}), using `text`.");
         }
@@ -2426,11 +2616,12 @@ class xPDOObject {
      * @param string $key The field name to get the data type for.
      * @return string The PHP data type of the field.
      */
-    protected function _getPHPType($key) {
-        $type= 'string';
+    protected function _getPHPType(string $key): string
+    {
+        $type = 'string';
         $actualKey = $this->getField($key, true);
         if ($actualKey !== false && isset($this->_fieldMeta[$actualKey]['phptype'])) {
-            $type= strtolower($this->_fieldMeta[$actualKey]['phptype']);
+            $type = strtolower($this->_fieldMeta[$actualKey]['phptype']);
         } elseif ($this->xpdo->getDebug() === true) {
             $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "xPDOObject::_getPHPType() -- No PHP type specified for field ({$key}), using `string`.");
         }
@@ -2443,17 +2634,19 @@ class xPDOObject {
      * @access protected
      * @param string|array $fields A field name or array of field names to load
      * from the data source.
+     * @throws xPDOException
      */
-    protected function _loadFieldData($fields) {
-        if (!is_array($fields)) $fields= array($fields);
-        else $fields= array_values($fields);
-        $criteria= $this->xpdo->newQuery($this->_class, $this->getPrimaryKey());
+    protected function _loadFieldData($fields)
+    {
+        if (!is_array($fields)) $fields = array($fields);
+        else $fields = array_values($fields);
+        $criteria = $this->xpdo->newQuery($this->_class, $this->getPrimaryKey());
         $criteria->select($fields);
-        if ($rows= xPDOObject :: _loadRows($this->xpdo, $this->_class, $criteria)) {
-            $row= $rows->fetch(\PDO::FETCH_ASSOC);
+        if ($rows = xPDOObject:: _loadRows($this->xpdo, $this->_class, $criteria)) {
+            $row = $rows->fetch(PDO::FETCH_ASSOC);
             $rows->closeCursor();
             $this->fromArray($row, '', false, true);
-            $this->_lazy= array_diff($this->_lazy, $fields);
+            $this->_lazy = array_diff($this->_lazy, $fields);
         }
     }
 
@@ -2464,8 +2657,10 @@ class xPDOObject {
      * @param string $key The key identifying the field to set.
      * @param mixed $val The value to set.
      * @return boolean Returns true if the value was set, false otherwise.
+     * @throws xPDOException
      */
-    protected function _setRaw($key, $val) {
+    protected function _setRaw(string $key, $val): bool
+    {
         $set = false;
         if ($val === null) {
             $this->_fields[$key] = null;
@@ -2477,22 +2672,22 @@ class xPDOObject {
                 case 'int':
                 case 'integer':
                 case 'boolean':
-                    $this->_fields[$key] = (integer) $val;
+                    $this->_fields[$key] = (integer)$val;
                     $set = true;
                     break;
                 case 'float':
-                    $this->_fields[$key] = (float) $val;
+                    $this->_fields[$key] = (float)$val;
                     $set = true;
                     break;
                 case 'array':
                     if (is_array($val)) {
-                        $this->_fields[$key]= serialize($val);
+                        $this->_fields[$key] = serialize($val);
                         $set = true;
                     } elseif (is_string($val)) {
-                        $this->_fields[$key]= $val;
+                        $this->_fields[$key] = $val;
                         $set = true;
-                    } elseif (is_object($val) && $val instanceof xPDOObject) {
-                        $this->_fields[$key]= serialize($val->toArray());
+                    } elseif ($val instanceof xPDOObject) {
+                        $this->_fields[$key] = serialize($val->toArray());
                         $set = true;
                     }
                     break;
@@ -2502,12 +2697,12 @@ class xPDOObject {
                         if (is_array($v)) {
                             $this->_fields[$key] = $this->xpdo->toJSON($v);
                             $set = true;
-                        } elseif (is_object($v) && $v instanceof xPDOObject) {
+                        } elseif ($v instanceof xPDOObject) {
                             $this->_fields[$key] = $this->xpdo->toJSON($v->toArray());
                             $set = true;
                         }
                     } else {
-                        $this->_fields[$key]= $val;
+                        $this->_fields[$key] = $val;
                         $set = true;
                     }
                     break;
@@ -2515,10 +2710,11 @@ class xPDOObject {
                 case 'datetime':
                 case 'timestamp':
                     if (preg_match('/int/i', $dbtype)) {
-                        $this->_fields[$key] = (integer) $val;
+                        $this->_fields[$key] = (integer)$val;
                         $set = true;
                         break;
                     }
+                    break;
                 default:
                     $this->_fields[$key] = $val;
                     $set = true;
@@ -2537,11 +2733,11 @@ class xPDOObject {
      * default is 0, i.e. no limit.
      * @return array An array of aliases or an empty array if none are found.
      */
-    protected function _getAliases($class, $limit = 0) {
+    protected function _getAliases(string $class, int $limit = 0): array
+    {
         $aliases = array();
-        $limit = intval($limit);
         $array = array('aggregates' => $this->_aggregates, 'composites' => $this->_composites);
-        foreach ($array as $relType => $relations) {
+        foreach ($array as $relations) {
             foreach ($relations as $alias => $def) {
                 if (isset($def['class']) && $def['class'] == $class) {
                     $aliases[] = $alias;
@@ -2556,6 +2752,7 @@ class xPDOObject {
      * Allows dumping xPDOObject instances with var_dump/print_r without running out of memory.
      *
      * @return array
+     * @throws xPDOException
      */
     public function __debugInfo()
     {
