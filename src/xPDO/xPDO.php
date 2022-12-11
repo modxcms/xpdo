@@ -856,7 +856,7 @@ class xPDO {
      * the time to live in the result set cache; if cacheFlag === false, caching
      * is ignored for the collection and if cacheFlag === true, the objects will
      * live in cache until flushed by another process.
-     * @return array<int, T>|null An array of class instances retrieved.
+     * @return array<int, T> An array of class instances retrieved.
     */
     public function getCollection($className, $criteria= null, $cacheFlag= true) {
         return $this->call($className, 'loadCollection', array(& $this, $className, $criteria, $cacheFlag));
@@ -1046,7 +1046,8 @@ class xPDO {
      * Retrieves an xPDOObject instance with specified related objects.
      *
      * @uses xPDO::getCollectionGraph()
-     * @param string $className The name of the class to return an instance of.
+     * @template T of xPDOObject
+     * @param class-string<T> $className The name of the class to return an instance of.
      * @param string|array $graph A related object graph in array or JSON
      * format, e.g. array('relationAlias'=>array('subRelationAlias'=>array()))
      * or {"relationAlias":{"subRelationAlias":{}}}.  Note that the empty arrays
@@ -1054,7 +1055,7 @@ class xPDO {
      * @param mixed $criteria A valid xPDOCriteria instance or expression.
      * @param boolean|integer $cacheFlag Indicates if the result set should be
      * cached, and optionally for how many seconds.
-     * @return Om\xPDOObject|null The object instance with related objects from the graph
+     * @return T|null The object instance with related objects from the graph
      * hydrated, or null if no instance can be located by the criteria.
      */
     public function getObjectGraph($className, $graph, $criteria= null, $cacheFlag= true) {
@@ -1073,14 +1074,15 @@ class xPDO {
      * Retrieves a collection of xPDOObject instances with related objects.
      *
      * @uses xPDOQuery::bindGraph()
-     * @param string $className The name of the class to return a collection of.
+     * @template T of xPDOObject
+     * @param class-string<T> $className The name of the class to return a collection of.
      * @param string|array $graph A related object graph in array or JSON
      * format, e.g. array('relationAlias'=>array('subRelationAlias'=>array()))
      * or {"relationAlias":{"subRelationAlias":{}}}.  Note that the empty arrays
      * are necessary in order for the relation to be recognized.
      * @param mixed $criteria A valid xPDOCriteria instance or condition string.
      * @param boolean $cacheFlag Indicates if the result set should be cached.
-     * @return array An array of instances matching the criteria with related
+     * @return array<int, T> An array of instances matching the criteria with related
      * objects from the graph hydrated.  An empty array is returned when no
      * matches are found.
      */
