@@ -795,10 +795,11 @@ class xPDO {
      * xPDOObject::save()} is called the first time and is reflected by the
      * {@link xPDOObject::$_new} property.
      *
-     * @param string $className Name of the class to get a new instance of.
+     * @template T of xPDOObject
+     * @param class-string<T> $className Name of the class to get a new instance of.
      * @param array $fields An associated array of field names/values to
      * populate the object with.
-     * @return Om\xPDOObject|null A new instance of the specified class, or null if a
+     * @return T|null A new instance of the specified class, or null if a
      * new object could not be instantiated.
      */
     public function newObject($className, $fields= array ()) {
@@ -824,13 +825,14 @@ class xPDO {
      * cannot be located by the supplied criteria, null is returned.
      *
      * @uses xPDOObject::load()
-     * @param string $className Name of the class to get an instance of.
+     * @template T of xPDOObject
+     * @param class-string<T> $className Name of the class to get an instance of.
      * @param mixed $criteria Primary key of the record or a xPDOCriteria object.
      * @param mixed $cacheFlag If an integer value is provided, this specifies
      * the time to live in the object cache; if cacheFlag === false, caching is
      * ignored for the object and if cacheFlag === true, the object will live in
      * cache indefinitely.
-     * @return Om\xPDOObject|null An instance of the class, or null if it could not be
+     * @return T|null An instance of the class, or null if it could not be
      * instantiated.
     */
     public function getObject($className, $criteria= null, $cacheFlag= true) {
@@ -846,14 +848,15 @@ class xPDO {
      * Retrieves a collection of xPDOObjects by the specified xPDOCriteria.
      *
      * @uses xPDOObject::loadCollection()
-     * @param string $className Name of the class to search for instances of.
+     * @template T of xPDOObject
+     * @param class-string<T> $className Name of the class to search for instances of.
      * @param object|array|string $criteria An xPDOCriteria object or an array
      * search expression.
      * @param mixed $cacheFlag If an integer value is provided, this specifies
      * the time to live in the result set cache; if cacheFlag === false, caching
      * is ignored for the collection and if cacheFlag === true, the objects will
      * live in cache until flushed by another process.
-     * @return array|null An array of class instances retrieved.
+     * @return array<int, T>|null An array of class instances retrieved.
     */
     public function getCollection($className, $criteria= null, $cacheFlag= true) {
         return $this->call($className, 'loadCollection', array(& $this, $className, $criteria, $cacheFlag));
