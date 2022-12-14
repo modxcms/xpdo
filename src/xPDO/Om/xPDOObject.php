@@ -275,11 +275,12 @@ class xPDOObject {
      * Loads an instance from an associative array.
      *
      * @static
+     * @template T of xPDOObject
      * @param xPDO &$xpdo A valid xPDO instance.
-     * @param string $className Name of the class.
+     * @param class-string<T> $className Name of the class.
      * @param xPDOQuery|string $criteria A valid xPDOQuery instance or relation alias.
      * @param array $row The associative array containing the instance data.
-     * @return xPDOObject A new xPDOObject derivative representing a data row.
+     * @return T|null A new xPDOObject derivative representing a data row.
      */
     public static function _loadInstance(& $xpdo, $className, $criteria, $row) {
         $rowPrefix= '';
@@ -342,9 +343,10 @@ class xPDOObject {
      * Responsible for loading an instance into a collection.
      *
      * @static
+     * @template T of xPDOObject
      * @param xPDO &$xpdo A valid xPDO instance.
      * @param array &$objCollection The collection to load the instance into.
-     * @param string $className Name of the class.
+     * @param class-string<T> $className Name of the class.
      * @param mixed $criteria A valid primary key, criteria array, or xPDOCriteria instance.
      * @param array $row The associative array containing the instance data.
      * @param bool $fromCache If the instance is for the cache
@@ -384,13 +386,14 @@ class xPDOObject {
      * Load an instance of an xPDOObject or derivative class.
      *
      * @static
+     * @template T of xPDOObject
      * @param xPDO &$xpdo A valid xPDO instance.
-     * @param string $className Name of the class.
+     * @param class-string<T> $className Name of the class.
      * @param mixed $criteria A valid primary key, criteria array, or
      * xPDOCriteria instance.
      * @param bool|int $cacheFlag Indicates if the objects should be cached and
      * optionally, by specifying an integer value, for how many seconds.
-     * @return object|null An instance of the requested class, or null if it
+     * @return T|null An instance of the requested class, or null if it
      * could not be instantiated.
      */
     public static function load(xPDO & $xpdo, $className, $criteria, $cacheFlag= true) {
@@ -442,13 +445,14 @@ class xPDOObject {
      * Load a collection of xPDOObject instances.
      *
      * @static
+     * @template T of xPDOObject
      * @param xPDO &$xpdo A valid xPDO instance.
-     * @param string $className Name of the class.
+     * @param class-string<T> $className Name of the class.
      * @param mixed $criteria A valid primary key, criteria array, or xPDOCriteria instance.
      * @param boolean|integer $cacheFlag Indicates if the objects should be
      * cached and optionally, by specifying an integer value, for how many
      * seconds.
-     * @return array An array of xPDOObject instances or an empty array if no instances are loaded.
+     * @return array<int, T> An array of xPDOObject instances or an empty array if no instances are loaded.
      */
     public static function loadCollection(xPDO & $xpdo, $className, $criteria= null, $cacheFlag= true) {
         $objCollection= array ();
@@ -492,8 +496,9 @@ class xPDOObject {
      * Load a collection of xPDOObject instances and a graph of related objects.
      *
      * @static
+     * @template T of xPDOObject
      * @param xPDO &$xpdo A valid xPDO instance.
-     * @param string $className Name of the class.
+     * @param class-string<T> $className Name of the class.
      * @param string|array $graph A related object graph in array or JSON
      * format, e.g. array('relationAlias'=>array('subRelationAlias'=>array()))
      * or {"relationAlias":{"subRelationAlias":{}}}.  Note that the empty arrays
@@ -502,7 +507,7 @@ class xPDOObject {
      * @param boolean|integer $cacheFlag Indicates if the objects should be
      * cached and optionally, by specifying an integer value, for how many
      * seconds.
-     * @return array An array of xPDOObject instances or an empty array if no instances are loaded.
+     * @return array<int, T> An array of xPDOObject instances or an empty array if no instances are loaded.
      */
     public static function loadCollectionGraph(xPDO & $xpdo, $className, $graph, $criteria, $cacheFlag) {
         $objCollection = array();
@@ -609,7 +614,6 @@ class xPDOObject {
      *
      * @access public
      * @param xPDO &$xpdo A reference to a valid xPDO instance.
-     * @return xPDOObject
      */
     public function __construct(xPDO & $xpdo) {
         $this->xpdo= & $xpdo;

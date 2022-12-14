@@ -793,9 +793,9 @@ class xPDO {
      *
      * All new objects created with this method are transient until {@link
      * xPDOObject::save()} is called the first time and is reflected by the
-     * {@link xPDOObject::$_new} property.
+     * {@link Om\xPDOObject::$_new} property.
      *
-     * @template T of xPDOObject
+     * @template T of Om\xPDOObject
      * @param class-string<T> $className Name of the class to get a new instance of.
      * @param array $fields An associated array of field names/values to
      * populate the object with.
@@ -825,7 +825,7 @@ class xPDO {
      * cannot be located by the supplied criteria, null is returned.
      *
      * @uses xPDOObject::load()
-     * @template T of xPDOObject
+     * @template T of Om\xPDOObject
      * @param class-string<T> $className Name of the class to get an instance of.
      * @param mixed $criteria Primary key of the record or a xPDOCriteria object.
      * @param mixed $cacheFlag If an integer value is provided, this specifies
@@ -848,7 +848,7 @@ class xPDO {
      * Retrieves a collection of xPDOObjects by the specified xPDOCriteria.
      *
      * @uses xPDOObject::loadCollection()
-     * @template T of xPDOObject
+     * @template T of Om\xPDOObject
      * @param class-string<T> $className Name of the class to search for instances of.
      * @param object|array|string $criteria An xPDOCriteria object or an array
      * search expression.
@@ -1046,7 +1046,7 @@ class xPDO {
      * Retrieves an xPDOObject instance with specified related objects.
      *
      * @uses xPDO::getCollectionGraph()
-     * @template T of xPDOObject
+     * @template T of Om\xPDOObject
      * @param class-string<T> $className The name of the class to return an instance of.
      * @param string|array $graph A related object graph in array or JSON
      * format, e.g. array('relationAlias'=>array('subRelationAlias'=>array()))
@@ -1074,7 +1074,7 @@ class xPDO {
      * Retrieves a collection of xPDOObject instances with related objects.
      *
      * @uses xPDOQuery::bindGraph()
-     * @template T of xPDOObject
+     * @template T of Om\xPDOObject
      * @param class-string<T> $className The name of the class to return a collection of.
      * @param string|array $graph A related object graph in array or JSON
      * format, e.g. array('relationAlias'=>array('subRelationAlias'=>array()))
