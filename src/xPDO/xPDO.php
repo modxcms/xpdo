@@ -793,12 +793,13 @@ class xPDO {
      *
      * All new objects created with this method are transient until {@link
      * xPDOObject::save()} is called the first time and is reflected by the
-     * {@link xPDOObject::$_new} property.
+     * {@link Om\xPDOObject::$_new} property.
      *
-     * @param string $className Name of the class to get a new instance of.
+     * @template T of Om\xPDOObject
+     * @param class-string<T> $className Name of the class to get a new instance of.
      * @param array $fields An associated array of field names/values to
      * populate the object with.
-     * @return Om\xPDOObject|null A new instance of the specified class, or null if a
+     * @return T|null A new instance of the specified class, or null if a
      * new object could not be instantiated.
      */
     public function newObject($className, $fields= array ()) {
@@ -824,13 +825,14 @@ class xPDO {
      * cannot be located by the supplied criteria, null is returned.
      *
      * @uses xPDOObject::load()
-     * @param string $className Name of the class to get an instance of.
+     * @template T of Om\xPDOObject
+     * @param class-string<T> $className Name of the class to get an instance of.
      * @param mixed $criteria Primary key of the record or a xPDOCriteria object.
      * @param mixed $cacheFlag If an integer value is provided, this specifies
      * the time to live in the object cache; if cacheFlag === false, caching is
      * ignored for the object and if cacheFlag === true, the object will live in
      * cache indefinitely.
-     * @return Om\xPDOObject|null An instance of the class, or null if it could not be
+     * @return T|null An instance of the class, or null if it could not be
      * instantiated.
     */
     public function getObject($className, $criteria= null, $cacheFlag= true) {
@@ -846,14 +848,15 @@ class xPDO {
      * Retrieves a collection of xPDOObjects by the specified xPDOCriteria.
      *
      * @uses xPDOObject::loadCollection()
-     * @param string $className Name of the class to search for instances of.
+     * @template T of Om\xPDOObject
+     * @param class-string<T> $className Name of the class to search for instances of.
      * @param object|array|string $criteria An xPDOCriteria object or an array
      * search expression.
      * @param mixed $cacheFlag If an integer value is provided, this specifies
      * the time to live in the result set cache; if cacheFlag === false, caching
      * is ignored for the collection and if cacheFlag === true, the objects will
      * live in cache until flushed by another process.
-     * @return array|null An array of class instances retrieved.
+     * @return array<int, T> An array of class instances retrieved.
     */
     public function getCollection($className, $criteria= null, $cacheFlag= true) {
         return $this->call($className, 'loadCollection', array(& $this, $className, $criteria, $cacheFlag));
@@ -1043,7 +1046,8 @@ class xPDO {
      * Retrieves an xPDOObject instance with specified related objects.
      *
      * @uses xPDO::getCollectionGraph()
-     * @param string $className The name of the class to return an instance of.
+     * @template T of Om\xPDOObject
+     * @param class-string<T> $className The name of the class to return an instance of.
      * @param string|array $graph A related object graph in array or JSON
      * format, e.g. array('relationAlias'=>array('subRelationAlias'=>array()))
      * or {"relationAlias":{"subRelationAlias":{}}}.  Note that the empty arrays
@@ -1051,7 +1055,7 @@ class xPDO {
      * @param mixed $criteria A valid xPDOCriteria instance or expression.
      * @param boolean|integer $cacheFlag Indicates if the result set should be
      * cached, and optionally for how many seconds.
-     * @return Om\xPDOObject|null The object instance with related objects from the graph
+     * @return T|null The object instance with related objects from the graph
      * hydrated, or null if no instance can be located by the criteria.
      */
     public function getObjectGraph($className, $graph, $criteria= null, $cacheFlag= true) {
@@ -1070,14 +1074,15 @@ class xPDO {
      * Retrieves a collection of xPDOObject instances with related objects.
      *
      * @uses xPDOQuery::bindGraph()
-     * @param string $className The name of the class to return a collection of.
+     * @template T of Om\xPDOObject
+     * @param class-string<T> $className The name of the class to return a collection of.
      * @param string|array $graph A related object graph in array or JSON
      * format, e.g. array('relationAlias'=>array('subRelationAlias'=>array()))
      * or {"relationAlias":{"subRelationAlias":{}}}.  Note that the empty arrays
      * are necessary in order for the relation to be recognized.
      * @param mixed $criteria A valid xPDOCriteria instance or condition string.
      * @param boolean $cacheFlag Indicates if the result set should be cached.
-     * @return array An array of instances matching the criteria with related
+     * @return array<int, T> An array of instances matching the criteria with related
      * objects from the graph hydrated.  An empty array is returned when no
      * matches are found.
      */
