@@ -1,5 +1,11 @@
 This file shows the changes in this release of xPDO.
 
+xPDO 3.0.5 (January 12, 2023)
+====================================
+- Force query operator to the uppercase (#243)
+- Add public xpdo property to xPDOCriteria (#242)
+- Fix passing null to int param is deprecated (#229)
+
 xPDO 3.0.4 (May 27, 2022)
 ====================================
 - Update symfony/console version constraints (#227)
