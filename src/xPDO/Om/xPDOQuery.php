@@ -136,6 +136,12 @@ abstract class xPDOQuery extends xPDOCriteria {
                 }
             }
         }
+        if ($operators = json_decode($this->xpdo->getOption('allowed_sql_operators', null, ''))) {
+            if (is_array($operators)) $this->_operators = array_unique(array_merge($this->_operators, $operators));
+        }
+        if ($operators = json_decode($this->xpdo->getOption('denied_sql_operators', null, ''))) {
+            if (is_array($operators)) $this->_operators = array_diff($this->_operators, $operators);
+        }
     }
 
     /**
