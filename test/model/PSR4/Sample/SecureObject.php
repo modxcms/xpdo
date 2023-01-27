@@ -11,6 +11,9 @@ use xPDO\xPDO;
  */
 class SecureObject extends \xPDO\Om\xPDOSimpleObject implements Secure
 {
+    /**
+     * @inheritDoc
+     */
     public function isSecure()
     {
         return true;
