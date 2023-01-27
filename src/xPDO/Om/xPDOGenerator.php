@@ -778,7 +778,6 @@ EOD;
         try {
             $reflector = new xPDOReflectionClass($class);
 
-            $classHeader = rtrim($reflector->getSource(null, 0, $reflector->getStartLine() - 1, false), "\n");
             $classFooter = trim($reflector->getSource(null, $reflector->getEndLine(), null, false), " \n\r\t");
             if (!empty($classFooter)) $classFooter = rtrim($classFooter, "\n");
 
@@ -826,7 +825,7 @@ EOD;
                 $methodArray[] = $reflector->getSource($method);
             }
 
-            $meta['class-header'] = "{$classHeader}\n";
+            $meta['class-header'] = $this->_constructClassHeader($class, $meta);
             $meta['class-declaration'] = "class {$reflector->getShortName()} extends \\{$reflector->getParentClass()->getName()}{$interfaces}\n{";
             if (version_compare(PHP_VERSION, '5.4', '>=')) {
                 $meta['class-traits'] = implode("\n", $traitArray);
@@ -845,6 +844,9 @@ EOD;
             $meta['class-methods'] = implode("\n", $methodArray);
             $meta['class-close-declaration'] = "}\n";
             $meta['class-footer'] = $classFooter;
+            $meta['phpdoc-start'] = $this->_constructPhpDocStart($class, $meta);
+            $meta['phpdoc-properties'] = $this->_constructPhpDocProperties($this->map[$meta['class']]);
+            $meta['phpdoc-end'] = $this->_constructPhpDocEnd($class, $meta);
         } catch (\Exception $e) {
             $this->manager->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
@@ -873,7 +875,7 @@ EOD;
         $meta['class-footer'] = $this->_constructClassFooter($class, $meta);
         $meta['phpdoc-start'] = $this->_constructPhpDocStart($class, $meta);
         $meta['phpdoc-properties'] = $this->_constructPhpDocProperties($this->map[$meta['class']]);
-        $meta['phpdoc-end'] = $this->_constructPhpDpcEnd($class, $meta);
+        $meta['phpdoc-end'] = $this->_constructPhpDocEnd($class, $meta);
     }
 
     protected function _constructPhpDocStart($class, $meta) {
@@ -885,7 +887,7 @@ EOD;
         return implode(PHP_EOL, $output);
     }
 
-    protected function _constructPhpDpcEnd($class, $meta) {
+    protected function _constructPhpDocEnd($class, $meta) {
         $output = array(
             ' *'
         );
