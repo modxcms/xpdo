@@ -37,6 +37,14 @@ class xPDOReflectionClass extends ReflectionClass
 
         $parentClass = $this->getParentClass();
         if (!$parentClass instanceof ReflectionClass) {
+            foreach ($interfaceNames as &$interfaceName) {
+                if (str_starts_with($interfaceName, $this->getNamespaceName())) {
+                    $interfaceName = substr($interfaceName, strlen($this->getNamespaceName()) + 1);
+                } else {
+                    $interfaceName = '\\' . $interfaceName;
+                }
+            }
+
             return $interfaceNames;
         }
 
@@ -46,6 +54,11 @@ class xPDOReflectionClass extends ReflectionClass
                 continue;
             }
 
+            if (str_starts_with($interfaceName, $this->getNamespaceName())) {
+                $interfaceName = substr($interfaceName, strlen($this->getNamespaceName()) + 1);
+            } else {
+                $interfaceName = '\\' . $interfaceName;
+            }
             $localInterfaceNames[] = $interfaceName;
         }
 
@@ -78,7 +91,7 @@ class xPDOReflectionClass extends ReflectionClass
                         $comment = $element->getDocComment();
                         if (!empty($comment)) {
                             array_unshift($sourceArray,
-                                ($element instanceof ReflectionClass ? '' : '    ') . "{$comment}\n");
+                                $element instanceof ReflectionClass ? '' : '    ' . "{$comment}\n");
                         }
                     }
                     $source = implode('', $sourceArray);

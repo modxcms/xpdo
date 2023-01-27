@@ -13,5 +13,10 @@ namespace xPDO\Test\Sample;
 
 interface Secure
 {
+    /**
+     * Indicates if the object is secure.
+     *
+     * @return bool
+     */
     public function isSecure();
 }
