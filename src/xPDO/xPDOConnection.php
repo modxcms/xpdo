@@ -95,7 +95,7 @@ class xPDOConnection {
 
             $connected= (is_object($this->pdo));
             if ($connected) {
-                $connectFile = XPDO_CORE_PATH . 'om/' . $this->config['dbtype'] . '/connect.inc.php';
+                $connectFile = XPDO_CORE_PATH . 'Om/' . $this->config['dbtype'] . '/connect.inc.php';
                 if (!empty($this->config['connect_file']) && file_exists($this->config['connect_file'])) {
                     $connectFile = $this->config['connect_file'];
                 }
