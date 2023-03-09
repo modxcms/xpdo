@@ -465,8 +465,8 @@ class xPDO {
         $added= false;
         if (is_string($pkg) && !empty($pkg)) {
             if (!is_string($path) || empty($path)) {
-                $this->log(xPDO::LOG_LEVEL_ERROR, "Invalid path specified for package: {$pkg}; using default xpdo model path: " . XPDO_CORE_PATH . 'om/');
-                $path= XPDO_CORE_PATH . 'om/';
+                $this->log(xPDO::LOG_LEVEL_ERROR, "Invalid path specified for package: {$pkg}; using default xpdo model path: " . XPDO_CORE_PATH . 'Om/');
+                $path= XPDO_CORE_PATH . 'Om/';
             }
             if (!is_dir($path)) {
                 $this->log(xPDO::LOG_LEVEL_ERROR, "Path specified for package {$pkg} is not a valid or accessible directory: {$path}");
@@ -586,7 +586,7 @@ class xPDO {
      *
      * which will translate to:
      *
-     *    XPDO_CORE_PATH/om/dir_a/dir_b/dir_c/dbtype/classname.class.php
+     *    XPDO_CORE_PATH/Om/dir_a/dir_b/dir_c/dbtype/classname.class.php
      *
      * As of xPDO 3.0, the use of loadClass is only necessary to support BC
      * with older xPDO models. Auto-loading in models built with xPDO 3.0 or
