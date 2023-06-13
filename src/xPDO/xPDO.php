@@ -55,6 +55,7 @@ if (!defined('XPDO_CLI_MODE')) {
  *
  * @package xpdo
  */
+#[\AllowDynamicProperties]
 class xPDO {
     /**#@+
      * Constants
