@@ -212,11 +212,12 @@ class xPDOFileVehicle extends xPDOVehicle {
                 }
                 if (file_exists($fileSource) && is_writable($fileTarget)) {
                     $copied = false;
+					$options = isset($object[xPDOTransport::FILE_RESOLVE_OPTIONS]) ? $object[xPDOTransport::FILE_RESOLVE_OPTIONS] : array();
                     if (is_dir($fileSource)) {
-                        $copied = $cacheManager->copyTree($fileSource, $fileTarget . $fileName);
+                        $copied = $cacheManager->copyTree($fileSource, $fileTarget . $fileName, $options);
                     }
                     elseif (is_file($fileSource)) {
-                        $copied = $cacheManager->copyFile($fileSource, $fileTarget . $fileName);
+                        $copied = $cacheManager->copyFile($fileSource, $fileTarget . $fileName, $options);
                     }
                     if (!$copied) {
                         $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not copy file from {$fileSource} to {$fileTarget}{$fileName}");
