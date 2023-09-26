@@ -1,5 +1,13 @@
 This file shows the changes in this release of xPDO.
 
+xPDO 3.0.6 (September 26, 2023)
+====================================
+- Do not send expire to Redis when value is zero (#250)
+- Add ability to forward logs to classes implementing ArrayAccess (#233)
+- Add AllowDynamicProperties attribute to xPDO class (#251)
+- Change path references from om/ to Om/ (#248)
+- Fix update=2 option in xPDOGenerator::parseSchema (#246)
+
 xPDO 3.0.5 (January 12, 2023)
 ====================================
 - Force query operator to the uppercase (#243)
