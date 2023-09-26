@@ -54,7 +54,11 @@ class xPDORedisCache extends xPDOCache {
     }
 
     public function set($key, $var, $expire= 0, $options= array()) {
-        $set=$this->redis->set($this->getCacheKey($key),$var,$expire); 
+        if ($expire === 0) {
+            $set = $this->redis->set($this->getCacheKey($key),$var); 
+        } else {
+            $set = $this->redis->set($this->getCacheKey($key),$var,$expire); 
+        }
         return $set;
     }
 
