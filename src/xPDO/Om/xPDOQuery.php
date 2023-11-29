@@ -70,6 +70,7 @@ abstract class xPDOQuery extends xPDOCriteria {
     protected $_class= null;
     protected $_alias= null;
     protected $_tableClass = null;
+    protected $errors = [];
     public $graph= array ();
     public $query= array (
         'command' => 'SELECT',
@@ -669,6 +670,10 @@ abstract class xPDOQuery extends xPDOCriteria {
         } else {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Could not construct or prepare query because it is invalid or could not connect: ' . $this->sql);
         }
+        if (!empty($this->errors)) {
+            $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, implode("\r\n", $this->errors) . "\r\nQuery: " . $this->sql);
+        }
+
         return $this->stmt;
     }
 
@@ -782,7 +787,7 @@ abstract class xPDOQuery extends xPDOCriteria {
                                     }
                                 }
                                 if (empty($vals)) {
-                                    $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Encountered empty {$operator} condition with key {$key}");
+                                    $this->errors[] = "Encountered empty {$operator} condition with key {$key}.";
                                 }
                                 $val = "(" . implode(',', $vals) . ")";
                                 $sql = "{$this->xpdo->escape($alias)}.{$this->xpdo->escape($key)} {$operator} {$val}";
