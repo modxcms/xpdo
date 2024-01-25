@@ -498,10 +498,12 @@ class xPDOCacheManager {
                             }
                             elseif (is_file($path)) {
                                 if (is_array($extensions) && !empty($extensions) && !$this->endsWith($file, $extensions)) continue;
-                                if (unlink($path)) {
-                                    array_push($result, $path);
-                                } else {
-                                    $hasMore= true;
+                                if(file_exists($path)){
+                                    if (unlink($path)) {
+                                        array_push($result, $path);
+                                    } else {
+                                        $hasMore= true;
+                                    }
                                 }
                             }
                         }
