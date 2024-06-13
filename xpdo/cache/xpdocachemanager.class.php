@@ -219,7 +219,7 @@ class xPDOCacheManager {
                 $append = false;
                 break;
         }
-        $fmode = (strlen($mode) > 1 && in_array($mode[1], array('b', 't'))) ? "a{$mode[1]}" : 'a';
+        $fmode = (strlen($mode) > 1 && in_array($mode[1], array('b', 't'))) ? "{$mode[0]}{$mode[1]}" : $mode[0];
         $file= @fopen($filename, $fmode);
         if ($file) {
             if ($append === true) {
