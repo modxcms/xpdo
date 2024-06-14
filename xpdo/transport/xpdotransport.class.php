@@ -58,6 +58,7 @@ class xPDOTransport {
     const ABORT_INSTALL_ON_VEHICLE_FAIL = 'abort_install_on_vehicle_fail';
     const PACKAGE_NAME = 'package_name';
     const PACKAGE_VERSION = 'package_version';
+    const FILE_RESOLVE_OPTIONS = 'file_resolve_options';
     /**
      * Indicates how pre-existing objects are treated on install/uninstall.
      * @var integer

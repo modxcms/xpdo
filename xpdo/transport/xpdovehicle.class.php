@@ -383,6 +383,7 @@ abstract class xPDOVehicle {
         $cacheManager = $transport->xpdo->getCacheManager();
         if ($cacheManager) {
             if (isset ($this->payload['resolve']) && is_array($this->payload['resolve'])) {
+				$fro = isset($this->payload[xPDOTransport::FILE_RESOLVE_OPTIONS]) ? $this->payload[xPDOTransport::FILE_RESOLVE_OPTIONS] : array();
                 foreach ($this->payload['resolve'] as $rKey => $r) {
                     $type = $r['type'];
                     $body = array ();
@@ -399,11 +400,15 @@ abstract class xPDOVehicle {
                             }
                             if (file_exists($fileSource) && is_writable($fileTarget)) {
                                 $copied = false;
+								$o = $fro;
+								if (isset($r[xPDOTransport::FILE_RESOLVE_OPTIONS])) {
+									$o = array_merge($fro, $r[xPDOTransport::FILE_RESOLVE_OPTIONS]);
+								}
                                 if (is_dir($fileSource)) {
-                                    $copied = $cacheManager->copyTree($fileSource, $fileTarget . $fileName);
+                                    $copied = $cacheManager->copyTree($fileSource, $fileTarget . $fileName, $o);
                                 }
                                 elseif (is_file($fileSource)) {
-                                    $copied = $cacheManager->copyFile($fileSource, $fileTarget . $fileName);
+                                    $copied = $cacheManager->copyFile($fileSource, $fileTarget . $fileName, $o);
                                 }
                                 if (!$copied) {
                                     $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not copy file from {$fileSource} to {$fileTarget}{$fileName}");
