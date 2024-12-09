@@ -1,5 +1,9 @@
 This file shows the changes in this release of xPDO.
 
+xPDO 3.1.5 (December 9, 2024)
+====================================
+- Validate Directory resource in xPDOCacheManager->deleteTree() (#255)
+
 xPDO 3.1.4 (September 26, 2023)
 ====================================
 - Do not send expire to Redis when value is zero (#250)
