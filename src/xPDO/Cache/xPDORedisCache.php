@@ -48,7 +48,7 @@ class xPDORedisCache extends xPDOCache {
     public function add($key, $var, $expire= 0, $options= array()) {
         $added= false;
         if(!$this->redis->exists($this->getCacheKey($key))){          
-            $added=$this->redis->set($this->getCacheKey($key),$var,$expire); 
+            $added=$this->set($key, $var, $expire); 
         }
         return $added;
     }
@@ -65,7 +65,7 @@ class xPDORedisCache extends xPDOCache {
     public function replace($key, $var, $expire= 0, $options= array()) {
         $replaced=false;
         if($this->redis->exists($this->getCacheKey($key))){          
-            $replaced=$this->redis->set($this->getCacheKey($key),$var,$expire); 
+            $replaced=$this->set($key, $var, $expire); 
         }
         return $replaced;
     }
