@@ -10,7 +10,7 @@ on:
 jobs:
   sqllite-check:
     name: SQL Lite Check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -48,7 +48,7 @@ jobs:
 
   mysql-check:
     name: MySQL Check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     services:
       mysql:
@@ -97,7 +97,7 @@ jobs:
 
   postgresql-check:
     name: PostgreSQL Check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     services:
       postgres:
