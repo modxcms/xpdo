@@ -24,7 +24,7 @@ use xPDO\Om\xPDOCriteria;
 use xPDO\Om\xPDOQuery;
 
 if (!defined('XPDO_CORE_PATH')) {
-    $xpdo_core_path= strtr(realpath(dirname(__FILE__)), '\\', '/') . '/';
+    $xpdo_core_path= strtr(dirname(__FILE__), '\\', '/') . '/';
     /**
      * @var string The full path to the xPDO root directory.
      */
