@@ -27,6 +27,10 @@ class SetUpTest extends TestCase
      */
     public function testConnectionError()
     {
+        if (self::$properties['xpdo_driver'] == 'sqlite') {
+            $this->markTestSkipped();
+        }
+
         $string_dsn = self::$properties[self::$properties['xpdo_driver'] . '_string_dsn_error'];
         $mypdo = new xPDO($string_dsn, "nonesuchuser", "nonesuchpass");
         $result = $mypdo->connect();

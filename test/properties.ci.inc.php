@@ -66,7 +66,7 @@ $properties['pgsql_array_options']= array(
 /* sqlite */
 $properties['sqlite_string_dsn_test']= 'sqlite:' . $properties['xpdo_test_path'] . 'db/xpdotest';
 $properties['sqlite_string_dsn_nodb']= 'sqlite::memory:';
-$properties['sqlite_string_dsn_error']= 'sqlite:db/';
+$properties['sqlite_string_dsn_error']= 'sqlite:db/folderdoesnotexist/';
 $properties['sqlite_string_username']= '';
 $properties['sqlite_string_password']= '';
 $properties['sqlite_array_driverOptions']= [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_SILENT];
