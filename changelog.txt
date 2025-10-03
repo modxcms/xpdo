@@ -1,5 +1,10 @@
 This file shows the changes in this release of xPDO.
 
+xPDO 3.1.6 (October 3, 2025)
+====================================
+- xPDORedisCache expire can't be zero (#261)
+- Remove realpath to enable xPDO usage in PHARs (#262)
+
 xPDO 3.1.5 (December 9, 2024)
 ====================================
 - Validate Directory resource in xPDOCacheManager->deleteTree() (#255)
