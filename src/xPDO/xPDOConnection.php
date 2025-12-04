@@ -59,7 +59,7 @@ class xPDOConnection {
         }
         $this->config['driverOptions']= $driverOptions;
         if (array_key_exists(xPDO::OPT_CONN_MUTABLE, $this->config)) {
-            $this->_mutable= (boolean) $this->config[xPDO::OPT_CONN_MUTABLE];
+            $this->_mutable= (bool) $this->config[xPDO::OPT_CONN_MUTABLE];
         }
     }
 

@@ -185,7 +185,7 @@ if (!empty($debug)) {
 }
 
 error_reporting($error_reporting);
-ini_set('display_errors', (boolean) $display_errors);
+ini_set('display_errors', (bool) $display_errors);
 
 $xpdo->setPackage($pkg, $pkg_path);
 

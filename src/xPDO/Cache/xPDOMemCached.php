@@ -31,9 +31,9 @@ class xPDOMemCached extends xPDOCache {
                 $servers = explode(',', $this->getOption($this->key . '_memcached_server', $options, $this->getOption('memcached_server', $options, 'localhost:11211')));
                 foreach ($servers as $server) {
                     $server = explode(':', $server);
-                    $this->memcached->addServer($server[0], (integer) $server[1]);
+                    $this->memcached->addServer($server[0], (int) $server[1]);
                 }
-                $this->memcached->setOption(Memcached::OPT_COMPRESSION, (boolean) $this->getOption($this->key . '_memcached_compression', $options, $this->getOption('memcached_compression', $options, $this->getOption(Memcached::OPT_COMPRESSION, $options, true))));
+                $this->memcached->setOption(Memcached::OPT_COMPRESSION, (bool) $this->getOption($this->key . '_memcached_compression', $options, $this->getOption('memcached_compression', $options, $this->getOption(Memcached::OPT_COMPRESSION, $options, true))));
                 $this->initialized = true;
             } else {
                 $this->memcached = null;

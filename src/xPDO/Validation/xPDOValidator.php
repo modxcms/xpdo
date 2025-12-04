@@ -68,7 +68,7 @@ class xPDOValidator {
                                 if (is_null($this->object->_fields[$column])) {
                                     $result = false;
                                 } else {
-                                    $result = (boolean)preg_match($rule['rule'], $this->object->_fields[$column]);
+                                    $result = (bool)preg_match($rule['rule'], $this->object->_fields[$column]);
                                 }
                                 if (!$result) $this->addMessage($column, $ruleName, isset($rule['parameters']['message']) ? $rule['parameters']['message'] : $ruleName . ' failed');
                                 if ($this->object->xpdo->getDebug() === true)

@@ -100,7 +100,7 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
                             foreach ($val as $v) {
                                 switch ($type) {
                                     case \PDO::PARAM_INT:
-                                        $vals[] = (integer) $v;
+                                        $vals[] = (int) $v;
                                         break;
                                     case \PDO::PARAM_STR:
                                         $vals[] = $this->xpdo->quote($v);

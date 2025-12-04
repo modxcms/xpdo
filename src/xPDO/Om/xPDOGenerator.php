@@ -240,12 +240,12 @@ abstract class xPDOGenerator {
     public function parseSchema($schemaFile, $outputDir= '', $options = array()) {
         $this->_reset();
         if (!is_array($options)) {
-            $compile = (boolean) $options;
+            $compile = (bool) $options;
         } else {
-            $compile = array_key_exists('compile', $options) ? (boolean) $options['compile'] : false;
+            $compile = array_key_exists('compile', $options) ? (bool) $options['compile'] : false;
         }
-        $regenerate = array_key_exists('regenerate', $options) ? (integer) $options['regenerate'] : 0;
-        $update = array_key_exists('update', $options) ? (integer) $options['update'] : 2;
+        $regenerate = array_key_exists('regenerate', $options) ? (int) $options['regenerate'] : 0;
+        $update = array_key_exists('update', $options) ? (int) $options['update'] : 2;
         $namespacePrefix = array_key_exists('namespacePrefix', $options) ? trim($options['namespacePrefix'], '\\') : '';
 
         $this->schemaFile= $schemaFile;
@@ -307,7 +307,7 @@ abstract class xPDOGenerator {
                                             case 'integer':
                                             case 'boolean':
                                             case 'bit':
-                                                $fldAttrValue = (integer) $fldAttrValue;
+                                                $fldAttrValue = (int) $fldAttrValue;
                                                 break;
                                             case 'float':
                                             case 'numeric':

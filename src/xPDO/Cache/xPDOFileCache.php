@@ -56,7 +56,7 @@ class xPDOFileCache extends xPDOCache {
                 $expireContent= 'if(time() > ' . $expirationTS . '){return null;}';
             }
             $fileName= $this->getCacheKey($key, $options);
-            $format = (integer) $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, xPDOCacheManager::CACHE_PHP);
+            $format = (int) $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, xPDOCacheManager::CACHE_PHP);
             switch ($format) {
                 case xPDOCacheManager::CACHE_SERIALIZE:
                     $content= serialize(array('expires' => $expirationTS, 'content' => $var));
@@ -107,7 +107,7 @@ class xPDOFileCache extends xPDOCache {
         $cacheKey= $this->getCacheKey($key, $options);
         if (file_exists($cacheKey)) {
             if ($file = @fopen($cacheKey, 'rb')) {
-                $format = (integer) $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, xPDOCacheManager::CACHE_PHP);
+                $format = (int) $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, xPDOCacheManager::CACHE_PHP);
                 if (flock($file, LOCK_SH)) {
                     switch ($format) {
                         case xPDOCacheManager::CACHE_PHP:

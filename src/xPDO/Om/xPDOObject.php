@@ -460,7 +460,7 @@ class xPDOObject {
         if (!$className= $xpdo->loadClass($className)) return $objCollection;
         $rows= false;
         $fromCache= false;
-        $collectionCaching = (integer) $xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
+        $collectionCaching = (int) $xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
         if (!is_object($criteria)) {
             $criteria= $xpdo->getCriteria($className, $criteria, $cacheFlag);
         }
@@ -516,7 +516,7 @@ class xPDOObject {
             $query->bindGraph($graph);
             $rows = array();
             $fromCache = false;
-            $collectionCaching = (integer) $xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
+            $collectionCaching = (int) $xpdo->getOption(xPDO::OPT_CACHE_DB_COLLECTIONS, array(), 1);
             if ($collectionCaching > 0 && $xpdo->_cacheEnabled && $cacheFlag) {
                 $rows= $xpdo->fromCache($query);
                 $fromCache = !empty($rows);
@@ -797,7 +797,7 @@ class xPDOObject {
                         //type validation
                         $phptype= $this->_fieldMeta[$k]['phptype'];
                         $dbtype= $this->_fieldMeta[$k]['dbtype'];
-                        $allowNull= isset($this->_fieldMeta[$k]['null']) ? (boolean) $this->_fieldMeta[$k]['null'] : true;
+                        $allowNull= isset($this->_fieldMeta[$k]['null']) ? (bool) $this->_fieldMeta[$k]['null'] : true;
                         if ($v === null) {
                             if ($allowNull) {
                                 $this->_fields[$k]= null;
@@ -813,7 +813,7 @@ class xPDOObject {
                                     $ts= false;
                                     if (preg_match('/int/i', $dbtype)) {
                                         if (strtolower($vType) == 'integer' || is_int($v) || $v == '0') {
-                                            $ts= (integer) $v;
+                                            $ts= (int) $v;
                                         } else {
                                             $ts= strtotime($v);
                                         }
@@ -842,7 +842,7 @@ class xPDOObject {
                                 case 'date' :
                                     if (preg_match('/int/i', $dbtype)) {
                                         if (strtolower($vType) == 'integer' || is_int($v) || $v == '0') {
-                                            $ts= (integer) $v;
+                                            $ts= (int) $v;
                                         } else {
                                             $ts= strtotime($v);
                                         }
@@ -974,7 +974,7 @@ class xPDOObject {
                 if ($value !== null) {
                     switch ($fieldType) {
                         case 'boolean' :
-                            $value= (boolean) $value;
+                            $value= (bool) $value;
                             break;
                         case 'integer' :
                             $value= intval($value);
@@ -1707,8 +1707,8 @@ class xPDOObject {
                             array(
                                 xPDO::OPT_CACHE_KEY => $this->getOption('cache_db_key', null, 'db'),
                                 xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, null, $this->getOption(xPDO::OPT_CACHE_HANDLER, null, 'xPDO\\Cache\\xPDOFileCache')),
-                                xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, xPDOCacheManager::CACHE_PHP)),
-                                xPDO::OPT_CACHE_EXPIRES => (integer) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
+                                xPDO::OPT_CACHE_FORMAT => (int) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, xPDOCacheManager::CACHE_PHP)),
+                                xPDO::OPT_CACHE_EXPIRES => (int) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
                                 xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', null, xPDOCacheManager::CACHE_DIR)
                             )
                         );
@@ -2402,7 +2402,7 @@ class xPDOObject {
      * the database.
      */
     public function isNew() {
-        return (boolean) $this->_new;
+        return (bool) $this->_new;
     }
 
     /**
@@ -2481,7 +2481,7 @@ class xPDOObject {
                 case 'int':
                 case 'integer':
                 case 'boolean':
-                    $this->_fields[$key] = (integer) $val;
+                    $this->_fields[$key] = (int) $val;
                     $set = true;
                     break;
                 case 'float':
@@ -2519,7 +2519,7 @@ class xPDOObject {
                 case 'datetime':
                 case 'timestamp':
                     if (preg_match('/int/i', $dbtype)) {
-                        $this->_fields[$key] = (integer) $val;
+                        $this->_fields[$key] = (int) $val;
                         $set = true;
                         break;
                     }
