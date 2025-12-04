@@ -57,7 +57,7 @@ class xPDOFileVehicle extends xPDOVehicle {
             $fileTargetPath = $fileTarget . $fileName;
             $preExistingMode = xPDOTransport::PRESERVE_PREEXISTING;
             if (isset ($vOptions[xPDOTransport::PREEXISTING_MODE])) {
-                $preExistingMode = (integer) $vOptions[xPDOTransport::PREEXISTING_MODE];
+                $preExistingMode = (int) $vOptions[xPDOTransport::PREEXISTING_MODE];
             }
             $cacheManager = $transport->xpdo->getCacheManager();
             if ($this->validate($transport, $object, $vOptions)) {
@@ -120,7 +120,7 @@ class xPDOFileVehicle extends xPDOVehicle {
             $fileTarget = eval ($object['target']);
             $preExistingMode = xPDOTransport::PRESERVE_PREEXISTING;
             if (isset ($vOptions[xPDOTransport::PREEXISTING_MODE])) {
-                $preExistingMode = (integer) $vOptions[xPDOTransport::PREEXISTING_MODE];
+                $preExistingMode = (int) $vOptions[xPDOTransport::PREEXISTING_MODE];
             }
             $cacheManager = $transport->xpdo->getCacheManager();
             $path = $fileTarget . $fileName;

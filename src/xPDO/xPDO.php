@@ -910,7 +910,7 @@ class xPDO {
                                 $this->cacheManager->delete($relatedClass, array(
                                     xPDO::OPT_CACHE_KEY => $this->getOption('cache_db_key', null, 'db'),
                                     xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, null, $this->getOption(xPDO::OPT_CACHE_HANDLER, null, 'xPDO\\Cache\\xPDOFileCache')),
-                                    xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, Cache\xPDOCacheManager::CACHE_PHP)),
+                                    xPDO::OPT_CACHE_FORMAT => (int) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, Cache\xPDOCacheManager::CACHE_PHP)),
                                     xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', null, Cache\xPDOCacheManager::CACHE_DIR),
                                     xPDO::OPT_CACHE_MULTIPLE_OBJECT_DELETE => true
                                 ));
@@ -2300,7 +2300,7 @@ class xPDO {
                     $result= $this->cacheManager->get($sig, array(
                         xPDO::OPT_CACHE_KEY => $this->getOption('cache_db_key', $options, 'db'),
                         xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, $options, $this->getOption(xPDO::OPT_CACHE_HANDLER, $options, 'xPDO\\Cache\\xPDOFileCache')),
-                        xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, Cache\xPDOCacheManager::CACHE_PHP)),
+                        xPDO::OPT_CACHE_FORMAT => (int) $this->getOption('cache_db_format', null, $this->getOption(xPDO::OPT_CACHE_FORMAT, null, Cache\xPDOCacheManager::CACHE_PHP)),
                         'cache_prefix' => $this->getOption('cache_db_prefix', $options, Cache\xPDOCacheManager::CACHE_DIR),
                     ));
                     if ($this->getDebug() === true) {
@@ -2387,8 +2387,8 @@ class xPDO {
                                     $removed= $this->cacheManager->delete($gClass, array_merge($options, array(
                                         xPDO::OPT_CACHE_KEY => $this->getOption('cache_db_key', $options, 'db'),
                                         xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, $options, $this->getOption(xPDO::OPT_CACHE_HANDLER, $options, 'xPDO\\Cache\\xPDOFileCache')),
-                                        xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', $options, $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, Cache\xPDOCacheManager::CACHE_PHP)),
-                                        xPDO::OPT_CACHE_EXPIRES => (integer) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
+                                        xPDO::OPT_CACHE_FORMAT => (int) $this->getOption('cache_db_format', $options, $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, Cache\xPDOCacheManager::CACHE_PHP)),
+                                        xPDO::OPT_CACHE_EXPIRES => (int) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
                                         xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', $options, Cache\xPDOCacheManager::CACHE_DIR),
                                         xPDO::OPT_CACHE_MULTIPLE_OBJECT_DELETE => true
                                     )));
@@ -2401,8 +2401,8 @@ class xPDO {
                         $cacheOptions = array_merge($options, array(
                             xPDO::OPT_CACHE_KEY => $this->getOption('cache_db_key', $options, 'db'),
                             xPDO::OPT_CACHE_HANDLER => $this->getOption(xPDO::OPT_CACHE_DB_HANDLER, $options, $this->getOption(xPDO::OPT_CACHE_HANDLER, $options, 'xPDO\\Cache\\xPDOFileCache')),
-                            xPDO::OPT_CACHE_FORMAT => (integer) $this->getOption('cache_db_format', $options, $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, Cache\xPDOCacheManager::CACHE_PHP)),
-                            xPDO::OPT_CACHE_EXPIRES => (integer) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
+                            xPDO::OPT_CACHE_FORMAT => (int) $this->getOption('cache_db_format', $options, $this->getOption(xPDO::OPT_CACHE_FORMAT, $options, Cache\xPDOCacheManager::CACHE_PHP)),
+                            xPDO::OPT_CACHE_EXPIRES => (int) $this->getOption(xPDO::OPT_CACHE_DB_EXPIRES, null, $this->getOption(xPDO::OPT_CACHE_EXPIRES, null, 0)),
                             xPDO::OPT_CACHE_PREFIX => $this->getOption('cache_db_prefix', $options, Cache\xPDOCacheManager::CACHE_DIR)
                         ));
                         $result= $this->cacheManager->set($sig, $object, $lifetime, $cacheOptions);
@@ -2580,7 +2580,7 @@ class xPDO {
                 break;
             case \PDO::PARAM_INT:
                 $quoted = trim($quoted);
-                $quoted = (integer) trim($quoted, "'");
+                $quoted = (int) trim($quoted, "'");
                 break;
             default:
                 break;

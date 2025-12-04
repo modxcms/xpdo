@@ -215,8 +215,8 @@ class xPDOCacheManager {
             } else {
                 $locked = false;
                 $attempt = 1;
-                $attempts = (integer) $this->getOption(xPDO::OPT_CACHE_ATTEMPTS, $options, 1);
-                $attemptDelay = (integer) $this->getOption(xPDO::OPT_CACHE_ATTEMPT_DELAY, $options, 1000);
+                $attempts = (int) $this->getOption(xPDO::OPT_CACHE_ATTEMPTS, $options, 1);
+                $attemptDelay = (int) $this->getOption(xPDO::OPT_CACHE_ATTEMPT_DELAY, $options, 1000);
                 while (!$locked && ($attempts === 0 || $attempt <= $attempts)) {
                     if ($this->getOption('use_flock', $options, true)) {
                         $locked = flock($file, LOCK_EX | LOCK_NB);
@@ -466,7 +466,7 @@ class xPDOCacheManager {
             if (!is_array($options)) {
                 $numArgs = func_num_args();
                 $options = array(
-                    'deleteTop' => is_scalar($options) ? (boolean) $options : false
+                    'deleteTop' => is_scalar($options) ? (bool) $options : false
                     ,'skipDirs' => $numArgs > 2 ? func_get_arg(2) : false
                     ,'extensions' => $numArgs > 3 ? func_get_arg(3) : array('.cache.php')
                 );

@@ -38,12 +38,12 @@ class xPDORedisCache extends xPDOCache
                         $this->getOption('redis_server', $options, 'localhost:6379')
                     )
                 );
-                if ($this->redis->pconnect($server[0], (integer)$server[1])) {
+                if ($this->redis->pconnect($server[0], (int)$server[1])) {
                     $redis_auth = $this->getOption('redis_auth', $options, '');
                     if (!empty($redis_auth)) {
                         $this->redis->auth($redis_auth);
                     }
-                    $this->redis->select((integer)$this->getOption('redis_db', $options, 0));
+                    $this->redis->select((int)$this->getOption('redis_db', $options, 0));
                     $this->redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
                     $this->initialized = true;
                 }

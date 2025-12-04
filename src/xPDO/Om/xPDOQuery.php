@@ -770,7 +770,7 @@ abstract class xPDOQuery extends xPDOCriteria {
                                     } else {
                                         switch ($type) {
                                             case \PDO::PARAM_INT:
-                                                $vals[] = (integer) $v;
+                                                $vals[] = (int) $v;
                                                 break;
                                             case \PDO::PARAM_STR:
                                                 $vals[] = $this->xpdo->quote($v);

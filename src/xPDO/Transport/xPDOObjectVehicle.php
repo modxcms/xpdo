@@ -60,7 +60,7 @@ class xPDOObjectVehicle extends xPDOVehicle {
                 $options = array_merge($options, $element);
                 $setKeys = false;
                 if (isset ($options[xPDOTransport::PRESERVE_KEYS])) {
-                    $setKeys = (boolean) $options[xPDOTransport::PRESERVE_KEYS];
+                    $setKeys = (bool) $options[xPDOTransport::PRESERVE_KEYS];
                 }
                 $object->fromJSON($element['object'], '', $setKeys, true);
             }

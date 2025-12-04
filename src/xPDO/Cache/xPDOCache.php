@@ -36,7 +36,7 @@ abstract class xPDOCache {
      * @return boolean true if the implementation was initialized successfully.
      */
     public function isInitialized() {
-        return (boolean) $this->initialized;
+        return (bool) $this->initialized;
     }
 
     /**

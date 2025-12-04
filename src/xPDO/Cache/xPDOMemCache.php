@@ -31,13 +31,13 @@ class xPDOMemCache extends xPDOCache {
                 $servers = explode(',', $this->getOption($this->key . '_memcached_server', $options, $this->getOption('memcached_server', $options, 'localhost:11211')));
                 foreach ($servers as $server) {
                     $server = explode(':', $server);
-                    $this->memcache->addServer($server[0], (integer) $server[1]);
+                    $this->memcache->addServer($server[0], (int) $server[1]);
                 }
                 $compressThreshold = $this->getOption($this->key . '_memcached_compress_threshold', $options, $this->getOption('memcached_compress_threshold', array(), '20000:0.2'));
                 if (!empty($compressThreshold)) {
                     $threshold = explode(':', $compressThreshold);
                     if (count($threshold) == 2) {
-                        $minValue = (integer) $threshold[0];
+                        $minValue = (int) $threshold[0];
                         $minSaving = (float) $threshold[1];
                         if ($minSaving >= 0 && $minSaving <= 1) {
                             $this->memcache->setCompressThreshold($minValue, $minSaving);
