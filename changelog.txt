@@ -1,5 +1,9 @@
 This file shows the changes in this release of xPDO.
 
+xPDO 3.1.7 (December 4, 2025)
+====================================
+- PHP 8.5 compatibility (#264)
+
 xPDO 3.1.6 (October 3, 2025)
 ====================================
 - xPDORedisCache expire can't be zero (#261)
