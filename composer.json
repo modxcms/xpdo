@@ -20,9 +20,11 @@
         "ext-json": "*",
         "ext-simplexml": "*",
         "symfony/console": "^5.4",
-        "psr/container": "^1.1 || ^2.0.1"
+        "psr/container": "^1.1 || ^2.0.1",
+        "psr/log": "^2.0"
     },
     "require-dev": {
+        "monolog/monolog": "^3.0",
         "yoast/phpunit-polyfills": "^1.0"
     },
     "suggest": {

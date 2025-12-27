@@ -20,6 +20,8 @@ namespace xPDO;
 
 use Composer\Autoload\ClassLoader;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use xPDO\Om\xPDOCriteria;
 use xPDO\Om\xPDOQuery;
 
@@ -156,6 +158,10 @@ class xPDO {
      */
     public $services= null;
     /**
+     * @var LoggerInterface|null A PSR-3 logger instance for this xPDO instance.
+     */
+    public $logger= null;
+    /**
      * @var float Start time of the request, initialized when the constructor is
      * called.
      */
@@ -278,6 +284,7 @@ class xPDO {
             if ($this->services === null) {
                 $this->services = new xPDOContainer();
             }
+            $this->initializeLogger($options);
             $this->setLogLevel($this->getOption('log_level', null, xPDO::LOG_LEVEL_FATAL, true));
             $this->setLogTarget($this->getOption('log_target', null, php_sapi_name() === 'cli' ? 'ECHO' : 'HTML', true));
             if (!empty($dsn)) {
@@ -357,6 +364,25 @@ class xPDO {
         }
 
         return $data;
+    }
+
+    /**
+     * Initialize a PSR-3 logger from constructor options, if provided.
+     *
+     * @param array|ContainerInterface $options
+     * @return void
+     */
+    protected function initializeLogger($options) {
+        $logger = null;
+        if ($options instanceof ContainerInterface && $options->has('logger')) {
+            $logger = $options->get('logger');
+        } elseif (is_array($options) && isset($options['logger'])) {
+            $logger = $options['logger'];
+        }
+
+        if ($logger instanceof LoggerInterface) {
+            $this->logger = $logger;
+        }
     }
 
     /**
@@ -2047,6 +2073,11 @@ class xPDO {
         if ($level !== xPDO::LOG_LEVEL_FATAL && $level > $this->logLevel && $this->_debug !== true) {
             return;
         }
+        list($file, $line) = $this->resolveLogLocation($file, $line);
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logToPsr($level, $msg, $def, $file, $line);
+            return;
+        }
         if (empty ($target)) {
             $target = $this->logTarget;
         }
@@ -2054,22 +2085,6 @@ class xPDO {
         if (is_array($target)) {
             if (isset($target['options'])) $targetOptions =& $target['options'];
             $target = isset($target['target']) ? $target['target'] : 'ECHO';
-        }
-        if (empty($file)) {
-            if (version_compare(phpversion(), '5.4.0', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-            } elseif (version_compare(phpversion(), '5.3.6', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            } else {
-                $backtrace = debug_backtrace();
-            }
-            if ($backtrace && isset($backtrace[2])) {
-                $file = $backtrace[2]['file'];
-                $line = $backtrace[2]['line'];
-            }
-        }
-        if (empty($file) && isset($_SERVER['SCRIPT_NAME'])) {
-            $file = $_SERVER['SCRIPT_NAME'];
         }
         if ($level === xPDO::LOG_LEVEL_FATAL) {
             while (ob_get_level() && @ob_end_flush()) {}
@@ -2121,6 +2136,99 @@ class xPDO {
             } else {
                 echo $content;
             }
+        }
+    }
+
+    /**
+     * Resolve the log file and line for a log entry.
+     *
+     * @param string $file
+     * @param string $line
+     * @return array
+     */
+    protected function resolveLogLocation($file, $line) {
+        if (empty($file)) {
+            if (version_compare(phpversion(), '5.4.0', '>=')) {
+                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+            } elseif (version_compare(phpversion(), '5.3.6', '>=')) {
+                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+            } else {
+                $backtrace = debug_backtrace();
+            }
+            if ($backtrace && isset($backtrace[2])) {
+                $file = $backtrace[2]['file'];
+                $line = $backtrace[2]['line'];
+            }
+        }
+        if (empty($file) && isset($_SERVER['SCRIPT_NAME'])) {
+            $file = $_SERVER['SCRIPT_NAME'];
+        }
+        return array($file, $line);
+    }
+
+    /**
+     * Send a log entry to a PSR-3 logger.
+     *
+     * @param integer $level
+     * @param mixed $msg
+     * @param string $def
+     * @param string $file
+     * @param string $line
+     * @return void
+     */
+    protected function logToPsr($level, $msg, $def, $file, $line) {
+        if (!($this->logger instanceof LoggerInterface)) {
+            return;
+        }
+        $message = $this->normalizePsrMessage($msg);
+        $context = array(
+            'def' => $def,
+            'file' => $file,
+            'line' => $line,
+            'xpdo_level' => $level,
+        );
+        if (!is_string($msg) && !(is_object($msg) && method_exists($msg, '__toString'))) {
+            $context['xpdo_message'] = $msg;
+        }
+        $this->logger->log($this->getPsrLogLevel($level), $message, $context);
+    }
+
+    /**
+     * Normalize a log message for PSR-3 loggers.
+     *
+     * @param mixed $msg
+     * @return string
+     */
+    protected function normalizePsrMessage($msg) {
+        if (is_string($msg)) {
+            return $msg;
+        }
+        if (is_object($msg) && method_exists($msg, '__toString')) {
+            return (string) $msg;
+        }
+        return print_r($msg, true);
+    }
+
+    /**
+     * Map an xPDO log level to a PSR-3 log level.
+     *
+     * @param integer $level
+     * @return string
+     */
+    protected function getPsrLogLevel($level) {
+        switch ($level) {
+            case xPDO::LOG_LEVEL_DEBUG:
+                return LogLevel::DEBUG;
+            case xPDO::LOG_LEVEL_INFO:
+                return LogLevel::INFO;
+            case xPDO::LOG_LEVEL_WARN:
+                return LogLevel::WARNING;
+            case xPDO::LOG_LEVEL_ERROR:
+                return LogLevel::ERROR;
+            case xPDO::LOG_LEVEL_FATAL:
+                return LogLevel::CRITICAL;
+            default:
+                return LogLevel::NOTICE;
         }
     }
 
