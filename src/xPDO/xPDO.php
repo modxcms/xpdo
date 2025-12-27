@@ -22,6 +22,7 @@ use Composer\Autoload\ClassLoader;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use xPDO\Logging\xPDOLogger;
 use xPDO\Om\xPDOCriteria;
 use xPDO\Om\xPDOQuery;
 
@@ -382,6 +383,9 @@ class xPDO {
 
         if ($logger instanceof LoggerInterface) {
             $this->logger = $logger;
+        }
+        if ($this->logger === null) {
+            $this->logger = new xPDOLogger($this);
         }
     }
 
@@ -2075,7 +2079,11 @@ class xPDO {
         }
         list($file, $line) = $this->resolveLogLocation($file, $line);
         if ($this->logger instanceof LoggerInterface) {
-            $this->logToPsr($level, $msg, $def, $file, $line);
+            $this->logToPsr($level, $msg, $def, $file, $line, $target);
+            if ($level === xPDO::LOG_LEVEL_FATAL) {
+                while (ob_get_level() && @ob_end_flush()) {}
+                exit ('[' . date('Y-m-d H:i:s') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $msg . "\n" . ($this->getDebug() === true ? '<pre>' . "\n" . print_r(debug_backtrace(), true) . "\n" . '</pre>' : ''));
+            }
             return;
         }
         if (empty ($target)) {
@@ -2176,18 +2184,25 @@ class xPDO {
      * @param string $line
      * @return void
      */
-    protected function logToPsr($level, $msg, $def, $file, $line) {
+    protected function logToPsr($level, $msg, $def, $file, $line, $target= '') {
         if (!($this->logger instanceof LoggerInterface)) {
             return;
         }
-        $message = $this->normalizePsrMessage($msg);
+        $isXpdoLogger = $this->logger instanceof xPDOLogger;
+        $message = $isXpdoLogger ? $msg : $this->normalizePsrMessage($msg);
         $context = array(
             'def' => $def,
             'file' => $file,
             'line' => $line,
             'xpdo_level' => $level,
         );
-        if (!is_string($msg) && !(is_object($msg) && method_exists($msg, '__toString'))) {
+        if ($isXpdoLogger && !empty($target)) {
+            $context['target'] = $target;
+        }
+        if ($isXpdoLogger) {
+            $context['xpdo_interpolate'] = false;
+        }
+        if (!$isXpdoLogger && !is_string($msg) && !(is_object($msg) && method_exists($msg, '__toString'))) {
             $context['xpdo_message'] = $msg;
         }
         $this->logger->log($this->getPsrLogLevel($level), $message, $context);

@@ -160,6 +160,9 @@ class xPDOLogger extends AbstractLogger
     protected function formatMessage($message, array $context): string
     {
         $messageText = $this->stringifyValue($message);
+        if (array_key_exists('xpdo_interpolate', $context) && $context['xpdo_interpolate'] === false) {
+            return $messageText;
+        }
         if (strpos($messageText, '{') === false) {
             return $messageText;
         }

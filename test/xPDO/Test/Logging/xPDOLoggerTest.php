@@ -10,8 +10,11 @@
 
 namespace xPDO\Test\Logging;
 
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LogLevel;
+use xPDO\Logging\xPDOLogger;
 use xPDO\TestCase;
 use xPDO\xPDO;
 
@@ -19,7 +22,7 @@ class xPDOLoggerTest extends TestCase
 {
     public function testLegacyArrayTargetFormat()
     {
-        $this->xpdo->logger = null;
+        $this->xpdo->logger = new xPDOLogger($this->xpdo);
         $this->xpdo->setLogLevel(xPDO::LOG_LEVEL_DEBUG);
 
         $output = array();
@@ -41,7 +44,7 @@ class xPDOLoggerTest extends TestCase
 
     public function testLegacyFileTargetWritesToCache()
     {
-        $this->xpdo->logger = null;
+        $this->xpdo->logger = new xPDOLogger($this->xpdo);
         $this->xpdo->setLogLevel(xPDO::LOG_LEVEL_DEBUG);
 
         $cachePath = $this->xpdo->getCachePath();
@@ -120,6 +123,69 @@ class xPDOLoggerTest extends TestCase
 
         $this->assertCount(1, $logger->records);
         $this->assertSame('Injected instance', $logger->records[0]['message']);
+    }
+
+    public function testLegacyEchoAndHtmlTargetsWithXpdoLogger()
+    {
+        $this->xpdo->logger = new xPDOLogger($this->xpdo);
+        $this->xpdo->setLogLevel(xPDO::LOG_LEVEL_DEBUG);
+
+        $this->xpdo->setLogTarget('ECHO');
+        ob_start();
+        $this->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Echo message', '', 'UnitTest', __FILE__, 456);
+        $echoOutput = ob_get_clean();
+
+        $echoPattern = '/^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] \\(INFO in UnitTest @ '
+            . preg_quote(__FILE__, '/')
+            . ' : 456\\) Echo message\\n$/';
+        $this->assertMatchesRegularExpression($echoPattern, $echoOutput);
+
+        $this->xpdo->setLogTarget('HTML');
+        ob_start();
+        $this->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Html message', '', 'UnitTest', __FILE__, 567);
+        $htmlOutput = ob_get_clean();
+
+        $htmlPattern = '/^<h5>\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] \\(INFO in UnitTest @ '
+            . preg_quote(__FILE__, '/')
+            . ' : 567\\)<\\/h5><pre>Html message<\\/pre>\\n$/';
+        $this->assertMatchesRegularExpression($htmlPattern, $htmlOutput);
+    }
+
+    public function testMonologLoggerReceivesMessages()
+    {
+        if (!class_exists(Logger::class) || !class_exists(TestHandler::class)) {
+            $this->markTestSkipped('Monolog is not installed.');
+        }
+
+        $handler = new TestHandler();
+        $logger = new Logger('xpdo');
+        $logger->pushHandler($handler);
+
+        $this->xpdo->logger = $logger;
+        $this->xpdo->setLogLevel(xPDO::LOG_LEVEL_DEBUG);
+
+        $output = array();
+        $target = array(
+            'target' => 'ARRAY',
+            'options' => array(
+                'var' => &$output,
+            ),
+        );
+
+        $this->xpdo->log(xPDO::LOG_LEVEL_INFO, 'Monolog works', $target, 'UnitTest', __FILE__, 678);
+
+        $this->assertCount(0, $output);
+        if (method_exists($handler, 'getRecords')) {
+            $records = $handler->getRecords();
+        } else {
+            $ref = new \ReflectionProperty($handler, 'records');
+            $ref->setAccessible(true);
+            $records = $ref->getValue($handler);
+        }
+        $this->assertNotEmpty($records);
+        $record = $records[0];
+        $message = is_array($record) ? $record['message'] : $record->message;
+        $this->assertSame('Monolog works', $message);
     }
 }
 
