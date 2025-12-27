@@ -51,14 +51,20 @@ class xPDOLogger extends AbstractLogger
     /**
      * Logs with an arbitrary level.
      *
-     * @param mixed  $level
+     * @param int|string  $level
      * @param mixed  $message
      * @param array  $context
      * @return void
      */
     public function log($level, $message, array $context = array()): void
     {
-        $legacyLevel = $this->mapPsrLevel($level);
+        $isLegacy = !empty($context['xpdo_legacy']);
+        if ($isLegacy) {
+            unset($context['xpdo_legacy']);
+            $legacyLevel = is_int($level) ? $level : intval($level);
+        } else {
+            $legacyLevel = $this->mapPsrLevel($level);
+        }
         if (!$this->shouldLog($legacyLevel)) {
             return;
         }
@@ -67,8 +73,6 @@ class xPDOLogger extends AbstractLogger
         $file = isset($context['file']) ? $context['file'] : '';
         $line = isset($context['line']) ? $context['line'] : '';
         list($file, $line) = $this->resolveLogLocation($file, $line);
-
-        $messageText = $this->formatMessage($message, $context);
 
         $target = $this->resolveTarget($context);
         $targetOptions = $this->targetOptions;
@@ -84,6 +88,8 @@ class xPDOLogger extends AbstractLogger
         $defText = !empty($def) ? " in {$def}" : '';
         $fileText = !empty($file) ? " @ {$file}" : '';
         $lineText = !empty($line) ? " : {$line}" : '';
+
+        $messageText = $isLegacy ? $message : $this->formatMessage($message, $context);
 
         if ($target === 'HTML') {
             $content = '<h5>[' . date('Y-m-d H:i:s') . '] (' . $levelText . $defText . $fileText . $lineText . ')</h5><pre>' . $messageText . '</pre>' . "\n";
@@ -160,9 +166,6 @@ class xPDOLogger extends AbstractLogger
     protected function formatMessage($message, array $context): string
     {
         $messageText = $this->stringifyValue($message);
-        if (array_key_exists('xpdo_interpolate', $context) && $context['xpdo_interpolate'] === false) {
-            return $messageText;
-        }
         if (strpos($messageText, '{') === false) {
             return $messageText;
         }
