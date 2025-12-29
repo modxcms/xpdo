@@ -70,6 +70,13 @@ class xPDOLoggingHistoricTest extends TestCase
         $this->assertMatchesRegularExpression($pattern, $output);
     }
 
+    private function captureLogOutput($level, $msg, $target, $def, $file, $line)
+    {
+        ob_start();
+        $this->xpdo->log($level, $msg, $target, $def, $file, $line);
+        return ob_get_clean();
+    }
+
     public function testLogEchoWritesOnlyStdout()
     {
         $this->xpdo->setDebug(false);
@@ -366,10 +373,13 @@ class xPDOLoggingHistoricTest extends TestCase
         $this->assertPlainLogLineMatches($sink[0], 'INFO', $msg, $def, $file, $line);
     }
 
-    public function testLogDoesNotWriteWhenAboveLogLevelAndDebugFalse()
+    /**
+     * @dataProvider providerDebugAndLogLevelFiltering
+     */
+    public function testLogRespectsDebugAndLogLevel($debug, $logLevel, $level, $shouldLog, $expectedLevelText)
     {
-        $this->xpdo->setDebug(false);
-        $this->xpdo->setLogLevel(xPDO::LOG_LEVEL_WARN);
+        $this->xpdo->setDebug($debug);
+        $this->xpdo->setLogLevel($logLevel);
 
         $sink = [];
         $target = array(
@@ -379,37 +389,30 @@ class xPDOLoggingHistoricTest extends TestCase
             ),
         );
 
-        ob_start();
-        $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, 'filtered message', $target, 'DefiningStruct', 'example.php', '123');
-        $output = ob_get_clean();
+        $msg = 'log filtering message';
+        $def = 'DefiningStruct';
+        $file = 'example.php';
+        $line = '123';
 
-        $this->assertSame('', $output, 'Filtered message must not write to STDOUT.');
-        $this->assertSame([], $sink, 'Filtered message must not append to ARRAY/ARRAY_EXTENDED sinks.');
-        $this->assertSame([], $this->cacheManagerSpy->writeCalls, 'Filtered message must not write to FILE.');
-    }
+        $output = $this->captureLogOutput($level, $msg, $target, $def, $file, $line);
 
-    public function testLogWritesWhenAboveLogLevelAndDebugTrue()
-    {
-        $this->xpdo->setDebug(true);
-        $this->xpdo->setLogLevel(xPDO::LOG_LEVEL_WARN);
+        if ($shouldLog) {
+            $this->assertPlainLogLineMatches($output, $expectedLevelText, $msg, $def, $file, $line);
+        } else {
+            $this->assertSame('', $output, 'Filtered message must not write to STDOUT.');
+        }
 
-        $sink = [];
-        $target = array(
-            'target' => 'ECHO',
-            'options' => array(
-                'var' => &$sink,
-            ),
-        );
-
-        $msg = 'debug override message';
-
-        ob_start();
-        $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, $msg, $target, 'DefiningStruct', 'example.php', '123');
-        $output = ob_get_clean();
-
-        $this->assertPlainLogLineMatches($output, 'DEBUG', $msg, 'DefiningStruct', 'example.php', '123');
         $this->assertSame([], $sink, 'ECHO target must not append to ARRAY/ARRAY_EXTENDED sinks.');
         $this->assertSame([], $this->cacheManagerSpy->writeCalls, 'ECHO target must not write to FILE.');
+    }
+
+    public function providerDebugAndLogLevelFiltering()
+    {
+        return array(
+            'debug overrides log level' => array(true, xPDO::LOG_LEVEL_WARN, xPDO::LOG_LEVEL_DEBUG, true, 'DEBUG'),
+            'level at log level' => array(false, xPDO::LOG_LEVEL_WARN, xPDO::LOG_LEVEL_WARN, true, 'WARN'),
+            'level above log level' => array(false, xPDO::LOG_LEVEL_WARN, xPDO::LOG_LEVEL_DEBUG, false, 'DEBUG'),
+        );
     }
 
     /**
@@ -426,6 +429,8 @@ class xPDOLoggingHistoricTest extends TestCase
         $line = __LINE__ + 2;
         ob_start();
         $this->xpdo->log(xPDO::LOG_LEVEL_INFO, $msg, 'ECHO', $def);
+        //$this->getLog($msg, $def);
+        // Modern tests need this
         $output = ob_get_clean();
 
         $this->assertPlainLogLineMatches($output, 'INFO', $msg, $def, __FILE__, (string)$line);
@@ -458,6 +463,16 @@ class xPDOLoggingHistoricTest extends TestCase
             array(xPDO::LOG_LEVEL_WARN, 'WARN'),
             array(xPDO::LOG_LEVEL_ERROR, 'ERROR'),
         );
+    }
+
+    /**
+     * @param string $msg
+     * @param string $def
+     * @return void
+     */
+    private function getLog(string $msg, string $def): void
+    {
+        $this->xpdo->log(xPDO::LOG_LEVEL_INFO, $msg, 'ECHO', $def);
     }
 }
 
