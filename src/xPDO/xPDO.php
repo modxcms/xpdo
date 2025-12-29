@@ -2152,6 +2152,10 @@ class xPDO {
         }
         list($file, $line) = $this->resolveLogLocation($file, $line);
         if ($this->logger instanceof xPDOLogger) {
+            if ($level === xPDO::LOG_LEVEL_FATAL) {
+                while (ob_get_level() && @ob_end_flush()) {}
+                exit ('[' . date('Y-m-d H:i:s') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $msg . "\n" . ($this->getDebug() === true ? '<pre>' . "\n" . print_r(debug_backtrace(), true) . "\n" . '</pre>' : ''));
+            }
             $context = array(
                 'def' => $def,
                 'file' => $file,
@@ -2162,10 +2166,6 @@ class xPDO {
                 $context['target'] = $target;
             }
             $this->logger->log($level, $msg, $context);
-            if ($level === xPDO::LOG_LEVEL_FATAL) {
-                while (ob_get_level() && @ob_end_flush()) {}
-                exit ('[' . date('Y-m-d H:i:s') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $msg . "\n" . ($this->getDebug() === true ? '<pre>' . "\n" . print_r(debug_backtrace(), true) . "\n" . '</pre>' : ''));
-            }
             return;
         }
         if ($this->logger instanceof LoggerInterface) {
