@@ -285,7 +285,7 @@ class xPDO {
             if ($this->services === null) {
                 $this->services = new xPDOContainer();
             }
-            $this->initializeLogger($options);
+            $this->initLogger();
             $this->setLogLevel($this->getOption('log_level', null, xPDO::LOG_LEVEL_FATAL, true));
             $this->setLogTarget($this->getOption('log_target', null, php_sapi_name() === 'cli' ? 'ECHO' : 'HTML', true));
             if (!empty($dsn)) {
@@ -370,10 +370,9 @@ class xPDO {
     /**
      * Initialize a PSR-3 logger from constructor options, if provided.
      *
-     * @param array|ContainerInterface $options
      * @return void
      */
-    protected function initializeLogger($options) {
+    protected function initLogger() {
         $logger = null;
 
         if ($this->services instanceof ContainerInterface) {
@@ -384,17 +383,11 @@ class xPDO {
             }
         }
 
-        if ($logger === null && $options instanceof ContainerInterface) {
-            if ($options->has(LoggerInterface::class)) {
-                $logger = $options->get(LoggerInterface::class);
-            } elseif ($options->has('logger')) {
-                $logger = $options->get('logger');
-            }
-        } elseif ($logger === null && is_array($options)) {
-            if (array_key_exists(LoggerInterface::class, $options)) {
-                $logger = $options[LoggerInterface::class];
-            } elseif (isset($options['logger'])) {
-                $logger = $options['logger'];
+        if ($logger === null && is_array($this->config)) {
+            if (array_key_exists(LoggerInterface::class, $this->config)) {
+                $logger = $this->config[LoggerInterface::class];
+            } elseif (isset($this->config['logger'])) {
+                $logger = $this->config['logger'];
             }
         }
 
