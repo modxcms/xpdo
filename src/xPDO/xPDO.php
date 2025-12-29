@@ -375,18 +375,98 @@ class xPDO {
      */
     protected function initializeLogger($options) {
         $logger = null;
-        if ($options instanceof ContainerInterface && $options->has('logger')) {
-            $logger = $options->get('logger');
-        } elseif (is_array($options) && isset($options['logger'])) {
-            $logger = $options['logger'];
+
+        if ($this->services instanceof ContainerInterface) {
+            if ($this->services->has(LoggerInterface::class)) {
+                $logger = $this->services->get(LoggerInterface::class);
+            } elseif ($this->services->has('logger')) {
+                $logger = $this->services->get('logger');
+            }
+        }
+
+        if ($logger === null && $options instanceof ContainerInterface) {
+            if ($options->has(LoggerInterface::class)) {
+                $logger = $options->get(LoggerInterface::class);
+            } elseif ($options->has('logger')) {
+                $logger = $options->get('logger');
+            }
+        } elseif ($logger === null && is_array($options)) {
+            if (array_key_exists(LoggerInterface::class, $options)) {
+                $logger = $options[LoggerInterface::class];
+            } elseif (isset($options['logger'])) {
+                $logger = $options['logger'];
+            }
         }
 
         if ($logger instanceof LoggerInterface) {
             $this->logger = $logger;
         }
+
         if ($this->logger === null) {
             $this->logger = new xPDOLogger($this);
         }
+
+        $this->registerLoggerService($this->logger);
+    }
+
+    /**
+     * Register a logger in the services container (when supported).
+     *
+     * @param LoggerInterface $logger
+     * @param bool $overwrite
+     * @return void
+     */
+    protected function registerLoggerService(LoggerInterface $logger, $overwrite = false)
+    {
+        if (!$this->services instanceof ContainerInterface) {
+            return;
+        }
+
+        if (method_exists($this->services, 'add')) {
+            if ($overwrite || !$this->services->has(LoggerInterface::class)) {
+                $this->services->add(LoggerInterface::class, $logger);
+            }
+            if ($overwrite || !$this->services->has('logger')) {
+                $this->services->add('logger', $logger);
+            }
+            return;
+        }
+
+        if ($this->services instanceof \ArrayAccess) {
+            if ($overwrite || !$this->services->has(LoggerInterface::class)) {
+                $this->services[LoggerInterface::class] = $logger;
+            }
+            if ($overwrite || !$this->services->has('logger')) {
+                $this->services['logger'] = $logger;
+            }
+        }
+    }
+
+    /**
+     * Get the active PSR-3 logger for this xPDO instance.
+     *
+     * @return LoggerInterface
+     */
+    public function getLogger(): LoggerInterface
+    {
+        if (!$this->logger instanceof LoggerInterface) {
+            $this->logger = new xPDOLogger($this);
+            $this->registerLoggerService($this->logger, true);
+        }
+
+        return $this->logger;
+    }
+
+    /**
+     * Set the active PSR-3 logger for this xPDO instance.
+     *
+     * @param LoggerInterface $logger
+     * @return void
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+        $this->registerLoggerService($this->logger, true);
     }
 
     /**

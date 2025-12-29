@@ -10,9 +10,11 @@
 
 namespace xPDO\Test\Logging;
 
+use ArrayObject;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Psr\Log\AbstractLogger;
+use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use xPDO\Logging\xPDOLogger;
 use xPDO\TestCase;
@@ -40,6 +42,45 @@ class xPDOLoggerTest extends TestCase
             . preg_quote(__FILE__, '/')
             . ' : 123\\) Hello\\n$/';
         $this->assertMatchesRegularExpression($pattern, $output[0]);
+    }
+
+    public function testLegacyArrayAccessTargetsCaptureLogs()
+    {
+        $this->xpdo->logger = new xPDOLogger($this->xpdo);
+        $this->xpdo->setLogLevel(xPDO::LOG_LEVEL_DEBUG);
+
+        $output = new ArrayObject();
+        $target = array(
+            'target' => 'ARRAY',
+            'options' => array(
+                'var' => $output,
+            ),
+        );
+
+        $this->xpdo->log(xPDO::LOG_LEVEL_INFO, 'ArrayAccess', $target, 'UnitTest', 'array-access.php', 111);
+
+        $this->assertCount(1, $output);
+        $pattern = '/^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] \\(INFO in UnitTest @ array-access\\.php : 111\\) ArrayAccess\\n$/';
+        $this->assertMatchesRegularExpression($pattern, $output[0]);
+
+        $extendedOutput = new ArrayObject();
+        $extendedTarget = array(
+            'target' => 'ARRAY_EXTENDED',
+            'options' => array(
+                'var' => $extendedOutput,
+            ),
+        );
+
+        $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'Extended', $extendedTarget, 'UnitTest', 'array-access.php', 222);
+
+        $this->assertCount(1, $extendedOutput);
+        $entry = $extendedOutput[0];
+        $this->assertSame('ERROR', $entry['level']);
+        $this->assertSame('Extended', $entry['msg']);
+        $this->assertSame(' in UnitTest', $entry['def']);
+        $this->assertSame(' @ array-access.php', $entry['file']);
+        $this->assertSame(' : 222', $entry['line']);
+        $this->assertArrayHasKey('content', $entry);
     }
 
     public function testLegacyFileTargetWritesToCache()
@@ -123,6 +164,35 @@ class xPDOLoggerTest extends TestCase
 
         $this->assertCount(1, $logger->records);
         $this->assertSame('Injected instance', $logger->records[0]['message']);
+    }
+
+    public function testContainerInjectionSetsLoggerByLoggerInterfaceId()
+    {
+        $logger = new SpyLogger();
+        $driver = self::$properties['xpdo_driver'];
+        $config = self::$properties["{$driver}_array_options"];
+
+        $container = new \xPDO\xPDOContainer();
+        $container->add('config', $config);
+        $container->add(LoggerInterface::class, $logger);
+
+        $xpdo = xPDO::getInstance(uniqid('logger-container', true), $container, true);
+        $xpdo->setLogLevel(xPDO::LOG_LEVEL_DEBUG);
+
+        $this->assertSame($logger, $xpdo->getLogger());
+        $this->assertSame($logger, $xpdo->logger);
+        $this->assertTrue($xpdo->services->has(LoggerInterface::class));
+        $this->assertSame($logger, $xpdo->services->get(LoggerInterface::class));
+    }
+
+    public function testGetLoggerAndSetLoggerKeepServicesInSync()
+    {
+        $logger = new SpyLogger();
+        $this->xpdo->setLogger($logger);
+
+        $this->assertSame($logger, $this->xpdo->getLogger());
+        $this->assertTrue($this->xpdo->services->has(LoggerInterface::class));
+        $this->assertSame($logger, $this->xpdo->services->get(LoggerInterface::class));
     }
 
     public function testLegacyEchoAndHtmlTargetsWithXpdoLogger()
