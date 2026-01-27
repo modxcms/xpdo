@@ -285,7 +285,18 @@ class xPDO {
             if ($this->services === null) {
                 $this->services = new xPDOContainer();
             }
-            $this->initLogger();
+            if ($this->services instanceof ContainerInterface) {
+                if ($this->services->has(LoggerInterface::class)) {
+                    $logger = $this->services->get(LoggerInterface::class);
+                } elseif ($this->services->has('logger')) {
+                    $logger = $this->services->get('logger');
+                } else {
+                    $logger = null;
+                }
+                if ($logger instanceof LoggerInterface) {
+                    $this->logger = $logger;
+                }
+            }
             $this->setLogLevel($this->getOption('log_level', null, xPDO::LOG_LEVEL_FATAL, true));
             $this->setLogTarget($this->getOption('log_target', null, php_sapi_name() === 'cli' ? 'ECHO' : 'HTML', true));
             if (!empty($dsn)) {
@@ -365,101 +376,6 @@ class xPDO {
         }
 
         return $data;
-    }
-
-    /**
-     * Initialize a PSR-3 logger from constructor options, if provided.
-     *
-     * @return void
-     */
-    protected function initLogger() {
-        $logger = null;
-
-        if ($this->services instanceof ContainerInterface) {
-            if ($this->services->has(LoggerInterface::class)) {
-                $logger = $this->services->get(LoggerInterface::class);
-            } elseif ($this->services->has('logger')) {
-                $logger = $this->services->get('logger');
-            }
-        }
-
-        if ($logger === null && is_array($this->config)) {
-            if (array_key_exists(LoggerInterface::class, $this->config)) {
-                $logger = $this->config[LoggerInterface::class];
-            } elseif (isset($this->config['logger'])) {
-                $logger = $this->config['logger'];
-            }
-        }
-
-        if ($logger instanceof LoggerInterface) {
-            $this->logger = $logger;
-        }
-
-        if ($this->logger === null) {
-            $this->logger = new xPDOLogger($this);
-        }
-
-        $this->registerLoggerService($this->logger);
-    }
-
-    /**
-     * Register a logger in the services container (when supported).
-     *
-     * @param LoggerInterface $logger
-     * @param bool $overwrite
-     * @return void
-     */
-    protected function registerLoggerService(LoggerInterface $logger, $overwrite = false)
-    {
-        if (!$this->services instanceof ContainerInterface) {
-            return;
-        }
-
-        if (method_exists($this->services, 'add')) {
-            if ($overwrite || !$this->services->has(LoggerInterface::class)) {
-                $this->services->add(LoggerInterface::class, $logger);
-            }
-            if ($overwrite || !$this->services->has('logger')) {
-                $this->services->add('logger', $logger);
-            }
-            return;
-        }
-
-        if ($this->services instanceof \ArrayAccess) {
-            if ($overwrite || !$this->services->has(LoggerInterface::class)) {
-                $this->services[LoggerInterface::class] = $logger;
-            }
-            if ($overwrite || !$this->services->has('logger')) {
-                $this->services['logger'] = $logger;
-            }
-        }
-    }
-
-    /**
-     * Get the active PSR-3 logger for this xPDO instance.
-     *
-     * @return LoggerInterface
-     */
-    public function getLogger(): LoggerInterface
-    {
-        if (!$this->logger instanceof LoggerInterface) {
-            $this->logger = new xPDOLogger($this);
-            $this->registerLoggerService($this->logger, true);
-        }
-
-        return $this->logger;
-    }
-
-    /**
-     * Set the active PSR-3 logger for this xPDO instance.
-     *
-     * @param LoggerInterface $logger
-     * @return void
-     */
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-        $this->registerLoggerService($this->logger, true);
     }
 
     /**
@@ -2152,24 +2068,43 @@ class xPDO {
         }
         list($file, $line) = $this->resolveLogLocation($file, $line);
         if ($this->logger instanceof xPDOLogger) {
-            if ($level === xPDO::LOG_LEVEL_FATAL) {
-                while (ob_get_level() && @ob_end_flush()) {}
-                exit ('[' . date('Y-m-d H:i:s') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $msg . "\n" . ($this->getDebug() === true ? '<pre>' . "\n" . print_r(debug_backtrace(), true) . "\n" . '</pre>' : ''));
+            $this->logger->handleXpdo($level, $msg, $target, $def, $file, $line);
+            return;
+        }
+        if ($this->logger instanceof LoggerInterface) {
+            if (is_string($msg)) {
+                $message = $msg;
+            } elseif (is_object($msg) && method_exists($msg, '__toString')) {
+                $message = (string) $msg;
+            } else {
+                $message = print_r($msg, true);
             }
             $context = array(
                 'def' => $def,
                 'file' => $file,
                 'line' => $line,
-                'xpdo_legacy' => true,
+                'xpdo_level' => $level,
             );
-            if (!empty($target)) {
-                $context['target'] = $target;
+            switch ($level) {
+                case xPDO::LOG_LEVEL_DEBUG:
+                    $psrLevel = LogLevel::DEBUG;
+                    break;
+                case xPDO::LOG_LEVEL_INFO:
+                    $psrLevel = LogLevel::INFO;
+                    break;
+                case xPDO::LOG_LEVEL_WARN:
+                    $psrLevel = LogLevel::WARNING;
+                    break;
+                case xPDO::LOG_LEVEL_ERROR:
+                    $psrLevel = LogLevel::ERROR;
+                    break;
+                case xPDO::LOG_LEVEL_FATAL:
+                    $psrLevel = LogLevel::CRITICAL;
+                    break;
+                default:
+                    $psrLevel = LogLevel::NOTICE;
             }
-            $this->logger->log($level, $msg, $context);
-            return;
-        }
-        if ($this->logger instanceof LoggerInterface) {
-            $this->logToPsr($level, $msg, $def, $file, $line);
+            $this->logger->log($psrLevel, $message, $context);
             if ($level === xPDO::LOG_LEVEL_FATAL) {
                 while (ob_get_level() && @ob_end_flush()) {}
                 exit ('[' . date('Y-m-d H:i:s') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $msg . "\n" . ($this->getDebug() === true ? '<pre>' . "\n" . print_r(debug_backtrace(), true) . "\n" . '</pre>' : ''));
@@ -2262,66 +2197,6 @@ class xPDO {
             $file = $_SERVER['SCRIPT_NAME'];
         }
         return array($file, $line);
-    }
-
-    /**
-     * Send a log entry to a PSR-3 logger.
-     *
-     * @param integer $level
-     * @param mixed $msg
-     * @param string $def
-     * @param string $file
-     * @param string $line
-     * @return void
-     */
-    protected function logToPsr($level, $msg, $def, $file, $line) {
-        $message = $this->normalizePsrMessage($msg);
-        $context = array(
-            'def' => $def,
-            'file' => $file,
-            'line' => $line,
-            'xpdo_level' => $level,
-        );
-        $this->logger->log($this->getPsrLogLevel($level), $message, $context);
-    }
-
-    /**
-     * Normalize a log message for PSR-3 loggers.
-     *
-     * @param mixed $msg
-     * @return string
-     */
-    protected function normalizePsrMessage($msg) {
-        if (is_string($msg)) {
-            return $msg;
-        }
-        if (is_object($msg) && method_exists($msg, '__toString')) {
-            return (string) $msg;
-        }
-        return print_r($msg, true);
-    }
-
-    /**
-     * Map an xPDO log level to a PSR-3 log level.
-     *
-     * @param integer $level
-     * @return string
-     */
-    protected function getPsrLogLevel($level) {
-        switch ($level) {
-            case xPDO::LOG_LEVEL_DEBUG:
-                return LogLevel::DEBUG;
-            case xPDO::LOG_LEVEL_INFO:
-                return LogLevel::INFO;
-            case xPDO::LOG_LEVEL_WARN:
-                return LogLevel::WARNING;
-            case xPDO::LOG_LEVEL_ERROR:
-                return LogLevel::ERROR;
-            case xPDO::LOG_LEVEL_FATAL:
-                return LogLevel::CRITICAL;
-            default:
-                return LogLevel::NOTICE;
-        }
     }
 
     /**
