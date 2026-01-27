@@ -2066,7 +2066,16 @@ class xPDO {
         if ($level !== xPDO::LOG_LEVEL_FATAL && $level > $this->logLevel && $this->_debug !== true) {
             return;
         }
-        list($file, $line) = $this->resolveLogLocation($file, $line);
+        if (empty($file)) {
+            $backtrace = debug_backtrace();
+            if ($backtrace && isset($backtrace[2])) {
+                $file = $backtrace[1]['file'];
+                $line = $backtrace[1]['line'];
+            }
+            if (empty($file) && isset($_SERVER['SCRIPT_NAME'])) {
+                $file = $_SERVER['SCRIPT_NAME'];
+            }
+        }
         if ($this->logger instanceof xPDOLogger) {
             $this->logger->handleXpdo($level, $msg, $target, $def, $file, $line);
             return;
@@ -2181,20 +2190,14 @@ class xPDO {
      */
     protected function resolveLogLocation($file, $line) {
         if (empty($file)) {
-            if (version_compare(phpversion(), '5.4.0', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-            } elseif (version_compare(phpversion(), '5.3.6', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            } else {
-                $backtrace = debug_backtrace();
-            }
+            $backtrace = debug_backtrace();
             if ($backtrace && isset($backtrace[2])) {
                 $file = $backtrace[2]['file'];
                 $line = $backtrace[2]['line'];
             }
-        }
-        if (empty($file) && isset($_SERVER['SCRIPT_NAME'])) {
-            $file = $_SERVER['SCRIPT_NAME'];
+            if (isset($_SERVER['SCRIPT_NAME'])) {
+                $file = $_SERVER['SCRIPT_NAME'];
+            }
         }
         return array($file, $line);
     }
