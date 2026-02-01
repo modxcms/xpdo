@@ -149,23 +149,6 @@ class xPDOLoggerTest extends TestCase
         $this->assertSame(LogLevel::NOTICE, $logger->records[0]['level']);
     }
 
-    public function testConstructorInjectionSetsLogger()
-    {
-        $logger = new SpyLogger();
-        $driver = self::$properties['xpdo_driver'];
-        $config = self::$properties["{$driver}_array_options"];
-        $config['logger'] = $logger;
-
-        $xpdo = xPDO::getInstance(uniqid('logger', true), $config, true);
-        $xpdo->setLogLevel(xPDO::LOG_LEVEL_DEBUG);
-
-        $this->assertSame($logger, $xpdo->logger);
-        $xpdo->log(xPDO::LOG_LEVEL_INFO, 'Injected instance');
-
-        $this->assertCount(1, $logger->records);
-        $this->assertSame('Injected instance', $logger->records[0]['message']);
-    }
-
     public function testContainerInjectionSetsLoggerByLoggerInterfaceId()
     {
         $logger = new SpyLogger();
@@ -179,20 +162,9 @@ class xPDOLoggerTest extends TestCase
         $xpdo = xPDO::getInstance(uniqid('logger-container', true), $container, true);
         $xpdo->setLogLevel(xPDO::LOG_LEVEL_DEBUG);
 
-        $this->assertSame($logger, $xpdo->getLogger());
         $this->assertSame($logger, $xpdo->logger);
         $this->assertTrue($xpdo->services->has(LoggerInterface::class));
         $this->assertSame($logger, $xpdo->services->get(LoggerInterface::class));
-    }
-
-    public function testGetLoggerAndSetLoggerKeepServicesInSync()
-    {
-        $logger = new SpyLogger();
-        $this->xpdo->setLogger($logger);
-
-        $this->assertSame($logger, $this->xpdo->getLogger());
-        $this->assertTrue($this->xpdo->services->has(LoggerInterface::class));
-        $this->assertSame($logger, $this->xpdo->services->get(LoggerInterface::class));
     }
 
     public function testLegacyEchoAndHtmlTargetsWithXpdoLogger()

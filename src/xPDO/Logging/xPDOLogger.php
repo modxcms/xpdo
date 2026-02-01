@@ -48,6 +48,24 @@ class xPDOLogger extends AbstractLogger
         }
     }
 
+    public function handleXpdo($level, $msg, $target= '', $def= '', $file= '', $line= '')
+    {
+        if ($level === xPDO::LOG_LEVEL_FATAL) {
+            while (ob_get_level() && @ob_end_flush()) {}
+            exit ('[' . date('Y-m-d H:i:s') . '] (' . $this->getLegacyLevelLabel($level) . $def . $file . $line . ') ' . $msg . "\n" . ($this->xpdo->getDebug() === true ? '<pre>' . "\n" . print_r(debug_backtrace(), true) . "\n" . '</pre>' : ''));
+        }
+        $context = array(
+            'def' => $def,
+            'file' => $file,
+            'line' => $line,
+            'xpdo_legacy' => true,
+        );
+        if (!empty($target)) {
+            $context['target'] = $target;
+        }
+        $this->log($level, $msg, $context);
+    }
+
     /**
      * Logs with an arbitrary level.
      *
