@@ -222,13 +222,7 @@ class xPDOLogger extends AbstractLogger
     protected function resolveLogLocation($file, $line): array
     {
         if (empty($file)) {
-            if (version_compare(phpversion(), '5.4.0', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-            } elseif (version_compare(phpversion(), '5.3.6', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            } else {
-                $backtrace = debug_backtrace();
-            }
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
             if ($backtrace && isset($backtrace[2])) {
                 $file = $backtrace[2]['file'];
                 $line = $backtrace[2]['line'];

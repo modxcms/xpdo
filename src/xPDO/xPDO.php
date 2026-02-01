@@ -2068,8 +2068,8 @@ class xPDO {
         }
         if (empty($file)) {
             // Avoid collecting the full stack and args just to resolve file/line.
-            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-            if ($backtrace && isset($backtrace[2])) {
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+            if ($backtrace && isset($backtrace[1])) {
                 $file = $backtrace[1]['file'];
                 $line = $backtrace[1]['line'];
             }
