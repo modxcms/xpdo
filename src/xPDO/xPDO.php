@@ -2182,27 +2182,6 @@ class xPDO {
     }
 
     /**
-     * Resolve the log file and line for a log entry.
-     *
-     * @param string $file
-     * @param string $line
-     * @return array
-     */
-    protected function resolveLogLocation($file, $line) {
-        if (empty($file)) {
-            $backtrace = debug_backtrace();
-            if ($backtrace && isset($backtrace[2])) {
-                $file = $backtrace[2]['file'];
-                $line = $backtrace[2]['line'];
-            }
-            if (isset($_SERVER['SCRIPT_NAME'])) {
-                $file = $_SERVER['SCRIPT_NAME'];
-            }
-        }
-        return array($file, $line);
-    }
-
-    /**
      * Returns an abbreviated backtrace of debugging information.
      *
      * This function returns just the fields returned via xPDOObject::toArray()
