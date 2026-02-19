@@ -124,4 +124,15 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery
         $this->sql= $sql;
         return (!empty ($this->sql));
     }
+
+    protected function isColumnIdentifier($key)
+    {
+        $unQuoted = '[A-Za-z_\x80-\xff][A-Za-z0-9_$\x80-\xff]{0,62}';
+        $dblQuote = '"(?:[^"\x00]|""){1,126}"';
+        $unicode  = 'U&"(?:[^"\x00]|""|\\\\[0-9A-Fa-f]{4}|\\\\\\+[0-9A-Fa-f]{6}){1,}"(?:\s*UESCAPE\s*\'[^0-9A-Fa-f+\x27\\\\]\s*\')?';
+        $ident    = "(?:{$unicode}|{$dblQuote}|{$unQuoted})";
+        $columnIdent = "(?:{$ident}\.)?{$ident}";
+
+        return (bool) preg_match("/^{$columnIdent}$/", trim($key));
+    }
 }

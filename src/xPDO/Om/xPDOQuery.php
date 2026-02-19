@@ -66,7 +66,22 @@ abstract class xPDOQuery extends xPDOCriteria {
         'MIN(',
         'AVG('
     );
-    protected $_quotable= array ('string', 'password', 'date', 'datetime', 'timestamp', 'time', 'json', 'array', 'float');
+    protected $_quotable = [
+        'string',
+        'password',
+        'date',
+        'datetime',
+        'timestamp',
+        'time',
+        'json',
+        'array',
+        'float',
+        'double',
+        'object',
+        'resource',
+        'unknown type',
+        'resource (closed)'
+    ];
     protected $_class= null;
     protected $_alias= null;
     protected $_tableClass = null;
@@ -737,30 +752,42 @@ abstract class xPDOQuery extends xPDOCriteria {
                             $key= $key_operator[1];
                             $operator= strtoupper($key_operator[2]);
                         }
-                        if (strpos($key, '.') !== false) {
-                            $key_parts= explode('.', $key);
-                            $alias= trim($key_parts[0], " {$this->xpdo->_escapeCharOpen}{$this->xpdo->_escapeCharClose}");
-                            $key= $key_parts[1];
-                        }
-                        if (!array_key_exists($key, $fieldMeta)) {
-                            if (array_key_exists($key, $fieldAliases)) {
-                                $key= $fieldAliases[$key];
-                            } elseif ($this->isConditionalClause($key)) {
-                                continue;
+                        $operand = $key;
+                        $isColumnIdentifier = $this->isColumnIdentifier($key);
+                        if ($isColumnIdentifier) {
+                            if (strpos($key, '.') !== false) {
+                                $key_parts = explode('.', $key);
+                                $alias = trim(
+                                    $key_parts[0],
+                                    " {$this->xpdo->_escapeCharOpen}{$this->xpdo->_escapeCharClose}"
+                                );
+                                $key = $key_parts[1];
                             }
+                            if (!array_key_exists($key, $fieldMeta)) {
+                                if (array_key_exists($key, $fieldAliases)) {
+                                    $key = $fieldAliases[$key];
+                                }
+                            }
+                            $operand = "{$this->xpdo->escape($alias)}.{$this->xpdo->escape($key)}";
                         }
-                        if (!empty($key)) {
+                        if (!empty($key) && !$this->isConditionalClause($key)) {
                             if ($val === null) {
                                 $type= \PDO::PARAM_NULL;
                                 if (!in_array($operator, array('IS', 'IS NOT'))) {
                                     $operator= $operator === '!=' ? 'IS NOT' : 'IS';
                                 }
                             }
-                            elseif (isset($fieldMeta[$key]) && !in_array($fieldMeta[$key]['phptype'], $this->_quotable)) {
-                                $type= \PDO::PARAM_INT;
-                            }
-                            else {
-                                $type= \PDO::PARAM_STR;
+                            elseif ($isColumnIdentifier) {
+                                if (isset($fieldMeta[$key]) && !in_array(
+                                        $fieldMeta[$key]['phptype'],
+                                        $this->_quotable
+                                    )) {
+                                    $type = \PDO::PARAM_INT;
+                                } else {
+                                    $type = \PDO::PARAM_STR;
+                                }
+                            } else {
+                                $type = $this->isQuotable($val) ? \PDO::PARAM_STR : \PDO::PARAM_INT;
                             }
                             if (in_array($operator, array('IN', 'NOT IN')) && is_array($val)) {
                                 $vals = array();
@@ -785,12 +812,12 @@ abstract class xPDOQuery extends xPDOCriteria {
                                     $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Encountered empty {$operator} condition with key {$key}");
                                 }
                                 $val = "(" . implode(',', $vals) . ")";
-                                $sql = "{$this->xpdo->escape($alias)}.{$this->xpdo->escape($key)} {$operator} {$val}";
+                                $sql = "{$operand} {$operator} {$val}";
                                 $result[]= new xPDOQueryCondition(array('sql' => $sql, 'binding' => null, 'conjunction' => $conj));
                                 continue;
                             }
                             $field= array ();
-                            $field['sql']= $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($key) . ' ' . $operator . ' ?';
+                            $field['sql']= $operand . ' ' . $operator . ' ?';
                             $field['binding']= array (
                                 'value' => $val,
                                 'type' => $type,
@@ -808,8 +835,8 @@ abstract class xPDOQuery extends xPDOCriteria {
         elseif ($this->isConditionalClause($conditions)) {
             $result= new xPDOQueryCondition(array(
                 'sql' => $conditions
-            ,'binding' => null
-            ,'conjunction' => $conjunction
+                ,'binding' => null
+                ,'conjunction' => $conjunction
             ));
         }
         elseif (($pktype == 'integer' && is_numeric($conditions)) || ($pktype == 'string' && is_string($conditions) && static::isValidClause($conditions))) {
@@ -937,4 +964,10 @@ abstract class xPDOQuery extends xPDOCriteria {
             'bindings' => $this->bindings,
         ];
     }
+
+    protected function isQuotable($value) {
+        return in_array(gettype($value), $this->_quotable);
+    }
+
+    abstract protected function isColumnIdentifier($key);
 }

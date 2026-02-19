@@ -22,6 +22,7 @@
             <file>./xPDO/Test/Om/xPDOObjectTest.php</file>
             <file>./xPDO/Test/Om/xPDOObjectSingleTableInheritanceTest.php</file>
             <file>./xPDO/Test/Om/xPDOQueryTest.php</file>
+            <file>./xPDO/Test/Om/xPDOQueryConditionsTest.php</file>
             <file>./xPDO/Test/Om/xPDOQueryHavingTest.php</file>
             <file>./xPDO/Test/Om/xPDOQueryLimitTest.php</file>
             <file>./xPDO/Test/Om/xPDOQuerySortByTest.php</file>

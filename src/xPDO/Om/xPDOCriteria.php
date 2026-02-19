@@ -18,6 +18,7 @@ use xPDO\xPDO;
  * @package xPDO\Om
  */
 class xPDOCriteria {
+    /** @var xPDO $xpdo */
     public $xpdo= null;
     public $sql= '';
     public $stmt= null;
