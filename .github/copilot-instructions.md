@@ -43,10 +43,10 @@ composer install
 
 ## Running Tests
 
-Tests require a `test/properties.inc.php` file. Copy the CI properties file to get started quickly:
+Tests require a `test/properties.inc.php` file. Copy the sample properties file to get started quickly:
 
 ```bash
-cp test/properties.ci.inc.php test/properties.inc.php
+cp test/properties.sample.inc.php test/properties.inc.php
 ```
 
 Run tests against a specific database driver:
@@ -64,6 +64,12 @@ vendor/bin/phpunit -c ./test/pgsql.phpunit.xml
 
 The active driver is selected via the `TEST_DRIVER` environment variable (set in each phpunit XML config).
 
+Run tests against all supported drivers:
+
+```bash
+vendor/bin/phpunit -c ./test/complete.phpunit.xml
+```
+
 ### CI Test Setup
 
 CI uses GitHub Actions (`.github/workflows/ci.yml`) and tests all three drivers across PHP 7.2–8.5. MySQL CI uses `root` with empty password; PostgreSQL uses `postgres`/`postgres`. SQLite needs no service.
@@ -74,7 +80,7 @@ CI uses GitHub Actions (`.github/workflows/ci.yml`) and tests all three drivers 
 - Use `@before` / `@after` / `@beforeClass` annotations (not `setUp`/`tearDown` directly).
 - Tests access the xPDO instance via `$this->xpdo`.
 - The `Test/` suite uses a modern PSR-4 model under `test/model/PSR4/`.
-- The `Legacy/` suite uses the older model under `test/model/sample/`.
+- The `Legacy/` suite uses the older model under `test/model/sample/`. New tests should target the modern PSR-4 model only.
 - Test fixtures (SetUpTest/TearDownTest) create and drop tables; always run the full suite in order.
 
 ## Coding Conventions
@@ -104,16 +110,21 @@ Driver-specific code lives under `src/xPDO/Om/<driver>/` (e.g., `mysql/`, `pgsql
 
 ## Schema / Model Generation
 
-xPDO uses XML schema files (see `test/model/schema/`) to define the object model. Generate PHP class and map files with:
+xPDO uses XML schema files (see `test/model/schema/`) to define the object model. Generate PHP class and map files from a schema with:
 
 ```bash
-bin/xpdo write-schema <schema-file> <target-path>
+bin/xpdo parse-schema [options] [--] <platform> <schema_file> [<path>]
+```
+
+Generate a schema from existing database tables with:
+
+```bash
+bin/xpdo write-schema [options] [--] <platform> <schema_file> <package> [<base_class> [<table_prefix>]]
 ```
 
 ## Common Errors and Workarounds
 
-- **`test/properties.inc.php` missing**: Tests will fail immediately. Always copy `properties.ci.inc.php` or `properties.sample.inc.php` to `properties.inc.php` before running tests.
-- **SQLite `db/` directory missing**: The SQLite test creates `test/db/xpdotest`. If the `db/` directory doesn't exist, the connection will fail. Create it with `mkdir -p test/db`.
+- **`test/properties.inc.php` missing**: Tests will fail immediately. Always copy `properties.sample.inc.php` to `properties.inc.php` and set the appropriate values for your environment before running tests.
 - **PHP 8.2+ dynamic properties deprecation**: Classes using dynamic properties need the `#[\AllowDynamicProperties]` attribute. This has already been applied to `xPDO\xPDO`.
 - **PHPUnit version mismatch**: The project uses `yoast/phpunit-polyfills` for compatibility across PHPUnit versions. Use `@before` / `@after` annotations rather than overriding `setUp()` / `tearDown()` directly.
 - **`php_pgsql` extension name in CI**: The PostgreSQL CI job installs `php_pgsql` as the extension name; on some systems it may be `pgsql`. If PostgreSQL tests fail with a missing extension, verify extension availability with `php -m | grep pgsql`.
