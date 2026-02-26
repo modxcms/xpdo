@@ -428,9 +428,7 @@ class xPDOLoggingHistoricTest extends TestCase
 
         $line = __LINE__ + 2;
         ob_start();
-        $this->xpdo->log(xPDO::LOG_LEVEL_INFO, $msg, 'ECHO', $def);
-        //$this->getLog($msg, $def);
-        // Modern tests need this
+        $this->getLog($msg, $def);
         $output = ob_get_clean();
 
         $this->assertPlainLogLineMatches($output, 'INFO', $msg, $def, __FILE__, (string)$line);
