@@ -37,6 +37,14 @@ class xPDOLogger extends AbstractLogger
      */
     protected $targetOptions = array();
 
+    /**
+     * xPDOLogger constructor.
+     *
+     * @param xPDO  $xpdo    The xPDO instance used for configuration and debugging.
+     * @param array $options Optional logger configuration:
+     *                       - 'target' (string|array|null): Log destination or destinations.
+     *                       - 'target_options' (array): Options specific to the configured target(s).
+     */
     public function __construct(xPDO $xpdo, array $options = array())
     {
         $this->xpdo = $xpdo;
@@ -48,6 +56,23 @@ class xPDOLogger extends AbstractLogger
         }
     }
 
+    /**
+     * Handles logging using the legacy xPDO format.
+     *
+     * For fatal log levels, all output buffers are flushed and the script
+     * exits immediately after writing the formatted log message. For other
+     * levels, the message is delegated to {@see log()} with a context
+     * payload that preserves legacy xPDO fields.
+     *
+     * @param int|string $level  Numeric or string log level (xPDO or PSR-3 style).
+     * @param string     $msg    Log message to record.
+     * @param string     $target Optional log target identifier.
+     * @param string     $def    Optional log message definition or label.
+     * @param string     $file   Optional file name associated with the log entry.
+     * @param string|int $line   Optional line number associated with the log entry.
+     *
+     * @return void
+     */
     public function handleXpdo($level, $msg, $target= '', $def= '', $file= '', $line= '')
     {
         if ($level === xPDO::LOG_LEVEL_FATAL) {
