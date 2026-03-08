@@ -18,6 +18,9 @@
         <testsuite name="Complete">
             <file>./xPDO/Test/SetUpTest.php</file>
             <file>./xPDO/Test/xPDOTest.php</file>
+            <file>./xPDO/Test/Logging/xPDOLoggingHistoricTest.php</file>
+            <file>./xPDO/Test/Logging/xPDOLoggingFatalTest.php</file>
+            <file>./xPDO/Test/Logging/xPDOLoggerTest.php</file>
             <file>./xPDO/Test/xPDOIteratorTest.php</file>
             <file>./xPDO/Test/Om/xPDOObjectTest.php</file>
             <file>./xPDO/Test/Om/xPDOObjectSingleTableInheritanceTest.php</file>

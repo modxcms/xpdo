@@ -20,6 +20,9 @@ namespace xPDO;
 
 use Composer\Autoload\ClassLoader;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
+use xPDO\Logging\xPDOLogger;
 use xPDO\Om\xPDOCriteria;
 use xPDO\Om\xPDOQuery;
 
@@ -156,6 +159,10 @@ class xPDO {
      */
     public $services= null;
     /**
+     * @var LoggerInterface|null A PSR-3 logger instance for this xPDO instance.
+     */
+    public $logger= null;
+    /**
      * @var float Start time of the request, initialized when the constructor is
      * called.
      */
@@ -277,6 +284,18 @@ class xPDO {
             $this->config = $this->initConfig($options);
             if ($this->services === null) {
                 $this->services = new xPDOContainer();
+            }
+            if ($this->services instanceof ContainerInterface) {
+                if ($this->services->has(LoggerInterface::class)) {
+                    $logger = $this->services->get(LoggerInterface::class);
+                } elseif ($this->services->has('logger')) {
+                    $logger = $this->services->get('logger');
+                } else {
+                    $logger = null;
+                }
+                if ($logger instanceof LoggerInterface) {
+                    $this->logger = $logger;
+                }
             }
             $this->setLogLevel($this->getOption('log_level', null, xPDO::LOG_LEVEL_FATAL, true));
             $this->setLogTarget($this->getOption('log_target', null, php_sapi_name() === 'cli' ? 'ECHO' : 'HTML', true));
@@ -2047,6 +2066,60 @@ class xPDO {
         if ($level !== xPDO::LOG_LEVEL_FATAL && $level > $this->logLevel && $this->_debug !== true) {
             return;
         }
+        if (empty($file)) {
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+            if ($backtrace && isset($backtrace[2])) {
+                $file = $backtrace[2]['file'];
+                $line = $backtrace[2]['line'];
+            }
+            if (empty($file) && isset($_SERVER['SCRIPT_NAME'])) {
+                $file = $_SERVER['SCRIPT_NAME'];
+            }
+        }
+        if ($this->logger instanceof xPDOLogger) {
+            $this->logger->handleXpdo($level, $msg, $target, $def, $file, $line);
+            return;
+        }
+        if ($this->logger instanceof LoggerInterface) {
+            if (is_string($msg)) {
+                $message = $msg;
+            } elseif (is_object($msg) && method_exists($msg, '__toString')) {
+                $message = (string) $msg;
+            } else {
+                $message = print_r($msg, true);
+            }
+            $context = array(
+                'def' => $def,
+                'file' => $file,
+                'line' => $line,
+                'xpdo_level' => $level,
+            );
+            switch ($level) {
+                case xPDO::LOG_LEVEL_DEBUG:
+                    $psrLevel = LogLevel::DEBUG;
+                    break;
+                case xPDO::LOG_LEVEL_INFO:
+                    $psrLevel = LogLevel::INFO;
+                    break;
+                case xPDO::LOG_LEVEL_WARN:
+                    $psrLevel = LogLevel::WARNING;
+                    break;
+                case xPDO::LOG_LEVEL_ERROR:
+                    $psrLevel = LogLevel::ERROR;
+                    break;
+                case xPDO::LOG_LEVEL_FATAL:
+                    $psrLevel = LogLevel::CRITICAL;
+                    break;
+                default:
+                    $psrLevel = LogLevel::NOTICE;
+            }
+            $this->logger->log($psrLevel, $message, $context);
+            if ($level === xPDO::LOG_LEVEL_FATAL) {
+                while (ob_get_level() && @ob_end_flush()) {}
+                exit ('[' . date('Y-m-d H:i:s') . '] (' . $this->_getLogLevel($level) . $def . $file . $line . ') ' . $msg . "\n" . ($this->getDebug() === true ? '<pre>' . "\n" . print_r(debug_backtrace(), true) . "\n" . '</pre>' : ''));
+            }
+            return;
+        }
         if (empty ($target)) {
             $target = $this->logTarget;
         }
@@ -2054,22 +2127,6 @@ class xPDO {
         if (is_array($target)) {
             if (isset($target['options'])) $targetOptions =& $target['options'];
             $target = isset($target['target']) ? $target['target'] : 'ECHO';
-        }
-        if (empty($file)) {
-            if (version_compare(phpversion(), '5.4.0', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-            } elseif (version_compare(phpversion(), '5.3.6', '>=')) {
-                $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            } else {
-                $backtrace = debug_backtrace();
-            }
-            if ($backtrace && isset($backtrace[2])) {
-                $file = $backtrace[2]['file'];
-                $line = $backtrace[2]['line'];
-            }
-        }
-        if (empty($file) && isset($_SERVER['SCRIPT_NAME'])) {
-            $file = $_SERVER['SCRIPT_NAME'];
         }
         if ($level === xPDO::LOG_LEVEL_FATAL) {
             while (ob_get_level() && @ob_end_flush()) {}
