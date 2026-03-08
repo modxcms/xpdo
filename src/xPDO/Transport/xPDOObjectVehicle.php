@@ -139,7 +139,7 @@ class xPDOObjectVehicle extends xPDOVehicle {
             if (!empty ($vOptions[xPDOTransport::PREEXISTING_MODE])) {
                 $preExistingMode = intval($vOptions[xPDOTransport::PREEXISTING_MODE]);
             }
-            if ($this->validate($transport, $object, $vOptions)) {
+            if ($parentObject !== null || $this->validate($transport, $object, $vOptions)) {
                 if (!$this->_installRelated($transport, $object, $element, $options, 'foreign')) {
                     $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Could not install related objects with foreign owned keys for vehicle object of class {$vClass}; criteria: " . print_r($criteria, true));
                     if ($transport->xpdo->getDebug() === true) $transport->xpdo->log(xPDO::LOG_LEVEL_DEBUG, 'Could not install related objects for vehicle: ' . print_r($vOptions, true));
