@@ -1487,6 +1487,13 @@ class xPDOObject {
                         $this->_dirty= array();
                         $this->_validated= array();
                         $this->_new= false;
+                    } elseif ($result && $this->_new && $pkGenerated) {
+                        // Successfully inserted with generated PK - ensure we're no longer new
+                        // (getPrimaryKey may return falsy for compound PK with generated field
+                        // when lastInsertId returns 0 or getPrimaryKey validation fails)
+                        $this->_dirty= array();
+                        $this->_validated= array();
+                        $this->_new= false;
                     }
                     $callback = $this->getOption(xPDO::OPT_CALLBACK_ON_SAVE);
                     if ($callback && is_callable($callback)) {

@@ -273,12 +273,13 @@ class xPDOTest extends TestCase
                     0 => 'xPDO\\Om\\xPDOSimpleObject',
                     1 => 'xPDO\\Test\\Sample\\PersonPhone',
                     2 => 'xPDO\\Test\\Sample\\BloodType',
-                    3 => 'xPDO\\Test\\Sample\\Person',
-                    4 => 'xPDO\\Test\\Sample\\Phone',
-                    5 => 'xPDO\\Test\\Sample\\xPDOSample',
-                    6 => 'xPDO\\Test\\Sample\\Item',
-                    7 => 'xPDO\\Test\\Sample\\SecureObject',
-                    8 => 'xPDO\\Test\\Sample\\SecureItem'
+                    3 => 'xPDO\\Test\\Sample\\NumberSeq',
+                    4 => 'xPDO\\Test\\Sample\\Person',
+                    5 => 'xPDO\\Test\\Sample\\Phone',
+                    6 => 'xPDO\\Test\\Sample\\xPDOSample',
+                    7 => 'xPDO\\Test\\Sample\\Item',
+                    8 => 'xPDO\\Test\\Sample\\SecureObject',
+                    9 => 'xPDO\\Test\\Sample\\SecureItem'
                 )
             ),
         );
