@@ -416,8 +416,28 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
         $notNull= !isset ($meta['null']) ? false : ($meta['null'] === 'false' || empty($meta['null']));
         $null= $notNull ? ' NOT NULL' : ' NULL';
         $extra= '';
-        if (isset($meta['index']) && $meta['index'] == 'pk' && !is_array($pk) && $pktype == 'integer' && isset ($meta['generated']) && $meta['generated'] == 'native') {
-            $extra= ' AUTO_INCREMENT';
+        $isGeneratedPkField = isset($meta['index']) && $meta['index'] == 'pk'
+            && isset($meta['generated']) && $meta['generated'] == 'native'
+            && (isset($meta['phptype']) ? $meta['phptype'] : '') === 'integer';
+        if ($isGeneratedPkField) {
+            if (!is_array($pk)) {
+                $extra = ' AUTO_INCREMENT';
+            } else {
+                $firstPkColumn = null;
+                $indexes = $this->xpdo->getIndexMeta($class);
+                if (is_array($indexes)) {
+                    foreach ($indexes as $idx) {
+                        if (!empty($idx['primary']) && isset($idx['columns']) && is_array($idx['columns'])) {
+                            $cols = array_keys($idx['columns']);
+                            $firstPkColumn = $cols[0] ?? null;
+                            break;
+                        }
+                    }
+                }
+                if ($firstPkColumn === $name) {
+                    $extra = ' AUTO_INCREMENT';
+                }
+            }
         }
         if (empty ($extra) && isset ($meta['extra'])) {
             $extra= ' ' . $meta['extra'];

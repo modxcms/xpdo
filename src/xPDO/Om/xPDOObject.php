@@ -1470,9 +1470,18 @@ class xPDOObject {
                 if ($result) {
                     if ($pkn && !$pk) {
                         if ($pkGenerated) {
-                            $this->_fields[$this->getPK()]= $this->getGeneratedKey();
+                            // For compound PK, find the generated field and set it (fix #129)
+                            $generatedKey = $this->getGeneratedKey();
+                            $pkFields = (array) $this->getPK();
+                            foreach ($pkFields as $pkField) {
+                                if (isset($this->_fieldMeta[$pkField]['generated'])
+                                    && $this->_fieldMeta[$pkField]['generated'] === 'native') {
+                                    $this->_fields[$pkField] = $generatedKey;
+                                    break;
+                                }
+                            }
                         }
-                        $pk= $this->getPrimaryKey();
+                        $pk = $this->getPrimaryKey();
                     }
                     if ($pk || !$this->getPK()) {
                         $this->_dirty= array();

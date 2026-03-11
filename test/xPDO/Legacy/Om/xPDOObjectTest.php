@@ -385,13 +385,14 @@ class xPDOObjectTest extends TestCase
      */
     public function testGetObjectGraphsByPK()
     {
-        //array method
+        $person = null;
+        $personPhone = null;
+        $phone = null;
         try {
             $person = $this->xpdo->getObjectGraph('Person', array('PersonPhone' => array('Phone' => array())), 2);
             if ($person) {
                 $personPhoneColl = $person->getMany('PersonPhone');
                 if ($personPhoneColl) {
-                    $phone = null;
                     foreach ($personPhoneColl as $personPhone) {
                         if ($personPhone->get('phone') == 2) {
                             $phone = $personPhone->getOne('Phone');
@@ -404,7 +405,7 @@ class xPDOObjectTest extends TestCase
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue($person instanceof \Person, "Error retrieving Person object by primary key via getObjectGraph");
-        $this->assertTrue($personPhone instanceof \PersonPhone, "Error retrieving retreiving related PersonPhone collection via getObjectGraph");
+        $this->assertTrue($personPhone instanceof \PersonPhone, "Error retrieving related PersonPhone collection via getObjectGraph");
         $this->assertTrue($phone instanceof \Phone, "Error retrieving related Phone object via getObjectGraph");
     }
 
@@ -413,13 +414,14 @@ class xPDOObjectTest extends TestCase
      */
     public function testGetObjectGraphsJSONByPK()
     {
-        //JSON method
+        $person = null;
+        $personPhone = null;
+        $phone = null;
         try {
             $person = $this->xpdo->getObjectGraph('Person', '{"PersonPhone":{"Phone":{}}}', 2);
             if ($person) {
                 $personPhoneColl = $person->getMany('PersonPhone');
                 if ($personPhoneColl) {
-                    $phone = null;
                     foreach ($personPhoneColl as $personPhone) {
                         if ($personPhone->get('phone') == 2) {
                             $phone = $personPhone->getOne('Phone');
@@ -432,7 +434,7 @@ class xPDOObjectTest extends TestCase
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue($person instanceof \Person, "Error retrieving Person object by primary key via getObjectGraph, JSON graph");
-        $this->assertTrue($personPhone instanceof \PersonPhone, "Error retrieving retreiving related PersonPhone collection via getObjectGraph, JSON graph");
+        $this->assertTrue($personPhone instanceof \PersonPhone, "Error retrieving related PersonPhone collection via getObjectGraph, JSON graph");
         $this->assertTrue($phone instanceof \Phone, "Error retrieving related Phone object via getObjectGraph, JSON graph");
     }
 

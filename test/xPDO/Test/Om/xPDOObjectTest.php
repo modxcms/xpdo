@@ -258,6 +258,35 @@ class xPDOObjectTest extends TestCase
     }
 
     /**
+     * Test saving an object with compound primary key that includes a generated field.
+     * Covers fix for #129: "PHP warning: Illegal offset type" when saving such objects.
+     *
+     * @requires extension pdo_mysql
+     */
+    public function testSaveCompoundPkWithGeneratedField()
+    {
+        if (self::$properties['xpdo_driver'] !== 'mysql') {
+            $this->markTestSkipped('NumberSeq model is MySQL-only (compound PK with AUTO_INCREMENT)');
+        }
+        $this->xpdo->getManager();
+        $this->xpdo->manager->createObjectContainer('xPDO\\Test\\Sample\\NumberSeq');
+
+        $number = $this->xpdo->newObject('xPDO\\Test\\Sample\\NumberSeq');
+        $number->fromArray(array('level' => 'B', 'number' => null), '', true);
+
+        $result = $number->save();
+        $msg = 'Save should succeed without PHP warnings';
+        if (!$result) {
+            $msg .= '. Error: ' . print_r($this->xpdo->errorInfo(), true);
+        }
+        $this->assertTrue($result, $msg);
+        $this->assertNotNull($number->get('number'), 'Generated number field should be set after save');
+        $this->assertFalse($number->isNew(), 'Object should not be new after save');
+
+        $this->xpdo->manager->removeObjectContainer('xPDO\\Test\\Sample\\NumberSeq');
+    }
+
+    /**
      * Test saving an object.
      */
     public function testSaveObject()
@@ -382,13 +411,14 @@ class xPDOObjectTest extends TestCase
      */
     public function testGetObjectGraphsByPK()
     {
-        //array method
+        $person = null;
+        $personPhone = null;
+        $phone = null;
         try {
             $person = $this->xpdo->getObjectGraph('xPDO\\Test\\Sample\\Person', array('PersonPhone' => array('Phone' => array())), 2);
             if ($person) {
                 $personPhoneColl = $person->getMany('PersonPhone');
                 if ($personPhoneColl) {
-                    $phone = null;
                     foreach ($personPhoneColl as $personPhone) {
                         if ($personPhone->get('phone') == 2) {
                             $phone = $personPhone->getOne('Phone');
@@ -401,7 +431,7 @@ class xPDOObjectTest extends TestCase
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue($person instanceof \xPDO\Test\Sample\Person, "Error retrieving Person object by primary key via getObjectGraph");
-        $this->assertTrue($personPhone instanceof \xPDO\Test\Sample\PersonPhone, "Error retrieving retreiving related PersonPhone collection via getObjectGraph");
+        $this->assertTrue($personPhone instanceof \xPDO\Test\Sample\PersonPhone, "Error retrieving related PersonPhone collection via getObjectGraph");
         $this->assertTrue($phone instanceof \xPDO\Test\Sample\Phone, "Error retrieving related Phone object via getObjectGraph");
     }
 
@@ -431,13 +461,14 @@ class xPDOObjectTest extends TestCase
      */
     public function testGetObjectGraphsJSONByPK()
     {
-        //JSON method
+        $person = null;
+        $personPhone = null;
+        $phone = null;
         try {
             $person = $this->xpdo->getObjectGraph('xPDO\\Test\\Sample\\Person', '{"PersonPhone":{"Phone":{}}}', 2);
             if ($person) {
                 $personPhoneColl = $person->getMany('PersonPhone');
                 if ($personPhoneColl) {
-                    $phone = null;
                     foreach ($personPhoneColl as $personPhone) {
                         if ($personPhone->get('phone') == 2) {
                             $phone = $personPhone->getOne('Phone');
@@ -450,7 +481,7 @@ class xPDOObjectTest extends TestCase
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue($person instanceof \xPDO\Test\Sample\Person, "Error retrieving Person object by primary key via getObjectGraph, JSON graph");
-        $this->assertTrue($personPhone instanceof \xPDO\Test\Sample\PersonPhone, "Error retrieving retreiving related PersonPhone collection via getObjectGraph, JSON graph");
+        $this->assertTrue($personPhone instanceof \xPDO\Test\Sample\PersonPhone, "Error retrieving related PersonPhone collection via getObjectGraph, JSON graph");
         $this->assertTrue($phone instanceof \xPDO\Test\Sample\Phone, "Error retrieving related Phone object via getObjectGraph, JSON graph");
     }
 
