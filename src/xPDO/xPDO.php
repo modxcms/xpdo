@@ -494,9 +494,10 @@ class xPDO {
                 $prefix= !is_string($prefix) ? $this->config[xPDO::OPT_TABLE_PREFIX] : $prefix;
                 if (!array_key_exists($pkg, $this->packages) || $this->packages[$pkg]['path'] !== $path || $this->packages[$pkg]['prefix'] !== $prefix) {
                     $this->packages[$pkg]= array('path' => $path, 'prefix' => $prefix);
-                    $this->setPackageMeta($pkg, $path, $namespacePrefix);
+                    $added = $this->setPackageMeta($pkg, $path, $namespacePrefix);
+                } else {
+                    $added = true;
                 }
-                $added= true;
             }
         } else {
             $this->log(xPDO::LOG_LEVEL_ERROR, 'addPackage called with an invalid package name.');
