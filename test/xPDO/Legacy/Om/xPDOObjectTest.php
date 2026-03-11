@@ -630,19 +630,55 @@ class xPDOObjectTest extends TestCase
     public function providerUpdateCollection()
     {
         return array(
-            array('Person', array('dob' => '2011-08-09'), array('dob:<' => '1951-01-01'), array(1, array())),
-            array('Person', array('security_level' => 5), array('security_level' => 3), array(1, array())),
-            array(
+            'no matches' => array('Person', array('dob' => '2011-08-09'), array('dob:<' => '1951-01-01'), array(1, array())),
+            'integer field' => array('Person', array('security_level' => 5), array('security_level' => 3), array(1, array())),
+            'update all records' => array(
                 'Person',
                 array('date_of_birth' => '2011-09-01'),
                 null,
                 array(2, array(array('date_of_birth' => '2011-09-01'), array('date_of_birth' => '2011-09-01')))
             ),
-            array(
+            'null value' => array(
                 'Person',
                 array('date_of_birth' => null),
                 array('security_level' => 3),
                 array(1, array(array('date_of_birth' => null)))
+            ),
+            'string with IN' => array(
+                'Person',
+                array('first_name' => 'The word IN is IN this strINg'),
+                array('security_level' => 3),
+                array(1, array(array('first_name' => 'The word IN is IN this strINg')))
+            ),
+            'string with LIKE' => array(
+                'Person',
+                array('first_name' => 'Something LIKE %test%'),
+                array('security_level' => 3),
+                array(1, array(array('first_name' => 'Something LIKE %test%')))
+            ),
+            'string with BETWEEN' => array(
+                'Person',
+                array('first_name' => 'Value BETWEEN 1 AND 10'),
+                array('security_level' => 3),
+                array(1, array(array('first_name' => 'Value BETWEEN 1 AND 10')))
+            ),
+            'string with equals' => array(
+                'Person',
+                array('first_name' => 'x = y'),
+                array('security_level' => 3),
+                array(1, array(array('first_name' => 'x = y')))
+            ),
+            'empty string' => array(
+                'Person',
+                array('middle_name' => ''),
+                array('security_level' => 3),
+                array(1, array(array('middle_name' => '')))
+            ),
+            'apostrophe SQL injection' => array(
+                'Person',
+                array('first_name' => "O'Brien"),
+                array('security_level' => 3),
+                array(1, array(array('first_name' => "O'Brien")))
             ),
         );
     }

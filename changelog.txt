@@ -1,5 +1,9 @@
 This file shows the changes in this release of xPDO.
 
+Unreleased
+====================================
+- [#54] Fix updateCollection/set() when string value contains SQL operator keywords (e.g. IN, LIKE)
+
 xPDO 3.1.7 (December 4, 2025)
 ====================================
 - PHP 8.5 compatibility (#264)

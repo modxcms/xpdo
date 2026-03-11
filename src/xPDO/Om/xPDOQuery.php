@@ -264,7 +264,7 @@ abstract class xPDOQuery extends xPDOCriteria {
                 elseif (!in_array($fieldMeta[$key]['phptype'], $this->_quotable)) {
                     $type= \PDO::PARAM_INT;
                 }
-                elseif (strpos($value, '(') === false && !$this->isConditionalClause($value)) {
+                else {
                     $type= \PDO::PARAM_STR;
                 }
                 $this->query['set'][$key]= array('value' => $value, 'type' => $type);

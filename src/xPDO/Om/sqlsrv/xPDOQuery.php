@@ -249,8 +249,8 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
                 foreach ($this->query['set'] as $setKey => $setVal) {
                     $value = $setVal['value'];
                     $type = $setVal['type'];
-                    if ($value !== null && in_array($type, array(\PDO::PARAM_INT, \PDO::PARAM_STR))) {
-                        $value = $this->xpdo->quote($value, $type);
+                    if ($value !== null && ($type === null || in_array($type, array(\PDO::PARAM_INT, \PDO::PARAM_STR)))) {
+                        $value = $this->xpdo->quote($value, $type === null ? \PDO::PARAM_STR : $type);
                     } elseif ($value === null) {
                         $value = 'NULL';
                     }
