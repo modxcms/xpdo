@@ -798,7 +798,13 @@ class xPDOObject {
                         $phptype= $this->_fieldMeta[$k]['phptype'];
                         $dbtype= $this->_fieldMeta[$k]['dbtype'];
                         $allowNull= isset($this->_fieldMeta[$k]['null']) ? (bool) $this->_fieldMeta[$k]['null'] : true;
-                        if ($v === null) {
+                        if ($v instanceof \xPDO\Om\xPDOExpression) {
+                            // Raw SQL expression: bypass type coercion and store as-is.
+                            // The expression will be inlined verbatim in save().
+                            $this->_fields[$k]= $v;
+                            $set= true;
+                        }
+                        elseif ($v === null) {
                             if ($allowNull) {
                                 $this->_fields[$k]= null;
                                 $set= true;
@@ -1349,6 +1355,7 @@ class xPDOObject {
         if (!empty ($this->_dirty)) {
             $cols= array ();
             $bindings= array ();
+            $valuesSql= array ();
             $updateSql= array ();
             foreach (array_keys($this->_dirty) as $_k) {
                 if (!array_key_exists($_k, $this->_fieldMeta)) {
@@ -1360,12 +1367,22 @@ class xPDOObject {
                         continue;
                     }
                 }
-                if ($this->_fieldMeta[$_k]['phptype'] === 'password') {
+                if ($this->_fieldMeta[$_k]['phptype'] === 'password' && !($this->_fields[$_k] instanceof \xPDO\Om\xPDOExpression)) {
                     $this->_fields[$_k]= $this->encode($this->_fields[$_k], 'password');
                 }
                 $fieldType= \PDO::PARAM_STR;
                 $fieldValue= $this->_fields[$_k];
-                if (in_array($this->_fieldMeta[$_k]['phptype'], array ('datetime', 'timestamp')) && !empty($this->_fieldMeta[$_k]['attributes']) && $this->_fieldMeta[$_k]['attributes'] == 'ON UPDATE CURRENT_TIMESTAMP') {
+                if ($fieldValue instanceof \xPDO\Om\xPDOExpression) {
+                    // Raw SQL expression: inline verbatim, do not create a PDO binding.
+                    if ($this->_new) {
+                        $cols[$_k]= $this->xpdo->escape($_k);
+                        $valuesSql[$_k]= $fieldValue->getExpression();
+                    } else {
+                        $updateSql[]= $this->xpdo->escape($_k) . ' = ' . $fieldValue->getExpression();
+                    }
+                    continue;
+                }
+                elseif (in_array($this->_fieldMeta[$_k]['phptype'], array ('datetime', 'timestamp')) && !empty($this->_fieldMeta[$_k]['attributes']) && $this->_fieldMeta[$_k]['attributes'] == 'ON UPDATE CURRENT_TIMESTAMP') {
                     $this->_fields[$_k]= date('Y-m-d H:i:s');
                     continue;
                 }
@@ -1392,6 +1409,7 @@ class xPDOObject {
                     $cols[$_k]= $this->xpdo->escape($_k);
                     $bindings[":{$_k}"]['value']= $fieldValue;
                     $bindings[":{$_k}"]['type']= $fieldType;
+                    $valuesSql[$_k]= ":{$_k}";
                 } else {
                     $bindings[":{$_k}"]['value']= $fieldValue;
                     $bindings[":{$_k}"]['type']= $fieldType;
@@ -1399,7 +1417,7 @@ class xPDOObject {
                 }
             }
             if ($this->_new) {
-                $sql= "INSERT INTO {$this->_table} (" . implode(', ', array_values($cols)) . ") VALUES (" . implode(', ', array_keys($bindings)) . ")";
+                $sql= "INSERT INTO {$this->_table} (" . implode(', ', array_values($cols)) . ") VALUES (" . implode(', ', array_values($valuesSql)) . ")";
             } else {
                 if ($pk && $pkn) {
                     if (is_array($pkn)) {

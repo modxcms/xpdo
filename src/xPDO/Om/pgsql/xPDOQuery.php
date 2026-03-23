@@ -69,7 +69,9 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery
                 foreach ($this->query['set'] as $setKey => $setVal) {
                     $value = $setVal['value'];
                     $type = $setVal['type'];
-                    if ($value !== null && in_array($type, array(\PDO::PARAM_INT, \PDO::PARAM_STR))) {
+                    if ($value instanceof \xPDO\Om\xPDOExpression) {
+                        $value = $value->getExpression();
+                    } elseif ($value !== null && in_array($type, array(\PDO::PARAM_INT, \PDO::PARAM_STR))) {
                         $value = $this->xpdo->quote($value, $type);
                     } elseif ($value === null) {
                         $value = 'NULL';

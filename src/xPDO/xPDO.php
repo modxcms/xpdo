@@ -2683,6 +2683,22 @@ class xPDO {
     }
 
     /**
+     * Creates an xPDOExpression wrapper to mark a value as a raw SQL fragment.
+     *
+     * Use this when you need to pass a raw SQL expression as the value in a SET
+     * clause via updateCollection() or xPDOQuery::set(), bypassing automatic
+     * quoting and SQL injection protection. Plain PHP strings should always be
+     * passed without this wrapper.
+     *
+     * @param string $expression The raw SQL expression.
+     * @return Om\xPDOExpression
+     */
+    public function expression(string $expression): Om\xPDOExpression
+    {
+        return new Om\xPDOExpression($expression);
+    }
+
+    /**
      * Splits a string on a specified character, ignoring escaped content.
      *
      * @static

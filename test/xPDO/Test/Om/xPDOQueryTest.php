@@ -10,6 +10,7 @@
 
 namespace xPDO\Test\Om;
 
+use xPDO\Om\xPDOExpression;
 use xPDO\Om\xPDOObject;
 use xPDO\Om\xPDOQuery;
 use xPDO\Om\xPDOQueryCondition;
@@ -589,5 +590,87 @@ class xPDOQueryTest extends TestCase {
             array("benchmark ( 999, 100+1 )"),
             array("if(now()=sysdate(),sleep (20),0)"),
         );
+    }
+
+    /**
+     * Test that updateCollection() succeeds when a string value contains SQL operator keywords.
+     *
+     * Regression test for https://github.com/modxcms/revolution/issues/9487
+     */
+    public function testUpdateCollectionWithSQLKeywordInString()
+    {
+        $person = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', array('first_name' => 'Johnathon'));
+        $this->assertNotNull($person, 'Could not retrieve test person fixture.');
+
+        $valueWithSQLKeyword = 'The word IN is IN this strINg';
+        $result = $this->xpdo->updateCollection(
+            'xPDO\\Test\\Sample\\Person',
+            array('username' => $valueWithSQLKeyword),
+            array('id' => $person->get('id'))
+        );
+
+        $this->assertNotFalse($result, 'updateCollection() returned false — SQL syntax error likely caused by SQL keyword in string value.');
+        $this->assertEquals(1, $result, 'updateCollection() should have updated exactly 1 row.');
+
+        $reloaded = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', $person->get('id'));
+        $this->assertEquals($valueWithSQLKeyword, $reloaded->get('username'), 'The saved value should match the original string with SQL keywords.');
+    }
+
+    /**
+     * Test that updateCollection() with an xPDOExpression executes raw SQL.
+     */
+    public function testUpdateCollectionWithExpression()
+    {
+        $person = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', array('first_name' => 'Johnathon'));
+        $this->assertNotNull($person, 'Could not retrieve test person fixture.');
+
+        $originalLevel = (int)$person->get('security_level');
+
+        $result = $this->xpdo->updateCollection(
+            'xPDO\\Test\\Sample\\Person',
+            array('security_level' => $this->xpdo->expression('security_level + 1')),
+            array('id' => $person->get('id'))
+        );
+
+        $this->assertNotFalse($result, 'updateCollection() with an xPDOExpression returned false.');
+        $this->assertEquals(1, $result, 'updateCollection() should have updated exactly 1 row.');
+
+        $reloaded = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', $person->get('id'));
+        $this->assertEquals($originalLevel + 1, (int)$reloaded->get('security_level'), 'xPDOExpression should have incremented security_level by 1.');
+    }
+
+    /**
+     * Test that xPDOQuery::set() assigns PDO::PARAM_STR to a string containing SQL keywords.
+     */
+    public function testSetQueryStringWithSQLKeywordIsParamStr()
+    {
+        $query = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+        $query->command('UPDATE');
+        $query->set(array('username' => 'The word IN is IN this strINg'));
+
+        $this->assertArrayHasKey('username', $query->query['set'], 'Field should be present in query set.');
+        $this->assertEquals(
+            \PDO::PARAM_STR,
+            $query->query['set']['username']['type'],
+            'A plain string containing SQL keywords must be typed as PDO::PARAM_STR (always quoted).'
+        );
+    }
+
+    /**
+     * Test that xPDOQuery::set() assigns null type to an xPDOExpression (raw SQL sentinel).
+     */
+    public function testSetQueryWithExpressionObjectHasNullType()
+    {
+        $expr = new xPDOExpression('NOW()');
+        $query = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Person');
+        $query->command('UPDATE');
+        $query->set(array('dob' => $expr));
+
+        $this->assertArrayHasKey('dob', $query->query['set'], 'Field should be present in query set.');
+        $this->assertNull(
+            $query->query['set']['dob']['type'],
+            'An xPDOExpression must have null type so construct() uses it verbatim.'
+        );
+        $this->assertSame($expr, $query->query['set']['dob']['value'], 'The xPDOExpression instance must be stored as the value.');
     }
 }

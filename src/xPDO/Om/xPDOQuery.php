@@ -258,13 +258,18 @@ abstract class xPDOQuery extends xPDOCriteria {
                 }
             }
             if (array_key_exists($key, $fieldMeta)) {
-                if ($value === null) {
+                if ($value instanceof xPDOExpression) {
+                    // Raw SQL expression: leave $type as null so construct() uses it verbatim.
+                }
+                elseif ($value === null) {
                     $type= \PDO::PARAM_NULL;
                 }
                 elseif (!in_array($fieldMeta[$key]['phptype'], $this->_quotable)) {
                     $type= \PDO::PARAM_INT;
                 }
-                elseif (strpos($value, '(') === false && !$this->isConditionalClause($value)) {
+                else {
+                    // All plain string values are always quoted regardless of content.
+                    // Use xPDOExpression to explicitly pass raw SQL expressions.
                     $type= \PDO::PARAM_STR;
                 }
                 $this->query['set'][$key]= array('value' => $value, 'type' => $type);

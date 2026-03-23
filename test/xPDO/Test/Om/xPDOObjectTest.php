@@ -10,6 +10,7 @@
 
 namespace xPDO\Test\Om;
 
+use xPDO\Om\xPDOExpression;
 use xPDO\Om\xPDOObject;
 use xPDO\Test\Sample\Person;
 use xPDO\TestCase;
@@ -805,5 +806,43 @@ class xPDOObjectTest extends TestCase
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
         $this->assertTrue($result === 2, "Error removing a collection of objects.");
+    }
+
+    /**
+     * Test that xPDOObject::set() accepts an xPDOExpression and stores it without type coercion.
+     */
+    public function testObjectSetAcceptsExpression()
+    {
+        $person = $this->xpdo->newObject('xPDO\\Test\\Sample\\Person');
+        $expr = new xPDOExpression('UPPER(first_name)');
+        $result = $person->set('username', $expr);
+
+        $this->assertTrue($result, 'xPDOObject::set() should return true when setting an xPDOExpression.');
+        $stored = $person->get('username');
+        $this->assertInstanceOf(xPDOExpression::class, $stored, 'xPDOObject::get() should return the xPDOExpression instance as stored.');
+        $this->assertSame($expr, $stored, 'The stored value must be the same xPDOExpression instance.');
+    }
+
+    /**
+     * Test that xPDOObject::save() handles an xPDOExpression in an UPDATE (existing object).
+     */
+    public function testObjectSaveWithExpressionInUpdate()
+    {
+        $person = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', array('first_name' => 'Johnathon'));
+        $this->assertNotNull($person, 'Could not retrieve test person fixture.');
+
+        $originalLevel = (int)$person->get('security_level');
+
+        $person->set('security_level', $this->xpdo->expression('security_level + 5'));
+        $saveResult = $person->save();
+
+        $this->assertTrue($saveResult, 'xPDOObject::save() with an xPDOExpression should return true.');
+
+        $reloaded = $this->xpdo->getObject('xPDO\\Test\\Sample\\Person', $person->get('id'));
+        $this->assertEquals(
+            $originalLevel + 5,
+            (int)$reloaded->get('security_level'),
+            'xPDOExpression in save() should have incremented security_level by 5.'
+        );
     }
 }
