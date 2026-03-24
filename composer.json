@@ -15,7 +15,7 @@
         }
     ],
     "require": {
-        "php": ">=7.2.5",
+        "php": ">=7.4",
         "ext-PDO": "*",
         "ext-json": "*",
         "ext-simplexml": "*",
