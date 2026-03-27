@@ -369,6 +369,8 @@ class xPDO {
             $this->services = $data;
             if ($this->services->has('config')) {
                 $data = $this->services->get('config');
+            } else {
+                throw new xPDOException('A ContainerInterface passed to xPDO must provide a \'config\' entry containing the xPDO configuration array.');
             }
         }
         if (!is_array($data)) {
