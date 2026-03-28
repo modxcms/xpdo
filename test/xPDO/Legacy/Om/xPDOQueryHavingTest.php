@@ -117,7 +117,9 @@ class xPDOQueryHavingTest extends TestCase
     {
         try {
             $criteria = $this->xpdo->newQuery('Item');
+            $criteria->groupby('id');
             $criteria->groupby('name');
+            $criteria->groupby('color');
             $criteria->having($having);
             $result = $this->xpdo->getCollection('Item', $criteria);
             if (is_array($result) && !empty($result)) {
