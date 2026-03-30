@@ -15,11 +15,11 @@
         }
     ],
     "require": {
-        "php": ">=7.2.5",
+        "php": ">=8.1",
         "ext-PDO": "*",
         "ext-json": "*",
         "ext-simplexml": "*",
-        "symfony/console": "^5.4",
+        "symfony/console": "^6.0|^7.0",
         "psr/container": "^1.1 || ^2.0.1",
         "psr/log": "^1.1 || ^2.0 || ^3.0"
     },
