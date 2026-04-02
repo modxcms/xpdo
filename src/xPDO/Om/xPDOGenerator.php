@@ -126,7 +126,7 @@ abstract class xPDOGenerator {
                     if ($char !== ' ') break;
                     $spaces++;
                 }
-                $output[] = str_repeat('    ', $indentLevel + 1) . str_repeat('    ', $spaces / 2) . substr($line, ($spaces ? $spaces + 1 : 0));
+                $output[] = str_repeat('    ', $indentLevel + 1) . str_repeat('    ', intdiv($spaces, 2)) . substr($line, ($spaces ? $spaces + 1 : 0));
             }
         }
         else {
