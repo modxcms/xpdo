@@ -87,9 +87,14 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
             $instance= $this->xpdo->newObject($className);
             if ($instance) {
                 $tableName= $this->xpdo->getTableName($className);
-                $existsStmt = $this->xpdo->query("SELECT COUNT(*) FROM {$tableName}");
-                if ($existsStmt && $existsStmt->fetchAll()) {
-                    return true;
+                try {
+                    $existsStmt = $this->xpdo->query("SELECT COUNT(*) FROM {$tableName}");
+                    if ($existsStmt && $existsStmt->fetchAll()) {
+                        return true;
+                    }
+                } catch (\PDOException $e) {
+                    /* Table does not exist; proceed to CREATE TABLE below. */
+                    $this->xpdo->log(xPDO::LOG_LEVEL_DEBUG, "Table {$tableName} does not exist, creating: " . $e->getMessage());
                 }
                 $tableMeta= $this->xpdo->getTableMeta($className);
                 $sql= 'CREATE TABLE ' . $tableName . ' (';
