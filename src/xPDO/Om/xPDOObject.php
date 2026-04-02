@@ -1470,15 +1470,17 @@ class xPDOObject {
                 if ($result) {
                     if ($pkn && !$pk) {
                         if ($pkGenerated) {
-                            // For compound PK, find the generated field and set it (fix #129)
-                            $generatedKey = $this->getGeneratedKey();
-                            $pkFields = (array) $this->getPK();
-                            foreach ($pkFields as $pkField) {
-                                if (isset($this->_fieldMeta[$pkField]['generated'])
-                                    && $this->_fieldMeta[$pkField]['generated'] === 'native') {
-                                    $this->_fields[$pkField] = $generatedKey;
-                                    break;
+                            if (is_array($pkn)) {
+                                $generatedKey = $this->getGeneratedKey();
+                                foreach ($pkn as $pkField => $v) {
+                                    if (isset($this->_fieldMeta[$pkField]['generated'])
+                                        && $this->_fieldMeta[$pkField]['generated'] === 'native') {
+                                        $this->_fields[$pkField] = $generatedKey;
+                                        break;
+                                    }
                                 }
+                            } else {
+                                $this->_fields[$this->getPK()] = $this->getGeneratedKey();
                             }
                         }
                         $pk = $this->getPrimaryKey();
@@ -1487,13 +1489,9 @@ class xPDOObject {
                         $this->_dirty= array();
                         $this->_validated= array();
                         $this->_new= false;
-                    } elseif ($result && $this->_new && $pkGenerated) {
-                        // Successfully inserted with generated PK - ensure we're no longer new
-                        // (getPrimaryKey may return falsy for compound PK with generated field
-                        // when lastInsertId returns 0 or getPrimaryKey validation fails)
-                        $this->_dirty= array();
-                        $this->_validated= array();
-                        $this->_new= false;
+                    }
+                    if (!$pk && $pkGenerated) {
+                        $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Could not retrieve generated key for class {$this->_class}.", '', __METHOD__, __FILE__, __LINE__);
                     }
                     $callback = $this->getOption(xPDO::OPT_CALLBACK_ON_SAVE);
                     if ($callback && is_callable($callback)) {

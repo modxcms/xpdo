@@ -247,6 +247,13 @@ class xPDOTest extends TestCase
      */
     public function testGetDescendants($class, array $correct = array())
     {
+        // NumberSeq only exists in the MySQL schema (compound PK with native-generated field
+        // is MySQL-only), so remove it from the expected set on other drivers.
+        if (self::$properties['xpdo_driver'] !== 'mysql') {
+            $correct = array_values(array_filter($correct, function ($c) {
+                return $c !== 'xPDO\\Test\\Sample\\NumberSeq';
+            }));
+        }
         $this->assertEquals($correct, $this->xpdo->getDescendants($class));
     }
 

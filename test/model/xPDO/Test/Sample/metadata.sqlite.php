@@ -17,7 +17,6 @@ $xpdo_meta_map = array (
         array (
             0 => 'xPDO\\Test\\Sample\\PersonPhone',
             1 => 'xPDO\\Test\\Sample\\BloodType',
-            2 => 'xPDO\\Test\\Sample\\NumberSeq',
         ),
         'xPDO\\Test\\Sample\\SecureObject' =>
         array (

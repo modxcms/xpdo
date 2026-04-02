@@ -1,6 +1,8 @@
 <?php
 namespace xPDO\Test\Sample\mysql;
 
+use xPDO\xPDO;
+
 class NumberSeq extends \xPDO\Test\Sample\NumberSeq
 {
 
@@ -9,46 +11,48 @@ class NumberSeq extends \xPDO\Test\Sample\NumberSeq
         'version' => '3.0',
         'table' => 'number_seq',
         'extends' => 'xPDO\\Om\\xPDOObject',
-        'fields' =>
+        'fields' => 
         array (
             'level' => NULL,
             'number' => NULL,
         ),
-        'fieldMeta' =>
+        'fieldMeta' => 
         array (
-            'level' =>
+            'level' => 
             array (
                 'dbtype' => 'varchar',
                 'precision' => '1',
                 'phptype' => 'string',
                 'null' => false,
+                'index' => 'pk',
             ),
-            'number' =>
+            'number' => 
             array (
                 'dbtype' => 'int',
                 'precision' => '10',
                 'attributes' => 'unsigned',
                 'phptype' => 'integer',
                 'null' => false,
+                'index' => 'pk',
                 'generated' => 'native',
             ),
         ),
-        'indexes' =>
+        'indexes' => 
         array (
-            'PRIMARY' =>
+            'PRIMARY' => 
             array (
                 'alias' => 'PRIMARY',
                 'primary' => true,
                 'unique' => true,
                 'type' => 'BTREE',
-                'columns' =>
+                'columns' => 
                 array (
-                    'number' =>
+                    'number' => 
                     array (
                         'collation' => 'A',
                         'null' => false,
                     ),
-                    'level' =>
+                    'level' => 
                     array (
                         'collation' => 'A',
                         'null' => false,

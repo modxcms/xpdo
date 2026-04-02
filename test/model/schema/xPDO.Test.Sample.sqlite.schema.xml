@@ -85,15 +85,6 @@
 
         <aggregate alias="Person" class="xPDO\Test\Sample\Person" local="type" foreign="blood_type" cardinality="many" owner="foreign" />
     </object>
-    <object class="NumberSeq" table="number_seq" extends="xPDO\Om\xPDOObject">
-        <field key="level" dbtype="varchar" precision="1" phptype="string" null="false" index="pk" />
-        <field key="number" dbtype="int" precision="10" phptype="integer" null="false" index="pk" />
-
-        <index alias="PRIMARY" name="PRIMARY" primary="true" unique="true">
-            <column key="level" collation="A" null="false" />
-            <column key="number" collation="A" null="false" />
-        </index>
-    </object>
     <object class="Item" table="items" extends="xPDO\Om\xPDOSimpleObject">
         <field key="name" dbtype="varchar" precision="255" phptype="string" null="false" default="" index="fk" />
         <field key="color" dbtype="varchar" precision="255" phptype="string" null="false" default="green" index="fk" />
