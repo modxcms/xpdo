@@ -1047,7 +1047,7 @@ class xPDO {
                 $query->query['columns'] = array();
             }
             if (!empty($query->query['groupby']) || !empty($query->query['having'])) {
-                $query->select($expr);
+                $query->select('1 AS _c');
                 if ($query->prepare()) {
                     $countQuery = new xPDOCriteria($this, "SELECT COUNT(*) FROM ({$query->toSQL(false)}) cq", $query->bindings, $query->cacheFlag);
                     $stmt = $countQuery->prepare();
