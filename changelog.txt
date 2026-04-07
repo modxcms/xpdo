@@ -1,5 +1,18 @@
 This file shows the changes in this release of xPDO.
 
+xPDO 3.2.0 (April 7, 2026)
+====================================
+- Introduce xPDOExpression value object for safe injection of raw SQL expressions into xPDOQuery (#280)
+- Fix xPDOQuery::set() silently quoting string values that should be treated as SQL expressions (#280)
+- Fix illegal offset type error for compound primary keys containing a generated field (#272)
+- Throw xPDOException when ContainerInterface is missing the required config entry (#279)
+- Fix createObjectContainer() uncaught PDOException on MySQL 8+ (#275)
+- Fix str_repeat() float argument deprecation in xPDOGenerator::varExport() (#274)
+- Fix ONLY_FULL_GROUP_BY SQL mode violations in getCount() and legacy GROUP BY queries (#278)
+- Fix addPackage() to return the result of setPackageMeta() when adding or updating a package (#270)
+- Raise PHP minimum to >=8.1; update symfony/console constraint to ^6.0|^7.0 (#276)
+- Upgrade CI database images to MySQL 8.0 and PostgreSQL 16 (#277)
+
 xPDO 3.1.7 (December 4, 2025)
 ====================================
 - PHP 8.5 compatibility (#264)
