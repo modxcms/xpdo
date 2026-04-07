@@ -33,6 +33,10 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
                 $this->select('*');
             }
             foreach ($this->query['columns'] as $alias => $column) {
+                if ($column instanceof \xPDO\Om\xPDOExpression) {
+                    $columns[]= $column->getExpression();
+                    continue;
+                }
                 $ignorealias = is_int($alias);
                 $escape = !preg_match('/\bAS\b/i', $column) && !preg_match('/\./', $column) && !preg_match('/\(/', $column);
                 if ($escape) {
@@ -78,7 +82,9 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
                 foreach ($this->query['set'] as $setKey => $setVal) {
                     $value = $setVal['value'];
                     $type = $setVal['type'];
-                    if ($value !== null && in_array($type, array(\PDO::PARAM_INT, \PDO::PARAM_STR))) {
+                    if ($value instanceof \xPDO\Om\xPDOExpression) {
+                        $value = $value->getExpression();
+                    } elseif ($value !== null && in_array($type, array(\PDO::PARAM_INT, \PDO::PARAM_STR))) {
                         $value = $this->xpdo->quote($value, $type);
                     } elseif ($value === null) {
                         $value = 'NULL';

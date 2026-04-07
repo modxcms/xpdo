@@ -10,6 +10,7 @@
 
 namespace xPDO\Test\Om;
 
+use xPDO\Om\xPDOExpression;
 use xPDO\Om\xPDOObject;
 use xPDO\TestCase;
 use xPDO\xPDO;
@@ -171,5 +172,52 @@ class xPDOQuerySortByTest extends TestCase {
             array('name','ASC',4,0,'item-01'),
             array('name','DESC',4,0,'item-39'),
         );
+    }
+
+    /**
+     * An xPDOExpression passed to sortby() must be inlined verbatim in the
+     * ORDER BY clause — not identifier-quoted, not dropped, no TypeError.
+     *
+     * Before the fix, sortby() passes $column directly to isValidClause() which
+     * calls rtrim() on it; PHP 8.1 emits a TypeError when rtrim() receives an
+     * object. Even if that were suppressed the object would be stored as-is and
+     * the driver construct() would fail to cast it to a string.
+     */
+    public function testSortByExpressionIsInlinedVerbatim()
+    {
+        $query = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+        $query->sortby(new xPDOExpression('FIELD(status, 1, 2)'), 'ASC');
+        $query->construct();
+
+        $sql = $query->toSQL();
+
+        $this->assertStringContainsString('FIELD(status, 1, 2) ASC', $sql,
+            'An xPDOExpression in sortby() must be inlined verbatim in ORDER BY. SQL was: ' . $sql);
+    }
+
+    /**
+     * An xPDOExpression passed to groupby() must be inlined verbatim in the
+     * GROUP BY clause — not identifier-quoted, not dropped, no TypeError.
+     *
+     * Before the fix, groupby() stores $column directly in the query array.
+     * When the driver construct() runs, it does `$sql .= $groupby['column']`
+     * which performs implicit string concatenation on the xPDOExpression object.
+     * xPDOExpression does not implement __toString(), so PHP 8.1 emits a fatal
+     * TypeError: "Object of class xPDO\Om\xPDOExpression could not be converted
+     * to string".
+     *
+     * After the fix, groupby() must call getExpression() before storing, so the
+     * driver construct() receives the raw SQL string and inlines it verbatim.
+     */
+    public function testGroupByExpressionIsInlinedVerbatim()
+    {
+        $query = $this->xpdo->newQuery('xPDO\\Test\\Sample\\Item');
+        $query->groupby(new xPDOExpression('DATE(created_at)'));
+        $query->construct();
+
+        $sql = $query->toSQL();
+
+        $this->assertStringContainsString('DATE(created_at)', $sql,
+            'An xPDOExpression in groupby() must be inlined verbatim in GROUP BY. SQL was: ' . $sql);
     }
 }

@@ -258,13 +258,23 @@ abstract class xPDOQuery extends xPDOCriteria {
                 }
             }
             if (array_key_exists($key, $fieldMeta)) {
-                if ($value === null) {
+                if ($value instanceof xPDOExpression) {
+                    // Raw SQL expression: leave $type as null to signal verbatim inline.
+                    $type= null;
+                }
+                elseif ($value === null) {
                     $type= \PDO::PARAM_NULL;
                 }
                 elseif (!in_array($fieldMeta[$key]['phptype'], $this->_quotable)) {
                     $type= \PDO::PARAM_INT;
                 }
-                elseif (strpos($value, '(') === false && !$this->isConditionalClause($value)) {
+                else {
+                    // Plain string value: always quote via PDO::PARAM_STR.
+                    // isConditionalClause() is intentionally NOT called here; it
+                    // belongs only in parseConditions()/where() where SQL clauses
+                    // are expected. In a SET value context a plain string is always
+                    // data, never a SQL fragment, unless the caller explicitly wraps
+                    // it in an xPDOExpression.
                     $type= \PDO::PARAM_STR;
                 }
                 $this->query['set'][$key]= array('value' => $value, 'type' => $type);
@@ -423,7 +433,8 @@ abstract class xPDOQuery extends xPDOCriteria {
     /**
      * Add an ORDER BY clause to the query.
      *
-     * @param string $column Column identifier to sort by.
+     * @param string|xPDOExpression $column Column identifier to sort by, or an
+     *   xPDOExpression whose raw SQL is inlined verbatim (bypasses injection check).
      * @param string $direction The direction to sort by, ASC or DESC.
      * @return xPDOQuery Returns the instance.
      */
@@ -433,7 +444,9 @@ abstract class xPDOQuery extends xPDOCriteria {
             $direction = '';
         }
 
-        if (!static::isValidClause($column)) {
+        if ($column instanceof xPDOExpression) {
+            $this->query['sortby'][] = array('column' => $column->getExpression(), 'direction' => $direction);
+        } elseif (!static::isValidClause($column)) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, 'SQL injection attempt detected in sortby column; clause rejected');
         } elseif (!empty($column)) {
             $this->query['sortby'][] = array('column' => $column, 'direction' => $direction);
@@ -449,7 +462,11 @@ abstract class xPDOQuery extends xPDOCriteria {
      * @return xPDOQuery Returns the instance.
      */
     public function groupby($column, $direction= '') {
-        $this->query['groupby'][]= array ('column' => $column, 'direction' => $direction);
+        if ($column instanceof xPDOExpression) {
+            $this->query['groupby'][] = array('column' => $column->getExpression(), 'direction' => $direction);
+        } else {
+            $this->query['groupby'][]= array ('column' => $column, 'direction' => $direction);
+        }
         return $this;
     }
 
@@ -715,6 +732,9 @@ abstract class xPDOQuery extends xPDOCriteria {
                         if (is_array($val)) {
                             $result[]= $this->parseConditions($val, $conjunction);
                             continue;
+                        } elseif ($val instanceof xPDOExpression) {
+                            $result[]= new xPDOQueryCondition(array('sql' => $val->getExpression(), 'binding' => null, 'conjunction' => $conjunction));
+                            continue;
                         } elseif ($this->isConditionalClause($val)) {
                             $result[]= new xPDOQueryCondition(array('sql' => $val, 'binding' => null, 'conjunction' => $conjunction));
                             continue;
@@ -722,7 +742,7 @@ abstract class xPDOQuery extends xPDOCriteria {
                             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, "Error parsing condition with key {$key}: " . print_r($val, true));
                             continue;
                         }
-                    } elseif (is_scalar($val) || is_array($val) || $val === null) {
+                    } elseif (is_scalar($val) || is_array($val) || $val === null || $val instanceof xPDOExpression) {
                         $alias= $command == 'SELECT' ? $this->_alias : $this->xpdo->getTableName($this->_class, false);
                         $alias= trim($alias, $this->xpdo->_escapeCharOpen . $this->xpdo->_escapeCharClose);
                         $operator= '=';
@@ -750,7 +770,13 @@ abstract class xPDOQuery extends xPDOCriteria {
                             }
                         }
                         if (!empty($key)) {
-                            if ($val === null) {
+                            if ($val instanceof xPDOExpression) {
+                                $type= null;
+                                $sql = $this->xpdo->escape($alias) . '.' . $this->xpdo->escape($key) . ' ' . $operator . ' ' . $val->getExpression();
+                                $result[]= new xPDOQueryCondition(array('sql' => $sql, 'binding' => null, 'conjunction' => $conj));
+                                continue;
+                            }
+                            elseif ($val === null) {
                                 $type= \PDO::PARAM_NULL;
                                 if (!in_array($operator, array('IS', 'IS NOT'))) {
                                     $operator= $operator === '!=' ? 'IS NOT' : 'IS';
@@ -804,6 +830,13 @@ abstract class xPDOQuery extends xPDOCriteria {
                     }
                 }
             }
+        }
+        elseif ($conditions instanceof xPDOExpression) {
+            $result= new xPDOQueryCondition(array(
+                'sql' => $conditions->getExpression()
+            ,'binding' => null
+            ,'conjunction' => $conjunction
+            ));
         }
         elseif ($this->isConditionalClause($conditions)) {
             $result= new xPDOQueryCondition(array(

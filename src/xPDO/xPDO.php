@@ -2684,6 +2684,32 @@ class xPDO {
     }
 
     /**
+     * Create an xPDOExpression value object wrapping a raw SQL fragment.
+     *
+     * This is the preferred public API for constructing xPDOExpression instances.
+     * Use this factory method (rather than instantiating xPDOExpression directly)
+     * when you need to pass a verbatim SQL expression (e.g. NOW(), counter + 1,
+     * COUNT(*) AS total) to xPDOQuery without the value being quoted or escaped.
+     *
+     * This is a query-layer feature only. Do not pass xPDOExpression instances
+     * to xPDOObject::set() or xPDOObject::save().
+     *
+     * SECURITY WARNING: The expression string is embedded verbatim into generated
+     * SQL without any escaping or parameterisation. User-supplied input must NEVER
+     * be passed directly to this method. Only developer-controlled, trusted strings
+     * are safe to use here.
+     *
+     * @param string $expr A trusted, developer-controlled SQL expression string.
+     *                     MUST NOT contain unsanitised user input.
+     * @return \xPDO\Om\xPDOExpression
+     * @psalm-taint-sink sql $expr
+     */
+    public function expression(string $expr): \xPDO\Om\xPDOExpression
+    {
+        return new \xPDO\Om\xPDOExpression($expr);
+    }
+
+    /**
      * Splits a string on a specified character, ignoring escaped content.
      *
      * @static
