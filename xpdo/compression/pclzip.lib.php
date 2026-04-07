@@ -2643,7 +2643,12 @@
     if ($p_header['stored_filename'] == "") {
       $p_header['status'] = "filtered";
     }
-    
+
+    // ----- Look for empty size
+    if (!($p_header['size'] > 0)) {
+      $p_header['status'] = "filtered";
+    }
+
     // ----- Check the path length
     if (strlen($p_header['stored_filename']) > 0xFF) {
       $p_header['status'] = 'filename_too_long';
