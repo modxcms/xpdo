@@ -88,6 +88,7 @@ if (!class_exists('PDO')) {
  *
  * @package xpdo
  */
+#[\AllowDynamicProperties]
 class xPDO {
     /**#@+
      * Constants
