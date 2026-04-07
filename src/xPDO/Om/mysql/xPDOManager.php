@@ -421,8 +421,18 @@ class xPDOManager extends \xPDO\Om\xPDOManager {
         $notNull= !isset ($meta['null']) ? false : ($meta['null'] === 'false' || empty($meta['null']));
         $null= $notNull ? ' NOT NULL' : ' NULL';
         $extra= '';
-        if (isset($meta['index']) && $meta['index'] == 'pk' && !is_array($pk) && $pktype == 'integer' && isset ($meta['generated']) && $meta['generated'] == 'native') {
-            $extra= ' AUTO_INCREMENT';
+        $isGeneratedPkField = isset($meta['index']) && $meta['index'] == 'pk'
+            && isset($meta['generated']) && $meta['generated'] == 'native';
+        if ($isGeneratedPkField && ($meta['phptype'] ?? '') === 'integer') {
+            if (!is_array($pk)) {
+                $extra = ' AUTO_INCREMENT';
+            } else {
+                $primaryColumns = $this->xpdo->getIndexMeta($class)['PRIMARY']['columns'] ?? [];
+                reset($primaryColumns);
+                if (key($primaryColumns) === $name) {
+                    $extra = ' AUTO_INCREMENT';
+                }
+            }
         }
         if (empty ($extra) && isset ($meta['extra'])) {
             $extra= ' ' . $meta['extra'];

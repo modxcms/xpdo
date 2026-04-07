@@ -88,6 +88,16 @@
             <column key="color" length="" collation="A" null="false" />
         </index>
     </object>
+    <object class="NumberSeq" table="number_seq" extends="xPDO\Om\xPDOObject">
+        <field key="level" dbtype="varchar" precision="1" phptype="string" null="false" index="pk" />
+        <field key="number" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="false" index="pk" generated="native" />
+
+        <!-- MySQL: AUTO_INCREMENT column must be first in composite PK -->
+        <index alias="PRIMARY" name="PRIMARY" primary="true" unique="true" type="BTREE">
+            <column key="number" collation="A" null="false" />
+            <column key="level" collation="A" null="false" />
+        </index>
+    </object>
     <object class="SecureObject" extends="xPDO\Om\xPDOSimpleObject" />
     <object class="SecureItem" table="secure_items" extends="xPDO\Test\Sample\SecureObject">
         <field key="name" dbtype="varchar" precision="255" phptype="string" null="false" />

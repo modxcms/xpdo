@@ -1470,14 +1470,28 @@ class xPDOObject {
                 if ($result) {
                     if ($pkn && !$pk) {
                         if ($pkGenerated) {
-                            $this->_fields[$this->getPK()]= $this->getGeneratedKey();
+                            if (is_array($pkn)) {
+                                $generatedKey = $this->getGeneratedKey();
+                                foreach ($pkn as $pkField => $v) {
+                                    if (isset($this->_fieldMeta[$pkField]['generated'])
+                                        && $this->_fieldMeta[$pkField]['generated'] === 'native') {
+                                        $this->_fields[$pkField] = $generatedKey;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                $this->_fields[$this->getPK()] = $this->getGeneratedKey();
+                            }
                         }
-                        $pk= $this->getPrimaryKey();
+                        $pk = $this->getPrimaryKey();
                     }
                     if ($pk || !$this->getPK()) {
                         $this->_dirty= array();
                         $this->_validated= array();
                         $this->_new= false;
+                    }
+                    if (!$pk && $pkGenerated) {
+                        $this->xpdo->log(xPDO::LOG_LEVEL_WARN, "Could not retrieve generated key for class {$this->_class}.", '', __METHOD__, __FILE__, __LINE__);
                     }
                     $callback = $this->getOption(xPDO::OPT_CALLBACK_ON_SAVE);
                     if ($callback && is_callable($callback)) {
