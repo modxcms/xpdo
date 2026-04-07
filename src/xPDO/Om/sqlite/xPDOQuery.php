@@ -133,4 +133,16 @@ class xPDOQuery extends \xPDO\Om\xPDOQuery {
         $this->sql= $sql;
         return (!empty ($this->sql));
     }
+
+    protected function isColumnIdentifier($key)
+    {
+        $unQuoted = '[A-Za-z_][A-Za-z0-9_]*';
+        $backtick = '`(?:[^`\x00]|``){1,128}`';
+        $bracket = '\[[^\]\x00]+\]';
+        $dblQuote = '"(?:[^"\x00]|""){1,}"';
+        $ident = "(?:{$dblQuote}|{$backtick}|{$bracket}|{$unQuoted})";
+        $columnIdent = "(?:{$ident}\.)?{$ident}";
+
+        return (bool) preg_match("/^{$columnIdent}$/", trim($key));
+    }
 }

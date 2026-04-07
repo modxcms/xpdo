@@ -29,7 +29,7 @@ class xPDOQueryConditionsTest extends TestCase
 
             $this->xpdo->manager->createObjectContainer('xPDO\Test\Sample\xPDOSample');
 
-            $sample = $this->xpdo->newObject('xPDO\Test\Sample\xPDOSample', [
+            $this->xpdo->newObject('xPDO\Test\Sample\xPDOSample', [
                 'parent' => 0,
                 'unique_varchar' => uniqid('prefix_'),
                 'varchar' => 'varchar',
@@ -54,13 +54,13 @@ class xPDOQueryConditionsTest extends TestCase
      */
     public function tearDownFixtures()
     {
-        parent::tearDownFixtures();
-
         try {
             $this->xpdo->manager->removeObjectContainer('xPDO\Test\Sample\xPDOSample');
         } catch (\Exception $e) {
             $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__, __FILE__, __LINE__);
         }
+
+        parent::tearDownFixtures();
     }
 
     /**
@@ -79,7 +79,7 @@ class xPDOQueryConditionsTest extends TestCase
 
     public function providerSelectConditions()
     {
-        return [
+        $data = [
             [
                 ['parent' => 0]
             ],
@@ -94,7 +94,154 @@ class xPDOQueryConditionsTest extends TestCase
             ],
             [
                 ['date_time' => '2018-03-24 00:00:00']
-            ]
+            ],
+            [
+                [
+                    'integer' => 1999,
+                    'OR:date_time:=' => '2018-03-24 00:00:00'
+                ]
+            ],
         ];
+
+        switch (self::$properties['xpdo_driver']) {
+            case 'mysql':
+                $data = array_merge($data, [
+                    [
+                        [
+                            '`integer` - 1' => 1998,
+                        ]
+                    ],
+                    [
+                        [
+                            'enum' => 'T',
+                            [
+                                'OR:`integer` - 1:=' => 1998,
+                                'date_time' => '2018-03-24 00:00:00'
+                            ]
+                        ]
+                    ],
+                    [
+                        [
+                            'LOG(`integer`)' => 7.6009,
+                            [
+                                'OR:text:=' => 'text',
+                                'date_time' => '2018-03-24 00:00:00'
+                            ]
+                        ]
+                    ],
+                    [
+                        [
+                            'date_time' => null,
+                            'OR:LOG(`integer`):=' => 7.6009,
+                            'OR:float:=' => 3.14159,
+                        ]
+                    ],
+                ]);
+                break;
+            case 'sqlite':
+                $data = array_merge($data, [
+                    [
+                        [
+                            '`integer` - 1' => 1998,
+                        ]
+                    ],
+                    [
+                        [
+                            'enum' => 'T',
+                            [
+                                'OR:`integer` - 1:=' => 1998,
+                                'date_time' => '2018-03-24 00:00:00'
+                            ]
+                        ]
+                    ],
+                    [
+                        [
+                            'LOG(`integer`)' => 7.6009,
+                            [
+                                'OR:text:=' => 'text',
+                                'date_time' => '2018-03-24 00:00:00'
+                            ]
+                        ]
+                    ],
+                    [
+                        [
+                            'date_time' => null,
+                            'OR:LOG(`integer`):=' => 7.6009,
+                            'OR:float:=' => 3.14159,
+                        ]
+                    ],
+                ]);
+                break;
+            case 'pgsql':
+                $data = array_merge($data, [
+                    [
+                        [
+                            '"integer" - 1' => 1998,
+                        ]
+                    ],
+                    [
+                        [
+                            'enum' => 'T',
+                            [
+                                'OR:"integer" - 1:=' => 1998,
+                                'date_time' => '2018-03-24 00:00:00'
+                            ]
+                        ]
+                    ],
+                    [
+                        [
+                            'LOG("integer")' => 7.6009,
+                            [
+                                'OR:text:=' => 'text',
+                                'date_time' => '2018-03-24 00:00:00'
+                            ]
+                        ]
+                    ],
+                    [
+                        [
+                            'date_time' => null,
+                            'OR:LOG("integer"):=' => 7.6009,
+                            'OR:float:=' => 3.14159,
+                        ]
+                    ],
+                ]);
+                break;
+            case 'sqlsrv':
+                $data = array_merge($data, [
+                    [
+                        [
+                            '[integer] - 1' => 1998,
+                        ]
+                    ],
+                    [
+                        [
+                            'enum' => 'T',
+                            [
+                                'OR:[integer] - 1:=' => 1998,
+                                'date_time' => '2018-03-24 00:00:00'
+                            ]
+                        ]
+                    ],
+                    [
+                        [
+                            'LOG([integer])' => 7.6009,
+                            [
+                                'OR:text:=' => 'text',
+                                'date_time' => '2018-03-24 00:00:00'
+                            ]
+                        ]
+                    ],
+                    [
+                        [
+                            'date_time' => null,
+                            'OR:LOG([integer]):=' => 7.6009,
+                            'OR:float:=' => 3.14159,
+                        ]
+                    ],
+                ]);
+                break;
+        }
+
+        return $data;
     }
 }
