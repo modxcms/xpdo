@@ -38,7 +38,10 @@ class xPDORedisCache extends xPDOCache
                         $this->getOption('redis_server', $options, 'localhost:6379')
                     )
                 );
-                if ($this->redis->pconnect($server[0], (int)$server[1])) {
+
+                $server_url = count($server) === 3 ? "$server[0]:$server[1]" : $server[0];
+                $server_port = count($server) === 3 ? (int)$server[2] : (int)$server[1] ?? 6379;
+                if ($this->redis->pconnect($server_url, $server_port)) {
                     $redis_auth = $this->getOption('redis_auth', $options, '');
                     if (!empty($redis_auth)) {
                         $this->redis->auth($redis_auth);
