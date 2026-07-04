@@ -2290,18 +2290,18 @@ class xPDO {
      * by latest native PDO implementation.
      */
     public static function parseDSN($string) {
-        $result= array ();
-        $pos= strpos($string, ':');
-        $result['dbtype']= strtolower(substr($string, 0, $pos));
-        $parameters= explode(';', substr($string, ($pos +1)));
-        for ($a= 0, $b= count($parameters); $a < $b; $a++) {
-            $tmp= explode('=', $parameters[$a]);
-            if (count($tmp) == 2) {
-                $result[strtolower(trim($tmp[0]))]= trim($tmp[1]);
-            } else {
-                $result['dbname']= trim($parameters[$a]);
-            }
+        $result = [];
+        $dsn = trim(preg_replace('/(\s*)([:;=])(\s*)/', '$2', $string), ' ;');
+        $tmp = explode(':', $dsn);
+        $result['dbtype'] = strtolower($tmp[0]);
+        $params = explode(';', $tmp[1]);
+        
+        foreach($params as $param) {
+            $paramData = explode('=', $param);
+            $key = strtolower($paramData[0]);
+            $result[$key] = $paramData[1];
         }
+        
         if (!isset($result['dbname']) && isset($result['database'])) {
             $result['dbname'] = $result['database'];
         }
