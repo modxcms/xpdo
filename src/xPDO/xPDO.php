@@ -2367,7 +2367,9 @@ class xPDO {
         foreach($params as $param) {
             $paramData = explode('=', $param);
             $key = strtolower($paramData[0]);
-            $result[$key] = $paramData[1];
+            if ($key) {
+                $result[$key] = $paramData[1];
+            }
         }
         
         if (!isset($result['dbname']) && isset($result['database'])) {
