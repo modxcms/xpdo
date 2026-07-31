@@ -2368,7 +2368,7 @@ class xPDO {
             $paramData = explode('=', $param);
             $key = strtolower($paramData[0]);
             if ($key) {
-                $result[$key] = $paramData[1];
+                $result[$key] = $paramData[1] ?? '';
             }
         }
         
