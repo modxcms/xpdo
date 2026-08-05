@@ -2344,7 +2344,7 @@ class xPDO {
             }
 
         } else {
-            $tmp = explode(':', $dsn);
+            $tmp = explode(':', $dsn, 2);
             $paramsString = $tmp[1];
             $params = explode(';', $paramsString);
             $result['dbtype'] = strtolower($tmp[0]);
