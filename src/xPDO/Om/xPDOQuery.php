@@ -217,7 +217,7 @@ abstract class xPDOQuery extends xPDOCriteria {
     /**
      * Specify columns to return from the SQL query.
      *
-     * @param string $columns Columns to return from the query.
+     * @param string|array $columns Columns to return from the query.
      * @return xPDOQuery Returns the current object for convenience.
      */
     public function select($columns= '*') {
