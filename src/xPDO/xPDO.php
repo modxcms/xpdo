@@ -2290,18 +2290,74 @@ class xPDO {
      * by latest native PDO implementation.
      */
     public static function parseDSN($string) {
-        $result= array ();
-        $pos= strpos($string, ':');
-        $result['dbtype']= strtolower(substr($string, 0, $pos));
-        $parameters= explode(';', substr($string, ($pos +1)));
-        for ($a= 0, $b= count($parameters); $a < $b; $a++) {
-            $tmp= explode('=', $parameters[$a]);
-            if (count($tmp) == 2) {
-                $result[strtolower(trim($tmp[0]))]= trim($tmp[1]);
+        $paramsString = '';
+        $params = [];
+        $result = [];
+
+        // Regex collapses all space except within values
+        $dsn = trim(preg_replace('/(\s*)([:;=])(\s*)/', '$2', $string), ' ;');
+        
+        $isSqlite = stripos($dsn, 'sqlite:') === 0;
+
+        if ($isSqlite) {
+            $result['dbtype'] = 'sqlite';
+            /*
+                Parse out the name based on the following:
+
+                In-memory naming spec in dsn, including URI-based
+                --------
+                1 - sqlite::memory:
+                2 - sqlite:file::memory:
+                3 - sqlite:file::memory:?cache=shared
+                4 - sqlite:file:example1?mode=memory&cache=shared
+                5 - sqlite:: (empty name indicates temporary db)
+                
+                File-based naming spec in dsn
+                ---------
+                6 - sqlite:path/to/example1.db
+            */
+
+            $matches = null;
+
+            // Note that the order of matching is important!
+
+            if (substr_count($dsn, ':') === 1 && strlen($dsn) > 7) {
+                // Captures file-based format #6
+                $result['dbname'] = explode(':', $dsn)[1];
+            } else if (preg_match('/(sqlite:file:)(?!:memory)([^:]*)?/s', $dsn, $matches)) {
+                // Captures in-memory format #4; not handling errant extra colons around :file: (if found, dbname may just be 'file')
+                $result['dbname'] = $matches[0];
+            } else if (preg_match('/(sqlite:file:|sqlite::)(:memory:\?[^:]*|:?memory:)?/s', $dsn, $matches)) {
+                // Captures in-memory formats #1-3, #5; empty string indicates temporary db
+                $result['dbname'] = $matches[0] === 'sqlite::' ? '' : $matches[0] ;
             } else {
-                $result['dbname']= trim($parameters[$a]);
+                self::log(xPDO::LOG_LEVEL_ERROR, "The given sqlite DSN connection string is either invalid or missing the correct specification of a database name: \r\n$string");
+            }
+            
+            if (isset($result['dbname'])) {
+                $result['dbname'] = str_replace('sqlite:' , '', $result['dbname']);
+
+                // Remove errant colons (only dsns ending in :memory: without params should retain colon)
+                if (str_ends_with($result['dbname'], ':memory:') === false) {
+                    $result['dbname'] = trim($result['dbname'], ':');
+                }
+            }
+
+        } else {
+            $tmp = explode(':', $dsn, 2);
+            $paramsString = $tmp[1];
+            $params = explode(';', $paramsString);
+            $result['dbtype'] = strtolower($tmp[0]);
+        }
+        
+        foreach($params as $param) {
+            $paramData = explode('=', $param);
+            $key = strtolower($paramData[0]);
+            if ($key) {
+                $result[$key] = $paramData[1] ?? '';
             }
         }
+        
         if (!isset($result['dbname']) && isset($result['database'])) {
             $result['dbname'] = $result['database'];
         }
