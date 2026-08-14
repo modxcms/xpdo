@@ -11,6 +11,10 @@ xPDO can be installed in your project via composer:
     composer require xpdo/xpdo
 
 
+## Database migrations
+
+Ledger-backed migrations: namespace `xPDO\Migrations\`, commands `migrate-create`, `migrate-status`, `migrate`, `migrate-rollback`. See [`docs/migrations/cli.md`](docs/migrations/cli.md).
+
 ## Usage
 
 The `\xPDO\xPDO` class is the main point of access to the framework. Provide a configuration array describing the connection(s) you want to establish when creating an instance of the class.
