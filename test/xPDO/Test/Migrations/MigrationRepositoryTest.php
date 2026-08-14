@@ -80,4 +80,16 @@ class MigrationRepositoryTest extends MigrationTestCase
         $this->assertSame([$orphan], $status->orphaned);
         $this->assertSame([], $status->pending);
     }
+
+    public function testDuplicateVersionInsertFails()
+    {
+        $repo = new MigrationRepository($this->xpdo, $this->makeConfig());
+        $repo->ensure();
+        $version = '20260403120000_Dup';
+        $at = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $repo->insert($version, 1, $at);
+
+        $this->expectException(\xPDO\Migrations\Exception\MigrationException::class);
+        $repo->insert($version, 2, $at);
+    }
 }

@@ -14,6 +14,10 @@ namespace xPDO\Migrations;
 use Psr\Log\LoggerInterface;
 use xPDO\xPDO;
 
+/**
+ * Runtime handle passed into Migration::up/down. Prefer getXpdo() over capturing
+ * connections yourself for the duration of the method.
+ */
 final class MigrationContext
 {
     /** @var xPDO */

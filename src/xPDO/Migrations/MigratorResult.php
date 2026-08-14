@@ -11,6 +11,9 @@
 
 namespace xPDO\Migrations;
 
+/**
+ * Result DTO returned by Migrator methods. Part of the stable consumer surface.
+ */
 final class MigratorResult
 {
     public const REPOSITORY_OK = 'ok';

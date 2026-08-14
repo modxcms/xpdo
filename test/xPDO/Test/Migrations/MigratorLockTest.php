@@ -129,7 +129,7 @@ exit(1);
                 . $stdout . ' stderr=' . $stderr
             );
         } finally {
-            $lock->release(true);
+            $lock->release();
             @unlink($tmp);
         }
     }

@@ -88,4 +88,16 @@ class MigratorHappyPathTest extends MigrationTestCase
 
         $this->assertSame($pdoBefore, $this->xpdo->pdo);
     }
+
+    public function testLedgerWriteSurvivesUpClearingConnection()
+    {
+        $name = '20260101122100_PinRestore';
+        $this->writeMigration(
+            $name,
+            '$xpdo = $context->getXpdo(); $xpdo->pdo = null; $xpdo->connection = null;'
+        );
+        $migrator = $this->makeMigrator();
+        $migrator->migrate();
+        $this->assertSame([$name], $migrator->status()->applied);
+    }
 }

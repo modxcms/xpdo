@@ -12,11 +12,16 @@
 namespace xPDO\Migrations;
 
 use Psr\Log\LoggerInterface;
-use Throwable;
 use xPDO\Migrations\Exception\MigrationException;
 use xPDO\xPDO;
 use xPDO\xPDOConnection;
 
+/**
+ * Public entry point for applying, inspecting, creating, and rolling back migrations.
+ *
+ * Stable surface for consumers: this class, Migration, MigrationContext, MigrationConfig,
+ * and MigratorResult DTOs returned by these methods.
+ */
 class Migrator
 {
     /** @var xPDO */
@@ -59,11 +64,22 @@ class Migrator
         $this->logger = $logger ?: $this->resolveLogger($xpdo);
         $this->repository = new MigrationRepository($xpdo, $config);
         $this->discoverer = new MigrationDiscoverer($config);
-        $this->executor = new MigrationExecutor($xpdo, $config, $this->repository, $this->logger);
+        $this->executor = new MigrationExecutor(
+            $xpdo,
+            $config,
+            $this->repository,
+            $this->logger,
+            function (): void {
+                $this->restorePinnedConnection();
+            }
+        );
         $this->lock = new MigrationLock($xpdo, $config);
         $this->generator = new MigrationGenerator($config);
     }
 
+    /**
+     * Inspect applied / pending / orphaned versions. Does not create the ledger table.
+     */
     public function status(): MigratorResult
     {
         if (!$this->repository->exists()) {
@@ -89,13 +105,16 @@ class Migrator
         return $result;
     }
 
+    /**
+     * Apply pending migrations in ascending name order. Optional $step caps how many.
+     * Failed up() is not recorded; later pending in the same run are not attempted.
+     */
     public function migrate(?int $step = null): MigratorResult
     {
-        $success = false;
         $this->beginPinnedRun();
         $this->lock->acquire();
         try {
-            return $this->withAutoCreateDisabled(function () use ($step, &$success) {
+            return $this->withAutoCreateDisabled(function () use ($step) {
                 $this->repository->ensure();
                 $discovered = $this->discoverer->discover();
                 $applied = array_fill_keys($this->repository->fetchAppliedVersions(), true);
@@ -111,7 +130,6 @@ class Migrator
                 if ($pending === []) {
                     $result->applied = [];
                     $result->pending = [];
-                    $success = true;
                     return $result;
                 }
 
@@ -136,18 +154,17 @@ class Migrator
                 $result->applied = $appliedNow;
                 $status = $this->status();
                 $result->pending = $status->pending;
-                $success = true;
                 return $result;
             });
-        } catch (Throwable $e) {
-            $success = false;
-            throw $e;
         } finally {
-            $this->lock->release($success);
+            $this->lock->release();
             $this->endPinnedRun();
         }
     }
 
+    /**
+     * Write a new migration stub on disk. Does not require a live database connection.
+     */
     public function create(string $description): MigratorResult
     {
         $name = $this->generator->create($description);
@@ -158,13 +175,16 @@ class Migrator
         return $result;
     }
 
+    /**
+     * Reverse rows with batch = MAX(batch), highest version first. Optional $step caps count.
+     * Failed down() leaves the ledger row in place.
+     */
     public function rollback(?int $step = null): MigratorResult
     {
-        $success = false;
         $this->beginPinnedRun();
         $this->lock->acquire();
         try {
-            return $this->withAutoCreateDisabled(function () use ($step, &$success) {
+            return $this->withAutoCreateDisabled(function () use ($step) {
                 $this->repository->ensure();
 
                 $result = new MigratorResult(MigratorResult::REPOSITORY_OK);
@@ -173,7 +193,6 @@ class Migrator
                     $status = $this->status();
                     $result->applied = $status->applied;
                     $result->pending = $status->pending;
-                    $success = true;
                     return $result;
                 }
 
@@ -199,14 +218,10 @@ class Migrator
                 $status = $this->status();
                 $result->applied = $status->applied;
                 $result->pending = $status->pending;
-                $success = true;
                 return $result;
             });
-        } catch (Throwable $e) {
-            $success = false;
-            throw $e;
         } finally {
-            $this->lock->release($success);
+            $this->lock->release();
             $this->endPinnedRun();
         }
     }

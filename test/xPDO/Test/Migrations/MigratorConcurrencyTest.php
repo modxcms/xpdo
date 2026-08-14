@@ -30,7 +30,7 @@ class MigratorConcurrencyTest extends MigrationTestCase
             $this->expectException(MigrationLockedException::class);
             $migrator->migrate();
         } finally {
-            $lock->release(true);
+            $lock->release();
             $secondary->pdo = null;
         }
     }

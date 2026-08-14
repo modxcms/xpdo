@@ -71,7 +71,7 @@ class MigrationLock
         $this->held = true;
     }
 
-    public function release(bool $successful = true): void
+    public function release(): void
     {
         if (!$this->held) {
             return;

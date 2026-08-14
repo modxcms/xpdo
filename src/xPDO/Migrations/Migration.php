@@ -11,6 +11,13 @@
 
 namespace xPDO\Migrations;
 
+/**
+ * Base class for user migration files. Extend and implement up()/down().
+ *
+ * Identity is the migration filename stem: YYYYMMDDHHMMSS_Description
+ * (see MigrationDiscoverer::NAME_PATTERN). Class name is M{that stem} in the
+ * configured namespace.
+ */
 abstract class Migration
 {
     abstract public function up(MigrationContext $context): void;

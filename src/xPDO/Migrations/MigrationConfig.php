@@ -13,6 +13,9 @@ namespace xPDO\Migrations;
 
 use xPDO\Migrations\Exception\ConfigurationException;
 
+/**
+ * Validated migration options (path, namespace, table, transaction policy, lock name).
+ */
 class MigrationConfig
 {
     public const POLICY_NON_TRANSACTIONAL = 'non_transactional';

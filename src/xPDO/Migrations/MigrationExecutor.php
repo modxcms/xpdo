@@ -36,12 +36,21 @@ class MigrationExecutor
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct(xPDO $xpdo, MigrationConfig $config, MigrationRepository $repository, LoggerInterface $logger)
-    {
+    /** @var callable|null */
+    private $ensurePinnedConnection;
+
+    public function __construct(
+        xPDO $xpdo,
+        MigrationConfig $config,
+        MigrationRepository $repository,
+        LoggerInterface $logger,
+        ?callable $ensurePinnedConnection = null
+    ) {
         $this->xpdo = $xpdo;
         $this->config = $config;
         $this->repository = $repository;
         $this->logger = $logger;
+        $this->ensurePinnedConnection = $ensurePinnedConnection;
     }
 
     public function applyUp(Migration $migration, string $name, int $batch): void
@@ -51,6 +60,8 @@ class MigrationExecutor
 
         $this->runInPolicy($transactional, $name, 'up', function () use ($migration, $context, $name, $batch) {
             $migration->up($context);
+            // Ledger write must use the same pinned connection as the migration run.
+            $this->restorePinnedConnection();
             $this->repository->insert($name, $batch, new DateTimeImmutable('now', new DateTimeZone('UTC')));
         });
     }
@@ -62,8 +73,16 @@ class MigrationExecutor
 
         $this->runInPolicy($transactional, $name, 'down', function () use ($migration, $context, $name) {
             $migration->down($context);
+            $this->restorePinnedConnection();
             $this->repository->delete($name);
         });
+    }
+
+    private function restorePinnedConnection(): void
+    {
+        if ($this->ensurePinnedConnection !== null) {
+            ($this->ensurePinnedConnection)();
+        }
     }
 
     private function resolveTransactional(Migration $migration): bool
