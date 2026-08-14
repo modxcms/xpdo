@@ -35,7 +35,7 @@ final class MigrateRollback extends Command
         $this->addMigrationOptions();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $migrator = $this->createMigrator($input, $output);
         if ($migrator === null) {
