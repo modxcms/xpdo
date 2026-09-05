@@ -183,11 +183,14 @@ class xPDOCacheManager {
      * @param string $filename The absolute path to the location the file will
      * be written in.
      * @param string $content The content of the newly written file.
-     * @param string $mode The php file mode to write in. Defaults to 'wb'. Note that this method always
-     * uses a (with b or t if specified) to open the file and that any mode except a means existing file
-     * contents will be overwritten.
+     * @param string $mode The php file mode to write in. Defaults to 'wb'.
+     * Modes starting with 'a' append. Any other mode replaces existing contents
+     * after an exclusive lock: the file is opened with 'c'/'cb'/'ct' (create if
+     * missing, do not truncate on open) so seek/truncate control the write.
+     * Opening replace writes with 'a' is avoided because PHP always appends on
+     * write in append mode regardless of fseek.
      * @param array $options An array of options for the function.
-     * @return int|bool Returns the number of bytes written to the file or false on failure.
+     * @return bool True when content was written; false on failure.
      */
     public function writeFile($filename, $content, $mode= 'wb', $options= array()) {
         $written= false;
@@ -198,16 +201,15 @@ class xPDOCacheManager {
         if (!file_exists($dirname)) {
             $this->writeTree($dirname, $options);
         }
-        $mode = str_replace('+', '', $mode);
-        switch ($mode[0]) {
-            case 'a':
-                $append = true;
-                break;
-            default:
-                $append = false;
-                break;
+        $mode = str_replace('+', '', (string) $mode);
+        if ($mode === '') {
+            $mode = 'wb';
         }
-        $fmode = (strlen($mode) > 1 && in_array($mode[1], array('b', 't'))) ? "a{$mode[1]}" : 'a';
+        $append = ($mode[0] === 'a');
+        $modifier = (strlen($mode) > 1 && in_array($mode[1], array('b', 't'), true)) ? $mode[1] : '';
+        // Append callers (error log) keep a/ab/at. Overwrite uses c/cb/ct so the
+        // handle stays seekable and truncate actually positions the next write.
+        $fmode = $append ? ('a' . $modifier) : ('c' . $modifier);
         $file= @fopen($filename, $fmode);
         if ($file) {
             if ($append === true) {
@@ -230,9 +232,13 @@ class xPDOCacheManager {
                     $attempt++;
                 }
                 if ($locked) {
-                    fseek($file, 0);
-                    ftruncate($file, 0);
-                    $written= fwrite($file, $content);
+                    $ready = fseek($file, 0) === 0
+                        && ftruncate($file, 0)
+                        && rewind($file)
+                        && ftell($file) === 0;
+                    if ($ready) {
+                        $written= fwrite($file, $content);
+                    }
                     if ($this->getOption('use_flock', $options, true)) {
                         flock($file, LOCK_UN);
                     } else {
