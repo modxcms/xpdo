@@ -156,4 +156,38 @@ class xPDOCacheManagerTest extends TestCase
             ),
         );
     }
+
+    public function testWriteFileOverwritesExistingContent()
+    {
+        $path = self::$properties['xpdo_test_path'] . 'fs/writefile_overwrite.txt';
+        @unlink($path);
+        $cm = $this->xpdo->getCacheManager();
+        $this->assertTrue($cm->writeFile($path, "FIRST\n"));
+        $this->assertTrue($cm->writeFile($path, "SECOND\n"));
+        $this->assertSame("SECOND\n", file_get_contents($path));
+        @unlink($path);
+    }
+
+    public function testWriteFileAppendModeAppends()
+    {
+        $path = self::$properties['xpdo_test_path'] . 'fs/writefile_append.txt';
+        @unlink($path);
+        $cm = $this->xpdo->getCacheManager();
+        $this->assertTrue($cm->writeFile($path, 'A', 'a'));
+        $this->assertTrue($cm->writeFile($path, 'B', 'a'));
+        $this->assertSame('AB', file_get_contents($path));
+        @unlink($path);
+    }
+
+    public function testWriteFileOverwriteWithUseFlockFalse()
+    {
+        $path = self::$properties['xpdo_test_path'] . 'fs/writefile_noflock.txt';
+        @unlink($path);
+        $cm = $this->xpdo->getCacheManager();
+        $options = array('use_flock' => false);
+        $this->assertTrue($cm->writeFile($path, 'ONE', 'wb', $options));
+        $this->assertTrue($cm->writeFile($path, 'TWO', 'wb', $options));
+        $this->assertSame('TWO', file_get_contents($path));
+        @unlink($path);
+    }
 }
