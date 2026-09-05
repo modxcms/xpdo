@@ -1,6 +1,6 @@
 # xPDO O/RB v3
 
-[![Build Status](https://github.com/modxcms/xpdo/workflows/CI/badge.svg?branch=3.x)](https://github.com/modxcms/xpdo/workflows/CI/badge.svg?branch=3.x)
+[![CI](https://github.com/modxcms/xpdo/actions/workflows/ci.yml/badge.svg?branch=3.x)](https://github.com/modxcms/xpdo/actions/workflows/ci.yml?query=branch%3A3.x)
 
 xPDO is an ultra-light object-relational bridge library for PHP. It is a standalone library and can be used with any framework or DI container.
 
