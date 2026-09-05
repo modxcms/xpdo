@@ -40,6 +40,18 @@
             <file>./xPDO/Test/Transport/xPDOVehicleTest.php</file>
             <file>./xPDO/Test/PSR4/xPDOTest.php</file>
             <file>./xPDO/Test/xPDOPsr11InitTest.php</file>
+            <file>./xPDO/Test/Migrations/MigrationConfigTest.php</file>
+            <file>./xPDO/Test/Migrations/MigrationDiscovererTest.php</file>
+            <file>./xPDO/Test/Migrations/MigrationRepositoryStatusTest.php</file>
+            <file>./xPDO/Test/Migrations/MigrationRepositoryTest.php</file>
+            <file>./xPDO/Test/Migrations/MigratorHappyPathTest.php</file>
+            <file>./xPDO/Test/Migrations/MigratorFailureTest.php</file>
+            <file>./xPDO/Test/Migrations/MigratorLockTest.php</file>
+            <file>./xPDO/Test/Migrations/MigratorRollbackTest.php</file>
+            <file>./xPDO/Test/Migrations/MigratorTransactionTest.php</file>
+            <file>./xPDO/Test/Migrations/MigratorConcurrencyTest.php</file>
+            <file>./xPDO/Test/Migrations/MigrationGeneratorUniquenessTest.php</file>
+            <file>./xPDO/Test/Migrations/MigrationConsoleTest.php</file>
             <file>./xPDO/Test/TearDownTest.php</file>
         </testsuite>
     </testsuites>

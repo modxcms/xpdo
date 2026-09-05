@@ -7,11 +7,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Command extends \Symfony\Component\Console\Command\Command
 {
     protected static $platforms = [
-        'mysql', 
-        'sqlite', 
-        'sqlsrv'
+        'mysql',
+        'sqlite',
+        'pgsql',
+        'sqlsrv',
     ];
-    
+
     protected function loadConfig(OutputInterface $output, $config = null)
     {
         if (empty($config) || !is_readable($config)) {
@@ -41,7 +42,7 @@ class Command extends \Symfony\Component\Console\Command\Command
             if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
                 $output->writeln("using config from {$config}");
             }
-            
+
             return $properties;
         }
 

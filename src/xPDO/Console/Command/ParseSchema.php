@@ -63,7 +63,7 @@ final class ParseSchema extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $platform = strtolower($input->getArgument('platform'));
         if (!in_array($platform, self::$platforms)) {

@@ -120,4 +120,10 @@ $properties['logLevel']= xPDO::LOG_LEVEL_INFO;
 $properties['logTarget']= php_sapi_name() === 'cli' ? 'ECHO' : 'HTML';
 //$properties['debug']= -1;
 
+/* Optional migrations CLI keys (used by migrate-* commands) */
+//$properties['migrations_path'] = __DIR__ . '/migrations';
+//$properties['migrations_namespace'] = 'App\\Migrations';
+//$properties['migrations_table'] = 'xpdo_migrations';
+//$properties['transaction_policy'] = 'non_transactional';
+
 return $properties;

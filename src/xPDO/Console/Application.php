@@ -1,6 +1,10 @@
 <?php
 namespace xPDO\Console;
 
+use xPDO\Console\Command\Migrate;
+use xPDO\Console\Command\MigrateCreate;
+use xPDO\Console\Command\MigrateRollback;
+use xPDO\Console\Command\MigrateStatus;
 use xPDO\Console\Command\ParseSchema;
 use xPDO\Console\Command\WriteSchema;
 
@@ -17,5 +21,9 @@ class Application extends \Symfony\Component\Console\Application
     {
         $this->add(new ParseSchema());
         $this->add(new WriteSchema());
+        $this->add(new MigrateCreate());
+        $this->add(new MigrateStatus());
+        $this->add(new Migrate());
+        $this->add(new MigrateRollback());
     }
 }
