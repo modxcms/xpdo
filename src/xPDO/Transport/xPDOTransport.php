@@ -590,8 +590,7 @@ class xPDOTransport {
             $constraint = ">={$requirement},<" . self::nextSignificantRelease($requirement);
         }
         if (strpos($constraint, ',') !== false) {
-            $exploded = explode(',', $constraint);
-            array_walk($exploded, 'trim');
+            $exploded = array_map('trim', explode(',', $constraint));
             $satisfies = array();
             foreach ($exploded as $requirement) {
                 $satisfies[] = self::satisfies($version, $requirement);
@@ -615,7 +614,10 @@ class xPDOTransport {
                 $operator .= substr($constraint, 1, 1);
                 $versionPos++;
             }
-            $requirement = substr($constraint, $versionPos);
+            if ($operator === '!') {
+                $operator = '!=';
+            }
+            $requirement = trim(substr($constraint, $versionPos));
             $satisfied = version_compare($version, $requirement, $operator);
         } elseif ($constraint === '*') {
             $satisfied = true;
